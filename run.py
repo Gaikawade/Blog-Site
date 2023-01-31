@@ -1,7 +1,7 @@
 from flask import render_template
 from app import app
 
-from views import author_views
+from Views import author_views
 
 @app.route('/')
 def homepage():

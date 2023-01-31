@@ -10,12 +10,7 @@ def register():
         lname = request.form['last_name']
         email = request.form['email']
         password = request.form['password']
-        
-        print(fname, lname)
-        
-        if not re.match(r'[^@]+@[^@]+\.[^@]+', email):
-          flash("Invalid email address")
-        
+
         doc = db.session.query(Author).filter_by(email=email)
         print(doc)
         if doc:

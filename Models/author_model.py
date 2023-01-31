@@ -1,4 +1,3 @@
-import pytz
 from datetime import datetime
 from app import db
 
@@ -17,5 +16,5 @@ class Author(db.Model):
         self.last_name = kwargs.get('lname')
         self.email = kwargs.get('email')
         self.password = kwargs.get('password')
-        self.created_at = datetime.now(pytz.timezone('Asia/Kolkata'))
+        self.created_at = datetime.now()
         db.create_all()
