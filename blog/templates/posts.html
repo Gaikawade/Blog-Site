@@ -2,7 +2,6 @@
 
 {% block contents %}
 
-    <h3>Posts Page</h3>
     {% with messages = get_flashed_messages(with_categories=true) %}
         {% if messages %}
             <ul class="flashes">
@@ -14,5 +13,7 @@
             </ul>
         {% endif %}
     {% endwith %}
+
+    <h3>Posts Page</h3>
 
 {% endblock contents %}

@@ -1,8 +1,6 @@
 {% extends 'layout.html' %}
 
 {% block contents %}
-
-    <h3>Login Page</h3>
     {% with messages = get_flashed_messages(with_categories=true) %}
         {% if messages %}
             <ul class="flashes">
@@ -14,6 +12,8 @@
             </ul>
         {% endif %}
     {% endwith %}
+
+    <h3>Login Page</h3>
 
     <form action="" method="post">
       {{ form.csrf_token }}
@@ -38,8 +38,13 @@
             {% endif %}
         </div>
 
-        <div id="success">{{ form.submit() }}</div>
-        
-    </form>
+        <div id="form-check">
+          {{ form.remember() }}
+          {{ form.remember.label }}
+        </div> <br />
 
+        <div id="success">{{ form.submit() }}</div>
+
+    </form>
+    
 {% endblock contents %}

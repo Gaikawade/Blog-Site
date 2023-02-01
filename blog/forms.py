@@ -1,5 +1,5 @@
 from flask_wtf import FlaskForm
-from wtforms import StringField, IntegerField, SubmitField, PasswordField
+from wtforms import StringField, IntegerField, SubmitField, PasswordField, BooleanField
 from wtforms.validators import DataRequired, Regexp, Length, Email, EqualTo, ValidationError
 from blog.models import User
 
@@ -55,4 +55,27 @@ class Login(FlaskForm):
     )
     
     submit = SubmitField('Login')
+    
+    remember = BooleanField('Remember Me')
+
+
+class Account(FlaskForm):
+    name = StringField(
+        'Name',
+        validators=[DataRequired(), Length(min=3, max=30), Regexp(name_regex)],
+        render_kw=form_css('Name')
+    )
+    
+    email = StringField(
+        'Email',
+        validators=[DataRequired(), Email()],
+        render_kw=form_css('Email')
+    )
+    
+    def validate_email(self, email):
+      document = User.query.filter_by(email=email.data).first()
+      if document:
+        raise ValidationError("Email address already registered")
+    
+    submit = SubmitField('Update details')
     
