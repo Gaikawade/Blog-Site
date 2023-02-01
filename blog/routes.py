@@ -1,6 +1,7 @@
-from flask import render_template, redirect, url_for
-from blog.forms import Register
-from blog import app
+from flask import render_template, redirect, url_for, flash
+from blog.forms import Register, Login
+from blog.models import add_user, User
+from blog import app, bcrypt
 
 @app.route('/')
 @app.route('/home')
@@ -17,7 +18,9 @@ def about():
 def register():
     form = Register()
     if form.validate_on_submit():
-        return redirect(url_for('home'))
+        add_user(form)
+        flash('Registration successful', 'success')
+        return redirect(url_for('login'))
     return render_template('register.html', title='RegisterPage', form=form)
 
 
@@ -29,3 +32,15 @@ def posts():
 @app.route('/add_post')
 def add_post():
     return render_template('add_post.html', title='Add Post')
+
+@app.route('/login', methods=['POST', 'GET'])
+def login():
+    form = Login()
+    if form.validate_on_submit():
+        document = User.query.filter_by(email=form.email.data).first()
+        if document and bcrypt.check_password_hash(document.password, form.password.data):
+            flash('Login successful', 'success')
+            return redirect(url_for('posts'))
+        else:
+            flash('Login failed', 'error')
+    return render_template('login.html', title='Login', form=form)

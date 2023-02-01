@@ -3,3 +3,4 @@ Flask_wtf
 Flask_SQLAlchemy
 MySQLClient
 Email_Validator
+Flask-Bcrypt
