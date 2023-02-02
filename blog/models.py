@@ -12,7 +12,7 @@ class User(db.Model, UserMixin):
     name = db.Column(db.String(80), nullable=False)
     email = db.Column(db.String(80), nullable=False, unique=True)
     password = db.Column(db.String(80), nullable=False)
-    created_at = db.Column(db.DateTime, default=datetime.now())
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
     posts = db.relationship('Post', backref='author', lazy=True)
 
     def __repr__(self):
@@ -22,8 +22,8 @@ class User(db.Model, UserMixin):
 class Post(db.Model):
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     title = db.Column(db.String(120), nullable=False)
-    content = db.Column(db.String(2000), nullable=False)
-    date = db.Column(db.Date, default=datetime.now)
+    content = db.Column(db.Text, nullable=False)
+    date = db.Column(db.Date, default=datetime.utcnow)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
 
     def __repr__(self):
@@ -37,3 +37,7 @@ def add_user(form):
     user = User(name=name, email=email, password=hashed_password)
     db.session.add(user)
     db.session.commit()
+
+def add_post(form):
+    title = form.title
+    

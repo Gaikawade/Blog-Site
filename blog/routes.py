@@ -1,13 +1,14 @@
 from flask import render_template, redirect, url_for, flash, request
-from blog.forms import Register, Login, Account
-from blog.models import add_user, User
-from blog import app, bcrypt
+from blog.forms import Register, Login, Account, PostForm
+from blog.models import add_user, User, Post
+from blog import app, bcrypt, db
 from flask_login import login_required, login_user, logout_user, current_user
 
 @app.route('/')
 @app.route('/home')
 def home():
-    return render_template('home.html', title='HomePage')
+    posts = Post.query.all()
+    return render_template('home.html', title='HomePage', posts=posts)
 
 
 @app.route('/about')
@@ -31,9 +32,16 @@ def posts():
     return render_template('posts.html', title='Posts')
 
 
-@app.route('/add_post')
+@app.route('/add_post', methods=['POST', 'GET'])
 def add_post():
-    return render_template('add_post.html', title='Add Post')
+    form = PostForm()
+    if form.validate_on_submit():
+        post = Post(title=form.title.data, content=form.content.data, author=current_user)
+        db.session.add(post)
+        db.session.commit()
+        flash('Post added successfully', 'success')
+        return redirect(url_for('home'))
+    return render_template('add_post.html', title='Add Post', form=form)
 
 
 @app.route('/login', methods=['POST', 'GET'])

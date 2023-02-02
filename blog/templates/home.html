@@ -1,5 +1,36 @@
 {% extends 'layout.html' %}
 
 {% block contents %}
-  <p>Home  Page</p>
-{% endblock %}
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+      <ul class="flashes">
+        {% for category, message in messages %}
+            <div class="alert alert-{{category}}" role="alert">
+                <li>{{message}}</li>
+            </div>
+        {% endfor %}
+      </ul>
+    {% endif %}
+  {% endwith %}
+  
+  {% for post in posts %}
+    <div class="card text-center m-5">
+      <div class="card-header"> {{ post.title }} </div>
+      <div class="card-body">
+        <p class="card-text"> {{ post.content }} </p>
+        <a href="#" class="btn btn-primary">Read more...</a>
+      </div>
+      <div class="card-footer text-muted">
+        <div class="row">
+          <div class="col-sm-6 text-start">
+            Author: {{ post.author.name }}
+          </div>
+          <div class="col-sm-6 text-end">
+            Date Created: {{ post.date.strftime('%B %d %Y - %H:%M:%S') }}
+          </div>
+        </div>
+      </div>
+    </div>
+  {% endfor %}
+
+  {% endblock %}
