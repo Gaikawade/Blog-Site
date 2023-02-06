@@ -52,7 +52,7 @@ def login():
         if document and bcrypt.check_password_hash(document.password, form.password.data):
             login_user(document, remember=form.remember.data)
             flash('Login successful', 'success')
-            return redirect(url_for('posts'))
+            return redirect(url_for('home'))
         else:
             flash('Login failed', 'danger')
     return render_template('login.html', title='Login Page', form=form)
@@ -81,3 +81,10 @@ def account():
         flash('Your account details have been updated', 'success')
         return redirect(url_for('account'))
     return render_template('account.html', title='Account', form=form)
+
+
+@app.route('/post/<int:post_id>')
+@login_required
+def read_post(post_id):
+    post = Post.query.get_or_404(post_id)
+    return render_template('post.html', title=post.title, post=post)
