@@ -17,6 +17,8 @@
             src="https://use.fontawesome.com/releases/v6.1.0/js/all.js"
             crossorigin="anonymous"
         ></script>
+        <!-- include libraries (jQuery, Bootstrap) -->
+
         <!-- Google fonts-->
         <link
             href="https://fonts.googleapis.com/css?family=Lora:400,700,400italic,700italic"
@@ -36,36 +38,23 @@
     </head>
     <body>
         <!-- Navigation -->
-        <nav class="navbar navbar-expand-lg navbar-light bg-light">
-            <!-- <a class="navbar-brand" href="{{url_for('home')}}">WebApp</a> -->
-            <!-- <button
-                class="navbar-toggler"
-                type="button"
-                data-toggle="collapse"
-                data-target="#navbarText"
-                aria-controls="navbarText"
-                aria-expanded="false"
-                aria-label="Toggle navigation"
-            >
-            </button> -->
-            <div class="navbar-collapse" id="navbarText">
+        <nav class="navbar navbar-light bg-light">
+            <div class="container-fluid" id="navbarText">
                 <a class="nav-link" href="{{url_for('home')}}">Home</a>
                 {% if current_user.is_authenticated %}
-                    <a class="nav-link" href="{{url_for('add_post')}}">Add Posts</a>
-                    <div class="text-end">
-                        <a class="nav-link" href="{{url_for('account')}}">Account</a>
-                        <a class="nav-link" href="{{url_for('logout')}}">Logout</a>
-                    </div>
-                {% else %}
-                    <div class="text-end">
-                        <a class="nav-link" href="{{url_for('register')}}">Register</a>
-                        <a class="nav-link" href="{{url_for('login')}}">Login</a>
-                    </div>
-                {% endif %}
-                <div class="text-end">
-                    <a class="nav-link" href="{{url_for('about')}}">About</a>
+                    <div class="d-flex">
+                    <a class="nav-link" href="{{url_for('add_post')}}">Add Post</a>
+                    <a class="nav-link" href="{{url_for('account')}}">Account</a>
+                    <a class="nav-link" href="{{url_for('logout')}}">Logout</a>
                 </div>
-            <!-- </div> -->
+                {% else %}
+                <div class="d-flex">
+                    <a class="nav-link" href="{{url_for('register')}}">Register</a>
+                    <a class="nav-link" href="{{url_for('login')}}">Login</a>
+                </div>
+                {% endif %}
+                    <a class="nav-link" href="{{url_for('about')}}">About</a>
+            </div>
         </nav>
 
         <div class="container">

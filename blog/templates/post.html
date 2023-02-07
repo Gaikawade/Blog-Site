@@ -18,15 +18,15 @@
     <div class="card-body">
       {% if post.author == current_user %}
         <p class="card-text"> {{ post.content }}</p>
-        <a href="" class="btn btn-primary">Update Post</a>
+        <a href="{{url_for('update_post', post_id=post.id)}}" class="btn btn-primary">Update Post</a>
         <a href="" class="btn btn-danger">Delete Post</a>
       {% else %}
         <p class="card-text"> {{ post.content }}</p>
       {% endif %}
     </div>
-    <div class="card-footer text-muted">
+    <div class="small fs-6 card-footer text-muted">
       <div class="row">
-        <div class="col-sm-6 text-start">
+        <div class="col-sm-6 text-start ">
           Author: {{ post.author.name }}
         </div>
         <div class="col-sm-6 text-end">

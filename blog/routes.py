@@ -1,4 +1,4 @@
-from flask import render_template, redirect, url_for, flash, request
+from flask import render_template, redirect, url_for, flash, request, abort
 from blog.forms import Register, Login, Account, PostForm
 from blog.models import add_user, User, Post
 from blog import app, bcrypt, db
@@ -33,6 +33,7 @@ def posts():
 
 
 @app.route('/add_post', methods=['POST', 'GET'])
+@login_required
 def add_post():
     form = PostForm()
     if form.validate_on_submit():
@@ -41,7 +42,7 @@ def add_post():
         db.session.commit()
         flash('Post added successfully', 'success')
         return redirect(url_for('home'))
-    return render_template('add_post.html', title='Add Post', form=form)
+    return render_template('post_form.html', title='Add Post', form=form)
 
 
 @app.route('/login', methods=['POST', 'GET'])
@@ -88,3 +89,32 @@ def account():
 def read_post(post_id):
     post = Post.query.get_or_404(post_id)
     return render_template('post.html', title=post.title, post=post)
+
+
+@app.route('/post/update/<int:post_id>', methods=['POST', "GET"])
+@login_required
+def update_post(post_id):
+    post = Post.query.get_or_404(post_id)
+    if post.author != current_user:
+        abort(403)
+    form = PostForm()
+    if request.method =='GET':
+        form.title.data = post.title
+        form.content.data = post.content
+    elif request.method == 'POST':
+        post.title = form.title.data
+        post.content = form.content.data
+        db.session.commit()
+        flash('The Article has been updated', 'success')
+        return redirect(url_for('read_post', post_id=post.id))
+    return render_template('post_form.html', title=post.title, form=form)
+
+
+@app.route('/post/delete/<int:post_id>', methods=['POST', "GET"])
+@login_required
+def delete_post(post_id):
+    return redirect(url_for('about'))
+
+@app.route('/test')
+def test():
+    return render_template('z.html')

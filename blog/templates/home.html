@@ -19,19 +19,19 @@
       <div class="card-body">
         {% if post.author == current_user %}
           <p class="card-text"> {{ post.content[0:120] }}... <a href="{{url_for('read_post', post_id=post.id)}}">Read more</a> </p>
-          <a href="" class="btn btn-primary">Update Post</a>
-          <a href="" class="btn btn-danger">Delete Post</a>
+          <a href="{{url_for('update_post', post_id=post.id)}}" class="btn btn-primary">Update Post</a>
+          <a href="#" class="btn btn-danger" data-toggle="modal" data-target="#deleteModalCenter">Delete Post</a>
         {% else %}
           <p class="card-text"> {{ post.content[0:120] }}... <a href="{{url_for('read_post', post_id=post.id)}}">Read more</a> </p>
         {% endif %}
       </div>
-      <div class="card-footer text-muted">
+      <div class="small fs-6 card-footer text-muted">
         <div class="row">
           <div class="col-sm-6 text-start">
             Author: {{ post.author.name }}
           </div>
           <div class="col-sm-6 text-end">
-            Date Created: {{ post.date.strftime('%B %d %Y - %H:%M:%S') }}
+            Date Created: {{ post.date.strftime('%b %d %Y') }}
           </div>
         </div>
       </div>
