@@ -37,7 +37,3 @@ def add_user(form):
     user = User(name=name, email=email, password=hashed_password)
     db.session.add(user)
     db.session.commit()
-
-def add_post(form):
-    title = form.title
-    

@@ -79,4 +79,4 @@ class PostForm(FlaskForm):
         validators=[DataRequired()],
         render_kw=form_css('Article Content') #Add row for larger text area
     )
-    submit = SubmitField('Add Post')
+    submit = SubmitField('Post')
