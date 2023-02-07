@@ -64,6 +64,7 @@ def login():
 def logout():
     if current_user.is_authenticated:
         logout_user()
+        flash('Successfully logged out', 'success')
         return redirect(url_for('home'))
     else:
         return redirect(url_for('login'))
