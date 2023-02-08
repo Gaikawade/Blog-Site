@@ -7,7 +7,7 @@ from flask_login import login_required, login_user, logout_user, current_user
 @app.route('/')
 @app.route('/home')
 def home():
-    posts = Post.query.order_by(-Post.date).all()
+    posts = Post.query.order_by(-Post.created_at).all()
     return render_template('home.html', title='HomePage', posts=posts)
 
 
