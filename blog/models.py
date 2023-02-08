@@ -15,6 +15,7 @@ class User(db.Model, UserMixin):
     password = db.Column(db.String(80), nullable=False)
     created_at = db.Column(db.DateTime, default=datetime.utcnow())
     posts = db.relationship('Post', backref='author', lazy=True)
+    comments = db.relationship('Comment', backref='author', lazy=True)
 
     def __repr__(self):
       return f'name: {self.name}, email: {self.email}'
@@ -26,9 +27,22 @@ class Post(db.Model):
     content = db.Column(db.Text, nullable=False)
     created_at = db.Column(db.DateTime, default=datetime.utcnow())
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    comments = db.relationship('Comment', backref='post', lazy=True)
 
     def __repr__(self):
       return f'title: {self.title}, author: {self.author}'
+
+
+class Comment(db.Model):
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    text = db.Column(db.String(200), nullable=False)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow())
+    commented_by = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    post_id = db.Column(db.Integer, db.ForeignKey('post.id'), nullable=False)
+    
+    def __repr__(self):
+        return f'{self.author.name}: {self.text}'
+
 
 def add_user(form):
     name = form.name.data

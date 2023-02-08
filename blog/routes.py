@@ -1,6 +1,6 @@
 from flask import render_template, redirect, url_for, flash, request, abort
 from blog.forms import Register, Login, Account, PostForm
-from blog.models import add_user, User, Post
+from blog.models import add_user, User, Post, Comment
 from blog import app, bcrypt, db
 from flask_login import login_required, login_user, logout_user, current_user
 
@@ -123,6 +123,19 @@ def delete_post(post_id):
     flash('The article has been deleted', 'success')
     return redirect(url_for('home'))
 
-@app.route('/test')
-def test():
-    return render_template('z.html')
+@app.route('/add_comment/<int:post_id>', methods=['POST', 'GET'])
+@login_required
+def add_comment(post_id):
+    text = request.form.get('text')
+    if not text:
+        flash('Comment cannot be empty', 'danger')
+    else:
+        post = Post.query.filter_by(id=post_id)
+        if post:
+            comment = Comment(text=text, commented_by=current_user.id, post_id=post_id)
+            db.session.add(comment)
+            db.session.commit()
+            flash('Comment added successfully', 'success')
+        else:
+            flash('Post does not exist', 'error')
+    return redirect(url_for('read_post', post_id=post_id))

@@ -18,6 +18,7 @@
     <div class="card-body">
       {% if post.author == current_user %}
         <p class="card-text"> {{ post.content }}</p>
+              <a href="{{url_for('add_comment', post_id=post.id)}}" class="btn btn-primary"> Add Comment </a>
         <a href="{{url_for('update_post', post_id=post.id)}}" class="btn btn-primary">Update Post</a>
         <a href="" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#deleteModal">Delete Post</a>
       {% else %}
@@ -30,11 +31,27 @@
           Author: {{ post.author.name }}
         </div>
         <div class="col-sm-6 text-end">
-          Date Created: {{ post.date.strftime('%B %d %Y - %H:%M:%S') }}
+          Date Created: {{ post.created_at.strftime('%b %d %Y-%H:%M:%S') }}
         </div>
       </div>
     </div>
   </div>
+  
+  <!-- Comments -->
+  <div class="card m-5">
+    <div class="card-header text-center"> Comments </div>
+    <div class="card-body">
+      <form class="input-group mb-2" action="{{url_for('add_comment', post_id=post.id)}}" method="post">
+        <input class="col-sm-4 border-bottom border-0" type="text" name="text" placeholder="write your comment" />
+        <button class="btn btn-primary"> Comment </button>
+      </form>
+      <div class="card-text">
+        {% for comment in post.comments %}
+          <div class="small">{{comment.author.name}}</div>
+          <div class="h6">{{comment.text}}</div>
+        {% endfor %}
+      </div>
+
   <!-- Modal -->
   <div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
     <div class="modal-dialog">
