@@ -40,6 +40,7 @@ def add_post():
         post = Post(title=form.title.data, content=form.content.data, author=current_user)
         db.session.add(post)
         db.session.commit()
+        print(post)
         flash('Post added successfully', 'success')
         return redirect(url_for('home'))
     return render_template('add_update_post.html', title='Add Post', form=form)
