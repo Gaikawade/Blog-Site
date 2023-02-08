@@ -7,7 +7,7 @@ from flask_login import login_required, login_user, logout_user, current_user
 @app.route('/')
 @app.route('/home')
 def home():
-    posts = Post.query.all()
+    posts = Post.query.order_by(-Post.date).all()
     return render_template('home.html', title='HomePage', posts=posts)
 
 
@@ -42,7 +42,7 @@ def add_post():
         db.session.commit()
         flash('Post added successfully', 'success')
         return redirect(url_for('home'))
-    return render_template('post_form.html', title='Add Post', form=form)
+    return render_template('add_update_post.html', title='Add Post', form=form)
 
 
 @app.route('/login', methods=['POST', 'GET'])
@@ -89,7 +89,7 @@ def account():
 @login_required
 def read_post(post_id):
     post = Post.query.get_or_404(post_id)
-    return render_template('post.html', title=post.title, post=post)
+    return render_template('read_post.html', title=post.title, post=post)
 
 
 @app.route('/post/update/<int:post_id>', methods=['POST', "GET"])
@@ -108,13 +108,19 @@ def update_post(post_id):
         db.session.commit()
         flash('The Article has been updated', 'success')
         return redirect(url_for('read_post', post_id=post.id))
-    return render_template('post_form.html', title=post.title, form=form)
+    return render_template('add_update_post.html', title=post.title, form=form)
 
 
 @app.route('/post/delete/<int:post_id>', methods=['POST', "GET"])
 @login_required
 def delete_post(post_id):
-    return redirect(url_for('about'))
+    post = Post.query.get_or_404(post_id)
+    if post.author != current_user:
+        abort(403)
+    db.session.delete(post)
+    db.session.commit()
+    flash('The article has been deleted', 'success')
+    return redirect(url_for('home'))
 
 @app.route('/test')
 def test():
