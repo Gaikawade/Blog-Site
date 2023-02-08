@@ -47,8 +47,13 @@
       </form>
       <div class="card-text">
         {% for comment in post.comments %}
-          <div class="small">{{comment.author.name}}</div>
-          <div class="h6">{{comment.text}}</div>
+          <div class="small">
+            <small><small>
+              <a class="text-start" href="{{url_for('')}}">{{comment.author.name}}</a>
+              <label class="text-end">{{comment.created_at.strftime('%D')}}</label>
+            </small></small>
+          </div>
+          <div>{{comment.text}}</div>
         {% endfor %}
       </div>
 
