@@ -1,7 +1,7 @@
 {% extends 'layout.html' %}
 
 {% block contents %}
-
+  <div class="container-fluid col-md-4">
     <h3>Registration Form</h3>
 
     <form action="" method="post">
@@ -45,4 +45,5 @@
         <div id="success"></div>
         {{ form.submit() }}
     </form>
+  </div>
 {% endblock contents %}

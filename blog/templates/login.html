@@ -13,10 +13,10 @@
         {% endif %}
     {% endwith %}
 
-    <h3>Login Page</h3>
-
-    <form action="" method="post">
-      {{ form.csrf_token }}
+    <div class="container-fluid col-md-4">
+    <h3>Login Page</h3> <br/>
+      <form action="" method="post">
+        {{ form.csrf_token }}
 
         <div class="form-floating">
           {{ form.email() }} 
@@ -44,7 +44,6 @@
         </div> <br />
 
         <div id="success">{{ form.submit() }}</div>
-
-    </form>
-    
+      </form>
+    </div>
 {% endblock contents %}
