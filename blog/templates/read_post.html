@@ -1,98 +1,145 @@
-{% extends 'layout.html' %}
+{% extends 'layout.html' %} {% block contents %} {% with messages =
+get_flashed_messages(with_categories=true) %} {% if messages %}
+<ul class="flashes">
+    {% for category, message in messages %}
+    <div class="alert alert-{{category}}" role="alert">
+        <li>{{message}}</li>
+    </div>
+    {% endfor %}
+</ul>
+{% endif %} {% endwith %}
 
-{% block contents %}
-  {% with messages = get_flashed_messages(with_categories=true) %}
-    {% if messages %}
-      <ul class="flashes">
-        {% for category, message in messages %}
-            <div class="alert alert-{{category}}" role="alert">
-                <li>{{message}}</li>
-            </div>
-        {% endfor %}
-      </ul>
-    {% endif %}
-  {% endwith %}
-
-  <div class="card text-center m-5">
+<div class="card text-center m-5">
     <div class="card-header">
-      <div class="row h6">
-        <div class="col-sm-6 text-start"> {{ post.title }}</div>
-        <div class="col-sm-6 text-end ">
-          <span id="likes-count-{{post.id}}"> {{ post.likes|length }} </span>
-          {% if current_user in post.likes|map(attribute="author")|list %}
-          <i
-            class="fas fa-thumbs-up"
-            id="like-button-{{post.id}}"
-            onclick="like({{post.id}})"
-            ></i>
-          {% else %}
-          <i
-            class="far fa-thumbs-up"
-            id="like-button-{{post.id}}"
-            onclick="like({{post.id}})"
-          ></i>
-          {% endif %}
+        <div class="row h6">
+            <div class="col-sm-6 text-start">{{ post.title }}</div>
+            <div class="col-sm-6 text-end">
+                <span id="likes-count-{{post.id}}">
+                    {{ post.likes|length }}
+                </span>
+                {% if current_user in post.likes|map(attribute="author")|list %}
+                <i
+                    class="fas fa-thumbs-up"
+                    id="like-button-{{post.id}}"
+                    onclick="like({{post.id}})"
+                ></i>
+                {% else %}
+                <i
+                    class="far fa-thumbs-up"
+                    id="like-button-{{post.id}}"
+                    onclick="like({{post.id}})"
+                ></i>
+                {% endif %}
+            </div>
         </div>
-      </div>
-      
     </div>
     <div class="card-body">
-      {% if post.author == current_user %}
-        <p class="card-text"> {{ post.content }}</p>
-              <!-- <a href="{{url_for('add_comment', post_id=post.id)}}" class="btn btn-primary"> Add Comment </a> -->
-        <a href="{{url_for('update_post', post_id=post.id)}}" class="btn btn-primary">Update Post</a>
-        <a href="" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#deleteModal">Delete Post</a>
-      {% else %}
-        <p class="card-text"> {{ post.content }}</p>
-      {% endif %}
+        {% if post.author == current_user %}
+        <p class="card-text">{{ post.content }}</p>
+        <a
+            href="{{url_for('update_post', post_id=post.id)}}"
+            class="btn btn-primary"
+            >Update Post</a
+        >
+        <a
+            href=""
+            class="btn btn-danger"
+            data-bs-toggle="modal"
+            data-bs-target="#deleteModal"
+            >Delete Post</a
+        >
+        {% else %}
+        <p class="card-text">{{ post.content }}</p>
+        {% endif %}
     </div>
     <div class="small fs-6 card-footer text-muted">
-      <div class="row">
-        <div class="col-sm-6 text-start ">
-          Author: {{ post.author.name }}
+        <div class="row">
+            <div class="col-sm-6 text-start">
+                Author: {{ post.author.name }}
+            </div>
+            <div class="col-sm-6 text-end">
+                Date Created: {{ post.created_at.strftime('%b %d %Y-%H:%M:%S')
+                }}
+            </div>
         </div>
-        <div class="col-sm-6 text-end">
-          Date Created: {{ post.created_at.strftime('%b %d %Y-%H:%M:%S') }}
-        </div>
-      </div>
     </div>
-  </div>
-  
-  <!-- Comments -->
-  <div class="card m-5">
-    <div class="card-header text-center"> Comments </div>
-    <div class="card-body">
-      <form class="input-group mb-2" action="{{url_for('add_comment', post_id=post.id)}}" method="post">
-        <input class="col-sm-4 border-bottom border-0" type="text" name="text" placeholder="write your comment" />
-        <button class="btn btn-primary"> Comment </button>
-      </form>
-      <div class="card-text">
-        {% for comment in post.comments %}
-          <div class="small">
-            <small><small>
-              <a class="text-start" href="#">{{comment.author.name}}</a>
-              <label class="text-end">{{comment.created_at.strftime('%D')}}</label>
-            </small></small>
-          </div>
-          <div>{{comment.text}}</div>
-        {% endfor %}
-      </div>
+</div>
 
-  <!-- Modal -->
-  <div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
-    <div class="modal-dialog">
-      <div class="modal-content">
-        <div class="modal-header">
-          <h5 class="modal-title" id="deleteModalLabel">Modal title</h5>
-          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+<!-- Comments -->
+<div class="card m-5">
+    <div class="card-header text-center">Comments</div>
+    <div class="card-body">
+        <form
+            class="input-group mb-2"
+            action="{{url_for('add_comment', post_id=post.id)}}"
+            method="post"
+        >
+            <input
+                class="col-sm-4 border-bottom border-0"
+                type="text"
+                name="text"
+                placeholder="write your comment"
+            />
+            <button class="btn btn-primary">Comment</button>
+        </form>
+        <div class="card-text">
+            {% for comment in post.comments %}
+            <div class="small">
+                <small>
+                    <a class="text-start" href="#">
+                        {{comment.author.name}}
+                    </a>
+                    <!-- #add the user's like which redirect to users' page -->
+                    <label class="text-end">
+                        {{comment.created_at.strftime('%D')}}
+                    </label>
+                </small>
+            </div>
+            <div class="h6">{{comment.text}}</div>
+            {% endfor %}
         </div>
-        <div class="modal-footer">
-          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-          <form action="{{url_for('delete_post', post_id=post.id)}}" method="post">
-            <input type="submit" class="btn btn-danger" value="Delete Article">
-          </form>
-        </div>
-      </div>
     </div>
-  </div>
+</div>
+
+<!-- Modal -->
+<div
+    class="modal fade"
+    id="deleteModal"
+    tabindex="-1"
+    aria-labelledby="deleteModalLabel"
+    aria-hidden="true"
+>
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="deleteModalLabel">Modal title</h5>
+                <button
+                    type="button"
+                    class="btn-close"
+                    data-bs-dismiss="modal"
+                    aria-label="Close"
+                ></button>
+            </div>
+            <div class="modal-footer">
+                <button
+                    type="button"
+                    class="btn btn-secondary"
+                    data-bs-dismiss="modal"
+                >
+                    Close
+                </button>
+                <form
+                    action="{{url_for('delete_post', post_id=post.id)}}"
+                    method="post"
+                >
+                    <input
+                        type="submit"
+                        class="btn btn-danger"
+                        value="Delete Article"
+                    />
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
 {% endblock contents %}

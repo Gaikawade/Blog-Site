@@ -7,7 +7,7 @@ function like(postId){
   .then((data) =>{
     console.log(data);
     likeCount.innerHTML = data[`likes`];
-    if(data[`likes`] === true){
+    if(data[`likes`] == true){
       likeButton.className = 'fas fa-thumbs-up';
     } else {
       likeButton.className = 'far fa-thumbs-up';
