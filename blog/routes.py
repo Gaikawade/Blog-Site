@@ -1,6 +1,6 @@
 from flask import render_template, redirect, url_for, flash, request, abort
 from blog.forms import Register, Login, Account, PostForm
-from blog.models import add_user, User, Post, Comment
+from blog.models import add_user, User, Post, Comment, Like
 from blog import app, bcrypt, db
 from flask_login import login_required, login_user, logout_user, current_user
 
@@ -139,3 +139,22 @@ def add_comment(post_id):
         else:
             flash('Post does not exist', 'error')
     return redirect(url_for('read_post', post_id=post_id))
+
+
+@app.route('/like_post/<int:post_id>', methods=['GET'])
+@login_required
+def like_post(post_id):
+    post = Post.query.filter_by(id=post_id).first()
+    like = Like.query.filter_by(liked_by=current_user.id, post_id=post_id).first()
+    
+    if not post:
+        flash('Post not found', 'danger')
+    elif like:
+        db.session.delete(like)
+        db.session.commit()
+    else:
+        like = Like(liked_by=current_user.id, post_id=post.id)
+        db.session.add(like)
+        db.session.commit()
+        
+    return redirect(url_for('read_post', post_id=post.id))

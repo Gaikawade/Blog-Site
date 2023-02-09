@@ -14,11 +14,20 @@
   {% endwith %}
 
   <div class="card text-center m-5">
-    <div class="card-header"> {{ post.title }} </div>
+    <div class="card-header">
+      <div class="row h6">
+        <div class="col-sm-6 text-start"> {{ post.title }}</div>
+        <div class="col-sm-6 text-end ">
+          {{ post.likes|length }}
+          <a href="{{url_for('like_post', post_id=post.id)}}"> <i class="far fa-thumbs-up"></i> </a>
+        </div>
+      </div>
+      
+    </div>
     <div class="card-body">
       {% if post.author == current_user %}
         <p class="card-text"> {{ post.content }}</p>
-              <a href="{{url_for('add_comment', post_id=post.id)}}" class="btn btn-primary"> Add Comment </a>
+              <!-- <a href="{{url_for('add_comment', post_id=post.id)}}" class="btn btn-primary"> Add Comment </a> -->
         <a href="{{url_for('update_post', post_id=post.id)}}" class="btn btn-primary">Update Post</a>
         <a href="" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#deleteModal">Delete Post</a>
       {% else %}
@@ -49,7 +58,7 @@
         {% for comment in post.comments %}
           <div class="small">
             <small><small>
-              <a class="text-start" href="{{url_for('')}}">{{comment.author.name}}</a>
+              <a class="text-start" href="#">{{comment.author.name}}</a>
               <label class="text-end">{{comment.created_at.strftime('%D')}}</label>
             </small></small>
           </div>
