@@ -58,8 +58,7 @@ get_flashed_messages(with_categories=true) %} {% if messages %}
                 Author: {{ post.author.name }}
             </div>
             <div class="col-sm-6 text-end">
-                Date Created: {{ post.created_at.strftime('%b %d %Y-%H:%M:%S')
-                }}
+                Date Created: {{ post.created_at.strftime('%b %d %Y-%H:%M:%S') }}
             </div>
         </div>
     </div>
@@ -75,7 +74,7 @@ get_flashed_messages(with_categories=true) %} {% if messages %}
             method="post"
         >
             <input
-                class="col-sm-4 border-bottom border-0"
+                class="col border-bottom border-0"
                 type="text"
                 name="text"
                 placeholder="write your comment"
@@ -83,17 +82,18 @@ get_flashed_messages(with_categories=true) %} {% if messages %}
             <button class="btn btn-primary">Comment</button>
         </form>
         <div class="card-text">
-            {% for comment in post.comments %}
-            <div class="small">
-                <small>
-                    <a class="text-start" href="#">
-                        {{comment.author.name}}
-                    </a>
-                    <!-- #add the user's like which redirect to users' page -->
-                    <label class="text-end">
-                        {{comment.created_at.strftime('%D')}}
-                    </label>
-                </small>
+            {% for comment in post.comments[::-1] %}
+            <div class="row small">
+                <div class="col-sm-6 text-start">
+                    <a href="#"> {{ comment.author.name }} </a>
+                </div>
+                <div class="col-sm-6 text-end">
+                    {{ post.created_at.strftime('%D') }}
+                    {% if current_user == comment.author or current_user == post.author %}
+                      <a href="{{url_for('delete_comment', comment_id=comment.id)}}"> <i class="fas fa-trash"></i> </a>
+                      <!-- #Implement javascript inorder to avoid page reloading -->
+                    {% endif %}
+                </div>
             </div>
             <div class="h6">{{comment.text}}</div>
             {% endfor %}
