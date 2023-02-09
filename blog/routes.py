@@ -1,4 +1,4 @@
-from flask import render_template, redirect, url_for, flash, request, abort
+from flask import render_template, redirect, url_for, flash, request, abort, jsonify
 from blog.forms import Register, Login, Account, PostForm
 from blog.models import add_user, User, Post, Comment, Like
 from blog import app, bcrypt, db
@@ -141,20 +141,20 @@ def add_comment(post_id):
     return redirect(url_for('read_post', post_id=post_id))
 
 
-@app.route('/like_post/<int:post_id>', methods=['GET'])
+@app.route('/like_post/<int:post_id>', methods=['POST'])
 @login_required
 def like_post(post_id):
     post = Post.query.filter_by(id=post_id).first()
     like = Like.query.filter_by(liked_by=current_user.id, post_id=post_id).first()
     
     if not post:
-        flash('Post not found', 'danger')
+        return jsonify({'error': 'Post does not exist'}, 404)
     elif like:
         db.session.delete(like)
         db.session.commit()
     else:
-        like = Like(liked_by=current_user.id, post_id=post.id)
+        like = Like(liked_by=current_user.id, post_id=post_id)
         db.session.add(like)
         db.session.commit()
         
-    return redirect(url_for('read_post', post_id=post.id))
+    return jsonify({'likes': len(post.likes), 'liked': current_user.id in map(lambda x: x.liked_by, post.likes)})

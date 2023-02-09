@@ -18,8 +18,20 @@
       <div class="row h6">
         <div class="col-sm-6 text-start"> {{ post.title }}</div>
         <div class="col-sm-6 text-end ">
-          {{ post.likes|length }}
-          <a href="{{url_for('like_post', post_id=post.id)}}"> <i class="far fa-thumbs-up"></i> </a>
+          <span id="likes-count-{{post.id}}"> {{ post.likes|length }} </span>
+          {% if current_user in post.likes|map(attribute="author")|list %}
+          <i
+            class="fas fa-thumbs-up"
+            id="like-button-{{post.id}}"
+            onclick="like({{post.id}})"
+            ></i>
+          {% else %}
+          <i
+            class="far fa-thumbs-up"
+            id="like-button-{{post.id}}"
+            onclick="like({{post.id}})"
+          ></i>
+          {% endif %}
         </div>
       </div>
       
