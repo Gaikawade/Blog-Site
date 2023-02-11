@@ -41,19 +41,14 @@
                 <a class="nav-link" href="{{url_for('home')}}">Home</a>
                 {% if current_user.is_authenticated %}
                 <div class="d-flex">
-                    <a class="nav-link" href="{{url_for('add_post')}}"
-                        >Add Post</a
-                    >
-                    <a class="nav-link" href="{{url_for('account')}}"
-                        >Account</a
-                    >
-                    <a class="nav-link" href="{{url_for('logout')}}">Logout</a>
+                    <a class="nav-link" href="{{url_for('add_post')}}"> Add Post </a>
+                    <a class="nav-link" href="{{url_for('users_all_posts')}}"> My Posts </a>
+                    <a class="nav-link" href="{{url_for('account')}}"> Account </a>
+                    <a class="nav-link" href="{{url_for('logout')}}"> Logout </a>
                 </div>
                 {% else %}
                 <div class="d-flex">
-                    <a class="nav-link" href="{{url_for('register')}}"
-                        >Register</a
-                    >
+                    <a class="nav-link" href="{{url_for('register')}}"> Register </a>
                     <a class="nav-link" href="{{url_for('login')}}">Login</a>
                 </div>
                 {% endif %}

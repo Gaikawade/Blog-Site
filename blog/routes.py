@@ -174,3 +174,16 @@ def like_post(post_id):
         db.session.commit()
         
     return jsonify({'likes': len(post.likes), 'liked': current_user.id in map(lambda x: x.liked_by, post.likes)})
+
+
+@app.route('/user/all_posts')
+@login_required
+def users_all_posts():
+    posts = Post.query.filter_by(user_id=current_user.id).all()
+    return render_template('posts.html', posts=posts)
+
+
+@app.route('/users/<user_name>/posts')
+@login_required
+def users_posts(user_name):
+    return
