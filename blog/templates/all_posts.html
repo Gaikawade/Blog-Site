@@ -100,7 +100,7 @@
                         {{ post.created_at.strftime('%D') }}
                         {% if current_user == comment.author or current_user == post.author %}
                           <a href="{{url_for('delete_comment', comment_id=comment.id)}}"> <i class="fas fa-trash"></i> </a>
-                          <!-- #Implement javascript inorder to avoid page reloading -->
+                          <!-- #Implement javascript (just like we did in likes component) inorder to avoid page reloading -->
                         {% endif %}
                     </div>
                 </div>

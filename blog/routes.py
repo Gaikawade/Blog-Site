@@ -26,10 +26,10 @@ def register():
     return render_template('register.html', title='RegisterPage', form=form)
 
 
-@app.route('/posts')
-@login_required
-def posts():
-    return render_template('posts.html', title='Posts')
+# @app.route('/posts')
+# @login_required
+# def posts():
+#     return render_template('posts.html', title='Posts')
 
 
 @app.route('/add_post', methods=['POST', 'GET'])
@@ -178,12 +178,13 @@ def like_post(post_id):
 
 @app.route('/user/all_posts')
 @login_required
-def users_all_posts():
+def my_posts():
     posts = Post.query.filter_by(user_id=current_user.id).all()
-    return render_template('posts.html', posts=posts)
+    return render_template('all_posts.html', posts=posts)
 
 
-@app.route('/users/<user_name>/posts')
+@app.route('/users/<user_id>/posts')
 @login_required
-def users_posts(user_name):
-    return
+def users_posts(user_id):
+    posts = Post.query.filter_by(user_id=user_id).all()
+    return render_template('all_posts.html', posts=posts)
