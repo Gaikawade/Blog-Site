@@ -15,3 +15,15 @@ function like(postId) {
         })
         .catch((e) => alert("Please try after some time."));
 }
+
+
+const comments = document.querySelector("#comments");
+const expandComments = document.querySelector("#expand-comments");
+
+expandComments.addEventListener("click", () =>{
+    if (comments.style.display == 'block'){
+        comments.style.display = 'none';
+    } else {
+        comments.style.display = 'block';
+    }
+})

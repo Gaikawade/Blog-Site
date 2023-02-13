@@ -139,6 +139,8 @@ def add_comment(post_id):
             flash('Comment added successfully', 'success')
         else:
             flash('Post does not exist', 'error')
+
+    # if myposts in request.url:
     return redirect(url_for('read_post', post_id=post_id))
 
 
@@ -183,7 +185,7 @@ def my_posts():
     return render_template('all_posts.html', posts=posts)
 
 
-@app.route('/users/<user_id>/posts')
+@app.route('/users/<int:user_id>/posts')
 @login_required
 def users_posts(user_id):
     posts = Post.query.filter_by(user_id=user_id).all()
