@@ -27,3 +27,13 @@ expandComments.addEventListener("click", () =>{
         comments.style.display = 'block';
     }
 })
+
+const expandcommentInput = document.querySelector('#expand-comment-input');
+const commentField = document.querySelector('#give-comments');
+expandcommentInput.addEventListener('click', () =>{
+    if(commentField.style.display == 'block'){
+        commentField.style.display = 'none';
+    } else {
+        commentField.style.display = 'block';
+    }
+})
