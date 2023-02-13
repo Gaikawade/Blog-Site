@@ -13,7 +13,11 @@
       {% endif %}
     {% endwith %}
 
-    <h3>Add Article</h3>
+    {% if type=='post' %}
+      <h3>Add Article</h3>
+    {% else %}
+      <h3>Update Article</h3>
+    {% endif %}
 
     <form action="" method="post">
     {{ form.csrf_token }}

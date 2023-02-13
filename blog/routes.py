@@ -43,7 +43,7 @@ def add_post():
         print(post)
         flash('Post added successfully', 'success')
         return redirect(url_for('home'))
-    return render_template('add_update_post.html', title='Add Post', form=form)
+    return render_template('add_update_post.html', title='Add Post', form=form, type='post')
 
 
 @app.route('/login', methods=['POST', 'GET'])
@@ -109,7 +109,7 @@ def update_post(post_id):
         db.session.commit()
         flash('The Article has been updated', 'success')
         return redirect(url_for('read_post', post_id=post.id))
-    return render_template('add_update_post.html', title=post.title, form=form)
+    return render_template('add_update_post.html', title=post.title, form=form, type='update')
 
 
 @app.route('/post/delete/<int:post_id>', methods=['POST', "GET"])
