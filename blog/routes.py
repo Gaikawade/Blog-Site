@@ -198,7 +198,7 @@ def base():
     return dict(form=form)
 
 
-@app.route('/search', methods=['POST'])
+@app.route('/search', methods=['GET'])
 @login_required
 def search():
     form = SearchForm()

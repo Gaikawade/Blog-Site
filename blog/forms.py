@@ -85,6 +85,10 @@ class PostForm(FlaskForm):
 class SearchForm(FlaskForm):
     searched = StringField(
         'Searched',
-        validators=[DataRequired()]
+        validators=[DataRequired()],
+        render_kw=form_css('Search')
     )
-    submit = SubmitField('Submit')
+    submit = SubmitField(
+        'Submit',
+        render_kw={'class': 'btn btn-outline-primary'}
+    )
