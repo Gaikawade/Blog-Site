@@ -1,5 +1,5 @@
 from flask import render_template, redirect, url_for, flash, request, abort, jsonify
-from blog.forms import Register, Login, Account, PostForm
+from blog.forms import Register, Login, Account, PostForm, SearchForm
 from blog.models import add_user, User, Post, Comment, Like
 from blog import app, bcrypt, db
 from flask_login import login_required, login_user, logout_user, current_user
@@ -190,3 +190,18 @@ def my_posts():
 def users_posts(user_id):
     posts = Post.query.filter_by(user_id=user_id).all()
     return render_template('all_posts.html', posts=posts)
+
+
+@app.context_processor
+def base():
+    form = SearchForm()
+    return dict(form=form)
+
+
+@app.route('/search', methods=['POST'])
+def search():
+    form = SearchForm()
+    posts = Post.query
+    if form.validate_on_submit():
+        posts.searched = form.searched.data
+        return render_template('search.html', form=form, posts=posts, searched=posts.searched)

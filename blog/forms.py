@@ -80,3 +80,11 @@ class PostForm(FlaskForm):
         render_kw=form_css('Article Content') #Add row for larger text area
     )
     submit = SubmitField('Post')
+
+
+class SearchForm(FlaskForm):
+    searched = StringField(
+        'Searched',
+        validators=[DataRequired()]
+    )
+    submit = SubmitField('Submit')
