@@ -199,9 +199,15 @@ def base():
 
 
 @app.route('/search', methods=['POST'])
+@login_required
 def search():
     form = SearchForm()
     posts = Post.query
+    users = User.query
     if form.validate_on_submit():
-        posts.searched = form.searched.data
-        return render_template('search.html', form=form, posts=posts, searched=posts.searched)
+        searched = form.searched.data
+        posts = posts.filter(Post.content.like('%' + searched + '%'))
+        posts = posts.order_by(Post.title).all()
+        users = users.filter(User.name.like('%' + searched + '%'))
+        users = users.order_by(User.name).all()
+        return render_template('search.html', form=form, posts=posts, users=users, searched=searched)
