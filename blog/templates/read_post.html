@@ -20,8 +20,7 @@
                 <div class="col-sm-6 text-end">
                     {% if post.author == current_user %}
                         <a href="{{url_for('update_post', post_id=post.id)}}">
-                            <i class="fa fa-pen-to-square"></i>
-                        </a>
+                            <i class="fa fa-pen-to-square"></i></a>
                         &NonBreakingSpace;
                         <a
                             href="{{url_for('delete_post', post_id=post.id)}}"

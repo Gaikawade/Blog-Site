@@ -101,16 +101,11 @@
                             <a class="nav-link">Disabled</a>
                         </li>
                     </ul>
-                    <form method="get" action="{{url_for('search')}}" class="d-flex">
-                        {{ form.csrf_token }}
-                        <div>
-                            {{ form.searched() }}
-                        </div>
-                        &NonBreakingSpace;
-                        <div>
-                            {{ form.submit() }}
-                        </div>
-                    </form>
+                    <form method="POST" action="{{ url_for('search')}}" class="d-flex">
+                        {{ form.hidden_tag() }}
+                        <input class="form-control me-2" type="search" placeholder="Search" aria-label="Search" name="searched">
+                        <button class="btn btn-outline-secondary" type="submit">Search</button>
+                      </form>
                 </div>
             </div>
         </nav>
