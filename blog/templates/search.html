@@ -2,59 +2,68 @@
 {% block contents %}
 
     <h4>You searched for: <em>{{searched}}</em></h4>
+
 	<!-- Search results for posts -->
-	<p class="btn btn-outline-secondary stn-sm border-0 border-bottom">Posts</p>
-	&NonBreakingSpace;
-	&NonBreakingSpace;
-	<p class="btn btn-outline-secondary stn-sm border-0 border-bottom">Users</p>
-	<br />
-    {% if posts %}
-        {% for post in posts %}
-            <div class="shadow p-3 mb-5 bg-body rounded">
-                  <h4>
-                      <a href="{{ url_for('read_post', post_id=post.id)}}"
-                          >{{ post.title }}</a
-                      >
-                  </h4>
-                  <br />
-                  {{ post.content[0:120]|safe }}...
-                  <br /><br />
-                  <small
-                      >By: {{ post.author.name }}<br />
-                      {{ post.created_at.strftime('%D') }}</small
-                  >
-                  <a
-                      href="{{ url_for('read_post', post_id=post.id)}}"
-                      class="btn btn-outline-secondary btn-sm"
-                      >View Post</a
-                  >
-                  {% if post.author.id == current_user.id %}
-                      <a
-                          href="{{ url_for('update_post', post_id=post.id)}}"
-                          class="btn btn-outline-secondary btn-sm"
-                          >Edit Post</a
-                      >
-                      <a
-                          href="{{ url_for('delete_post', post_id=post.id)}}"
-                          class="btn btn-outline-danger btn-sm"
-                          >Delete Post</a
-                      >
-                  {% endif %}
-                  <br /><br />
-            </div>
-            <br />
-        {% endfor %}
-	{% else %}
-        Sorry, your search term: <strong>{{ searched }}</strong> was not found...
-    {% endif %}
-	<br />
-	<!-- Search results for users -->
-    {% if users %}
-		{% for user in users %}
-			<a href="{{url_for('users_posts', user_id=user.id)}}">{{user.name}}</a>
-		{% endfor %}
-	{% else %}
-        Sorry, your search term: <strong>{{ searched }}</strong> was not found...
-    {% endif %}
+    <div class="btn btn-outline-secondary border-0 border-bottom" id="expand-posts">Posts</div>
+    &NonBreakingSpace;
+    &NonBreakingSpace;
+    <div class="btn btn-outline-secondary border-0 border-bottom" id="expand-users">Users</div>
+    <br /><br />
+
+    <div class="container-lg m-auto">
+        <div id="posts" style="display: block">
+            {% if posts %}
+                <h5 class="mb-2">Posts</h5>
+                {% for post in posts %}
+                    <div class="shadow p-3 mb-5 bg-body rounded">
+                        <h4>
+                            <a href="{{ url_for('read_post', post_id=post.id)}}"
+                                >{{ post.title }}</a
+                            >
+                        </h4>
+                        <br />
+                        {{ post.content[0:120]|safe }}...
+                        <br /><br />
+                        <small
+                            >By: {{ post.author.name }}<br />
+                            {{ post.created_at.strftime('%D') }}</small
+                        >
+                        <a
+                            href="{{ url_for('read_post', post_id=post.id)}}"
+                            class="btn btn-outline-secondary btn-sm"
+                            >View Post</a
+                        >
+                        {% if post.author.id == current_user.id %}
+                            <a
+                                href="{{ url_for('update_post', post_id=post.id)}}"
+                                class="btn btn-outline-secondary btn-sm"
+                                >Edit Post</a
+                            >
+                            <a
+                                href="{{ url_for('delete_post', post_id=post.id)}}"
+                                class="btn btn-outline-danger btn-sm"
+                                >Delete Post</a
+                            >
+                        {% endif %}
+                        <br /><br />
+                    </div>
+                    <br />
+                {% endfor %}
+            {% else %}
+                Sorry, your search term: <strong>{{ searched }}</strong> was not found...
+            {% endif %}
+        </div>
+        <!-- Search results for users -->
+        <div id="users" style="display: none">
+            {% if users %}
+                <h5 class="mb-2">Users</h5>
+                {% for user in users %}
+                    <a href="{{url_for('users_posts', user_id=user.id)}}">{{user.name}}</a>
+                {% endfor %}
+            {% else %}
+                Sorry, your search term: <strong>{{ searched }}</strong> was not found...
+            {% endif %}
+        </div>
+    </div>
 
 {% endblock contents %}
