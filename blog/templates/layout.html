@@ -1,136 +1,104 @@
 <!DOCTYPE html>
 <html lang="en">
-    <head>
-        <meta charset="utf-8" />
-        <meta
-            name="viewport"
-            content="width=device-width, initial-scale=1, shrink-to-fit=no"
-        />
-        <meta name="description" content="" />
-        <meta name="author" content="" />
-        <title>
-            {% if title == null %} Webapp {% else %} {{title}} {% endif %}
-        </title>
-        <!-- include libraries (jQuery, Bootstrap) -->
-        <link
-            href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css"
-            rel="stylesheet"
-            integrity="sha384-rbsA2VBKQhggwzxH7pPCaAqO46MgnOM80zW1RWuH61DGLwZJEdK2Kadq2F9CUG65"
-            crossorigin="anonymous"
-        />
-        <!-- Font Awesome for Icons -->
-        <script
-            src="https://kit.fontawesome.com/ef453f4231.js"
-            crossorigin="anonymous"
-        ></script>
-    </head>
 
-    <body>
-        <!-- Navigation -->
-        <nav class="navbar navbar-expand-lg navbar-light bg-light">
-            <div class="container-fluid">
-                <a class="navbar-brand" href="{{url_for('home')}}">Home</a>
-                <button
-                    class="navbar-toggler"
-                    type="button"
-                    data-bs-toggle="collapse"
-                    data-bs-target="#navbarSupportedContent"
-                    aria-controls="navbarSupportedContent"
-                    aria-expanded="false"
-                    aria-label="Toggle navigation"
-                >
-                    <span class="navbar-toggler-icon"></span>
-                </button>
-                <div
-                    class="collapse navbar-collapse"
-                    id="navbarSupportedContent"
-                >
-                    <ul class="navbar-nav me-auto mb-2 mb-lg-0">
-                        {% if current_user.is_authenticated %}
-                            <li class="nav-item">
-                                <a class="nav-link" href="{{url_for('add_post')}}"
-                                    >Add Post</a
-                                >
-                            </li>
-                            <li class="nav-item">
-                                <a class="nav-link" href="{{url_for('my_posts')}}"
-                                    >My Posts</a
-                                >
-                            </li>
-                            <li class="nav-item">
-                                <a class="nav-link" href="{{url_for('account')}}"
-                                    >Account</a
-                                >
-                            </li>
-                            <li class="nav-item">
-                                <a class="nav-link" href="{{url_for('logout')}}"
-                                    >Logout</a
-                                >
-                            </li>
-                        {% else %}
-                            <!-- <li class="nav-item dropdown">
-                            <a
-                                class="nav-link dropdown-toggle"
-                                href="#"
-                                id="navbarDropdown"
-                                role="button"
-                                data-bs-toggle="dropdown"
-                                aria-expanded="false"
-                            >
-                                Dropdown
-                            </a>
-                            <ul class="dropdown-menu" aria-labelledby="navbarDropdown">
-                                <li><a class="dropdown-item" href="#">Action</a></li>
-                                <li><a class="dropdown-item" href="#">Another action</a></li>
-                                <li><hr class="dropdown-divider"></li>
-                                <li><a class="dropdown-item" href="#">Something else here</a></li>
-                            </ul>
-                        </li> -->
-                            <li class="nav-item">
-                                <a class="nav-link" href="{{url_for('register')}}"
-                                    >Register</a
-                                >
-                            </li>
-                            <li class="nav-item">
-                                <a class="nav-link" href="{{url_for('login')}}"
-                                    >Login</a
-                                >
-                            </li>
-                        {% endif %}
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
+    <meta name="description" content="" />
+    <meta name="author" content="" />
+    <title>
+        {% if title == null %} Webapp {% else %} {{title}} {% endif %}
+    </title>
+
+    <!-- CSS only -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css">
+
+    <!-- Font Awesome for Icons -->
+    <script src="https://kit.fontawesome.com/ef453f4231.js" crossorigin="anonymous"></script>
+</head>
+
+<body>
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-light bg-light">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="{{url_for('home')}}">Home</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse"
+                data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false"
+                aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarSupportedContent">
+                <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+                    {% if current_user.is_authenticated %}
                         <li class="nav-item">
-                            <a class="nav-link">Disabled</a>
+                            <a class="nav-link" href="{{url_for('add_post')}}">Add Post</a>
                         </li>
-                    </ul>
-                    <form method="POST" action="{{ url_for('search')}}" class="d-flex">
-                        {{ form.hidden_tag() }}
-                        <input class="form-control me-2" type="search" placeholder="Search" aria-label="Search" name="searched">
-                        <button class="btn btn-outline-secondary" type="submit">Search</button>
-                      </form>
-                </div>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{url_for('my_posts')}}">My Posts</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{url_for('account')}}">Account</a>
+                        </li>
+                    {% else %}
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{url_for('register')}}">Register</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{url_for('login')}}">Login</a>
+                        </li>
+                    {% endif %}
+                </ul>
+                <form method="POST" action="{{ url_for('search')}}" class="d-flex">
+                    {{ form.hidden_tag() }}
+                    <input class="form-control me-2" type="search" placeholder="Search" aria-label="Search"
+                        name="searched">
+                    <button class="btn btn-outline-secondary" type="submit">Search</button>
+                </form>
+                &NonBreakingSpace;
+                <ul class="navbar-nav mb-2 mb-lg-0">
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button"
+                            data-bs-toggle="dropdown" data-bs-display="static" aria-expanded="false">
+                            More
+                        </a>
+                        <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarDropdown">
+                            <li><a class="dropdown-item" href="{{url_for('admin_login')}}">Admin Login</a></li>
+                            <li><a class="dropdown-item" href="{{url_for('admin_register')}}">Admin Register</a></li>
+                            <li>
+                                <hr class="dropdown-divider">
+                            </li>
+                            {% if current_user.is_authenticated %}
+                                <li><a class="dropdown-item" href="#">Dashboard</a></li>
+                                <li><a class="dropdown-item" href="{{url_for('logout')}}">Logout</a></li>
+                            {% endif %}
+                        </ul>
+                    </li>
+                </ul>
             </div>
-        </nav>
+        </div>
+    </nav>
 
-        <div class="container">{% block contents %} {% endblock %}</div>
-        <br />
+    <div class="container">{% block contents %} {% endblock %}</div>
+    <br />
 
-        <!-- Footer-->
-        <footer>
-            <div class="small text-center text-muted fst-italic">
-                Copyright &copy; Blog Website 2023
-            </div>
-        </footer>
+    <!-- Footer-->
+    <footer>
+        <div class="small text-center text-muted fst-italic">
+            Copyright &copy; Blog Website 2023
+        </div>
+    </footer>
 
-        <!-- Bootstrap core JS-->
-        <script
+    <!-- Bootstrap core JS-->
+    <!-- <script
             src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.min.js"
             integrity="sha384-cuYeSxntonz0PPNlHhBs68uyIAVpIIOZZ5JqeqvYYIcEL727kskC66kF92t6Xl2V"
             crossorigin="anonymous"
-        ></script>
+        ></script> -->
+    <!-- JavaScript Bundle with Popper -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js"></script>
 
-        <!-- Core theme JS-->
-        <script
-            type="text/javascript"
-            src="{{url_for('static', filename='script.js')}}"
-        ></script>
-    </body>
+    <!-- Core theme JS-->
+    <script type="text/javascript" src="{{url_for('static', filename='script.js')}}"></script>
+</body>
+
 </html>

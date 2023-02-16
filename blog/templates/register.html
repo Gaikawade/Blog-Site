@@ -50,5 +50,12 @@
         <div id="success"></div>
         {{ form.submit() }}
     </form>
+
+    {% if 'admin' is not in request.url %}
+        <br/>
+        <p class="small">Already have an Account?
+            <a href="{{url_for('login')}}">Login Here</a>
+        </p>
+    {% endif %}
 </div>
 {% endblock contents %}

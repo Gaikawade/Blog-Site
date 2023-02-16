@@ -19,9 +19,9 @@ def about():
     return render_template('about.html', title='AboutPage')
 
 
-@app.route('/admin/register', methods=['POST', 'GET'])
-def admin_register():
-    form = AdminRegister()
+@app.route('/register', methods=['POST', 'GET'])
+def register():
+    form = Register()
     if form.validate_on_submit():
         add_user(form)
         flash('Registration successful', 'success')
@@ -219,8 +219,8 @@ def search():
         return error
 
 
-@app.route('/register', methods=['POST', 'GET'])
-def register():
+@app.route('/admin/register', methods=['POST', 'GET'])
+def admin_register():
     form = AdminRegister()
     if form.validate_on_submit():
         if form.access_code.data == access_token:
@@ -228,3 +228,17 @@ def register():
             flash('Registration successful', 'success')
             return redirect(url_for('login'))
     return render_template('register.html', title='RegisterPage', form=form)
+
+
+@app.route('/admin/login', methods=['POST', 'GET'])
+def admin_login():
+    form = Login()
+    if form.validate_on_submit():
+        document = Admin.query.filter_by(email=form.email.data).first()
+        if document and bcrypt.check_password_hash(document.password, form.password.data):
+            login_user(document, remember=form.remember.data)
+            flash('Login successful', 'success')
+            return redirect(url_for('home'))
+        else:
+            flash('Login failed', 'danger')
+    return render_template('login.html', title='Login Page', form=form)
