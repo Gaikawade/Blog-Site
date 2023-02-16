@@ -6,11 +6,9 @@
         {% if messages %}
             <ul class="flashes">
               {% for category, message in messages %}
-                  <div class="alert alert-{{category}}" role="alert">
-                    <div class="alert alert-warning alert-dismissible fade show" role="alert">
+                  <div class="alert alert-{{category}} alert-dismissible" role="alert">
                         {{ message }}
                         <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                    </div>
                   </div>
               {% endfor %}
             </ul>
@@ -24,7 +22,7 @@
                 <div class="row h6">
                     <div class="col-sm-6 text-start">{{ post.title }}</div>
                     <div class="col-sm-6 text-end">
-                        {% if post.author == current_user %}
+                        {% if post.author == current_user or current_user.is_admin == true %}
                             <a href="{{url_for('update_post', post_id=post.id)}}">
                                 <i class="fa fa-pen-to-square"></i></a>
                             &NonBreakingSpace;

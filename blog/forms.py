@@ -109,11 +109,6 @@ class AdminRegister(FlaskForm):
       document = Admin.query.filter_by(email=email.data).first()
       if document:
         raise ValidationError("Email address already registered")
-    access_code = PasswordField(
-        'Access Code',
-        validators=[DataRequired()],
-        render_kw=form_css('Access Code')
-    )
     password = PasswordField(
         'Password',
         validators=[DataRequired()],

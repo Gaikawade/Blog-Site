@@ -15,13 +15,12 @@
             </ul>
         {% endif %} 
     {% endwith %}
-
     <div class="card text-center mt-5 mb-2">
         <div class="card-header">
             <div class="row h6">
                 <div class="col-sm-6 text-start">{{ post.title }}</div>
                 <div class="col-sm-6 text-end">
-                    {% if post.author == current_user %}
+                    {% if post.author == current_user or current_user.is_admin == 1 %}
                         <a href="{{url_for('update_post', post_id=post.id)}}">
                             <i class="fa fa-pen-to-square"></i></a>
                         &NonBreakingSpace;
@@ -108,7 +107,7 @@
             </div>
             <div class="col-sm-6 text-end">
                 {{ post.created_at.strftime('%D') }}
-                {% if current_user == comment.author or current_user == post.author %}
+                {% if current_user == comment.author or current_user == post.author or current_user.is_admin == 1 %}
                 <a href="{{url_for('delete_comment', comment_id=comment.id)}}"> <i class="fas fa-trash"></i> </a>
                 <!-- #Implement javascript (just like we did in likes component) inorder to avoid page reloading -->
                 {% endif %}

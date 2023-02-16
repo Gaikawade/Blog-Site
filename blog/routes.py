@@ -5,8 +5,6 @@ from blog import app, bcrypt, db
 from flask_login import login_required, login_user, logout_user, current_user
 
 
-access_token = 'blog-site-access-token'
-
 @app.route('/')
 @app.route('/home')
 def home():
@@ -223,10 +221,9 @@ def search():
 def admin_register():
     form = AdminRegister()
     if form.validate_on_submit():
-        if form.access_code.data == access_token:
-            add_admin(form)
-            flash('Registration successful', 'success')
-            return redirect(url_for('login'))
+        add_admin(form)
+        flash('Registration successful', 'success')
+        return redirect(url_for('admin_login'))
     return render_template('register.html', title='RegisterPage', form=form)
 
 
@@ -235,10 +232,34 @@ def admin_login():
     form = Login()
     if form.validate_on_submit():
         document = Admin.query.filter_by(email=form.email.data).first()
+        print(document)
         if document and bcrypt.check_password_hash(document.password, form.password.data):
             login_user(document, remember=form.remember.data)
             flash('Login successful', 'success')
+            # print(current_user.name, current_user.email)
             return redirect(url_for('home'))
         else:
             flash('Login failed', 'danger')
     return render_template('login.html', title='Login Page', form=form)
+
+
+def admin_required(f):
+    def decorated_function(*args, **kwargs):
+        if 'user' not in session or session['user'] != 'admin':
+            return redirect(url_for('login'))
+        return f(*args, **kwargs)
+    return decorated_function
+
+
+@app.route('/admin/delete_post/<int:post_id>', methods=['POST'])
+@admin_required
+def admin_delete_post(post_id):
+    post = Post.query.get_or_404(post_id).first()
+    if post:
+        db.session.delete(post)
+        db.session.commit()
+        flash('Post deleted successfully', 'success')
+        return render_template('home.html')
+
+
+

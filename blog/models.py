@@ -53,14 +53,17 @@ class Like(db.Model):
     post_id = db.Column(db.Integer, db.ForeignKey('post.id'), nullable=False)
 
 
-class Admin(db.Model):
+class Admin(db.Model, UserMixin):
     __tablename__ = 'admin'
-    id = db.Column(db.Integer, primary_key=True)
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     name = db.Column(db.String(80), nullable=False)
     email = db.Column(db.String(80), nullable=False, unique=True)
-    access_code = db.Column(db.String(80), nullable=False)
     password = db.Column(db.String(80), nullable=False)
+    is_admin = db.Column(db.Boolean, default=True)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+    def __repr__(self):
+        return f'{self.name} {self.email}'
 
 
 def add_user(form):
@@ -75,8 +78,7 @@ def add_user(form):
 def add_admin(form):
     name = form.name.data
     email = form.email.data
-    access_code = form.access_code.data
     hashed_password = bcrypt.generate_password_hash(form.password.data).decode('utf-8')
-    admin = User(name=name, email=email, password=hashed_password, access_code=access_code)
+    admin = Admin(name=name, email=email, password=hashed_password)
     db.session.add(admin)
     db.session.commit()

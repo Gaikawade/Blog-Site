@@ -4,17 +4,16 @@
 		{% if messages %}
 		<ul class="flashes">
 			{% for category, message in messages %}
-				<div class="alert alert-{{category}}" role="alert">
-					<div class="alert alert-warning alert-dismissible fade show" role="alert">
-						{{ message }}
-						<button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-					</div>
+				<div class="alert alert-{{category}} alert-dismissible" role="alert">
+					{{ message }}
+					<button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
 				</div>
 			{% endfor %}
 		</ul>
 		{% endif %}
 	{% endwith %}
-
+{{current_user.name}}
+{{current_user.email}}
 {% for post in posts %}
 <div class="card text-center m-5">
 	<div class="card-header">{{ post.title }}</div>

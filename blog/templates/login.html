@@ -6,18 +6,21 @@
 		{% if messages %}
 		<ul class="flashes">
 			{% for category, message in messages %}
-			<div class="alert alert-{{category}}" role="alert">
-				<div class="alert alert-warning alert-dismissible fade show" role="alert">
+			<div class="alert alert-{{category}} alert-dismissible" role="alert">
 					{{ message }}
 					<button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-				</div>
 			</div>
 			{% endfor %}
 		</ul>
 		{% endif %}
 	{% endwith %}
-
-	<h3>Login Page</h3> <br />
+	
+	<br />
+	{% if 'admin' in request.url %}
+		<h3>Admin Login Page</h3> <br />
+	{% else %}
+		<h3>Login Page</h3>
+	{% endif %}
 	<form action="" method="post">
 		{{ form.csrf_token }}
 
