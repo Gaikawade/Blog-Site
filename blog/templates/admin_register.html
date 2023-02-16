@@ -23,17 +23,17 @@
                 {% endfor %}
             {% endif %}
         </div>
-        {% if 'admin' in request.url %}
-            <div class="form-floating">
-                {{ form.access_code() }} {{ form.access_code.label }} <br />
-                {% if form.access_code.errors %}
-                    {% for error in form.access_code.errors %}
-                        <div class="text-danger">{{ error }}</div>
-                        <br />
-                    {% endfor %}
-                {% endif %}
-            </div>
-        {% endif %}
+
+        <div class="form-floating">
+            {{ form.access_code() }} {{ form.access_code.label }} <br />
+            {% if form.access_code.errors %}
+                {% for error in form.access_code.errors %}
+                    <div class="text-danger">{{ error }}</div>
+                    <br />
+                {% endfor %}
+            {% endif %}
+        </div>
+
         <div class="form-floating">
             {{ form.password() }} {{ form.password.label }} <br />
         </div>
@@ -47,6 +47,7 @@
                 {% endfor %}
             {% endif %}
         </div>
+
         <div id="success"></div>
         {{ form.submit() }}
     </form>

@@ -1,8 +1,11 @@
 from flask import render_template, redirect, url_for, flash, request, abort, jsonify
-from blog.forms import Register, Login, Account, PostForm, SearchForm
-from blog.models import add_user, User, Post, Comment, Like
+from blog.forms import Register, Login, Account, PostForm, SearchForm, AdminRegister
+from blog.models import add_user, add_admin, User, Post, Comment, Like, Admin
 from blog import app, bcrypt, db
 from flask_login import login_required, login_user, logout_user, current_user
+
+
+access_token = 'blog-site-access-token'
 
 @app.route('/')
 @app.route('/home')
@@ -16,9 +19,9 @@ def about():
     return render_template('about.html', title='AboutPage')
 
 
-@app.route('/register', methods=['POST', 'GET'])
-def register():
-    form = Register()
+@app.route('/admin/register', methods=['POST', 'GET'])
+def admin_register():
+    form = AdminRegister()
     if form.validate_on_submit():
         add_user(form)
         flash('Registration successful', 'success')
@@ -214,3 +217,14 @@ def search():
             return render_template('search.html', search_form=form, posts=posts, users=users, searched=searched)
     except Exception as error:
         return error
+
+
+@app.route('/register', methods=['POST', 'GET'])
+def register():
+    form = AdminRegister()
+    if form.validate_on_submit():
+        if form.access_code.data == access_token:
+            add_admin(form)
+            flash('Registration successful', 'success')
+            return redirect(url_for('login'))
+    return render_template('register.html', title='RegisterPage', form=form)

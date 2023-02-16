@@ -52,12 +52,31 @@ class Like(db.Model):
     liked_by = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     post_id = db.Column(db.Integer, db.ForeignKey('post.id'), nullable=False)
 
+
+class Admin(db.Model):
+    __tablename__ = 'admin'
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(80), nullable=False)
+    email = db.Column(db.String(80), nullable=False, unique=True)
+    access_code = db.Column(db.String(80), nullable=False)
+    password = db.Column(db.String(80), nullable=False)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+
 def add_user(form):
-    
     name = form.name.data
     email = form.email.data
     hashed_password = bcrypt.generate_password_hash(form.password.data).decode('utf-8')
-    
     user = User(name=name, email=email, password=hashed_password)
     db.session.add(user)
+    db.session.commit()
+
+
+def add_admin(form):
+    name = form.name.data
+    email = form.email.data
+    access_code = form.access_code.data
+    hashed_password = bcrypt.generate_password_hash(form.password.data).decode('utf-8')
+    admin = User(name=name, email=email, password=hashed_password, access_code=access_code)
+    db.session.add(admin)
     db.session.commit()
