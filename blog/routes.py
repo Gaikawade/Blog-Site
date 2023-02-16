@@ -27,12 +27,6 @@ def register():
     return render_template('register.html', title='RegisterPage', form=form)
 
 
-# @app.route('/posts')
-# @login_required
-# def posts():
-#     return render_template('posts.html', title='Posts')
-
-
 @app.route('/add_post', methods=['POST', 'GET'])
 @login_required
 def add_post():
@@ -70,6 +64,7 @@ def logout():
         return redirect(url_for('home'))
     else:
         return redirect(url_for('login'))
+
 
 @app.route('/account', methods=['POST', 'GET'])
 @login_required 
@@ -215,51 +210,5 @@ def search():
             return render_template('search.html', search_form=form, posts=posts, users=users, searched=searched)
     except Exception as error:
         return error
-
-
-@app.route('/admin/register', methods=['POST', 'GET'])
-def admin_register():
-    form = AdminRegister()
-    if form.validate_on_submit():
-        add_admin(form)
-        flash('Registration successful', 'success')
-        return redirect(url_for('admin_login'))
-    return render_template('register.html', title='RegisterPage', form=form)
-
-
-@app.route('/admin/login', methods=['POST', 'GET'])
-def admin_login():
-    form = Login()
-    if form.validate_on_submit():
-        document = Admin.query.filter_by(email=form.email.data).first()
-        print(document)
-        if document and bcrypt.check_password_hash(document.password, form.password.data):
-            login_user(document, remember=form.remember.data)
-            flash('Login successful', 'success')
-            # print(current_user.name, current_user.email)
-            return redirect(url_for('home'))
-        else:
-            flash('Login failed', 'danger')
-    return render_template('login.html', title='Login Page', form=form)
-
-
-def admin_required(f):
-    def decorated_function(*args, **kwargs):
-        if 'user' not in session or session['user'] != 'admin':
-            return redirect(url_for('login'))
-        return f(*args, **kwargs)
-    return decorated_function
-
-
-@app.route('/admin/delete_post/<int:post_id>', methods=['POST'])
-@admin_required
-def admin_delete_post(post_id):
-    post = Post.query.get_or_404(post_id).first()
-    if post:
-        db.session.delete(post)
-        db.session.commit()
-        flash('Post deleted successfully', 'success')
-        return render_template('home.html')
-
 
 
