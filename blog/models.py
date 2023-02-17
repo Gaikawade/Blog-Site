@@ -3,6 +3,7 @@ from blog import db, bcrypt, login_manager
 from flask_login import UserMixin
 import uuid
 
+# it is a decorator in Flask-Login, and a Flask extension for handling user authentication and session management
 @login_manager.user_loader
 def load_user(id):
     # Load the user as a regular user
@@ -14,21 +15,27 @@ def load_user(id):
     if admin:
         return admin
 
+
+# Defining the structure of the 'user' table in the database
 class User(db.Model, UserMixin):
+    # Specifies the name of the database table 
     __tablename__ = 'user'
     id = db.Column(db.String(40), primary_key=True, default='U' + str(uuid.uuid4().int >> 64))
     name = db.Column(db.String(80), nullable=False)
     email = db.Column(db.String(80), nullable=False, unique=True)
     password = db.Column(db.String(80), nullable=False)
+    is_blocked = db.Column(db.Boolean, default=False)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     posts = db.relationship('Post', backref='author', lazy=True, cascade='all, delete')
     comments = db.relationship('Comment', backref='author', lazy=True, cascade='all, delete')
     likes = db.relationship('Like', backref='author', lazy=True, cascade='all, delete')
 
+    # String representation of the User object
     def __repr__(self):
       return f'name: {self.name}, email: {self.email}'
 
 
+# Defining the structure of the 'post' table in the database
 class Post(db.Model):
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     title = db.Column(db.String(120), nullable=False)
@@ -42,6 +49,7 @@ class Post(db.Model):
       return f'title: {self.title}, author: {self.author}'
 
 
+# Defining the structure of the 'comment' table in the database
 class Comment(db.Model):
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     text = db.Column(db.String(200), nullable=False)
@@ -53,6 +61,7 @@ class Comment(db.Model):
         return f'{self.author.name}: {self.text}'
 
 
+# Defining the structure of the 'like' table in the database
 class Like(db.Model):
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
@@ -60,6 +69,7 @@ class Like(db.Model):
     post_id = db.Column(db.Integer, db.ForeignKey('post.id'), nullable=False)
 
 
+# Defining the structure of the 'admin' table in the database
 class Admin(db.Model, UserMixin):
     id = db.Column(db.String(40), primary_key=True, default='A' + str(uuid.uuid4().int >> 64))
     name = db.Column(db.String(80), nullable=False)
@@ -72,6 +82,7 @@ class Admin(db.Model, UserMixin):
         return f'{self.name} {self.email}'
 
 
+# Function to add new user to the database
 def add_user(form):
     name = form.name.data
     email = form.email.data
@@ -81,6 +92,7 @@ def add_user(form):
     db.session.commit()
 
 
+# Function to add new admin to the database
 def add_admin(form):
     name = form.name.data
     email = form.email.data

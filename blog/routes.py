@@ -112,7 +112,7 @@ def update_post(post_id):
 @login_required
 def delete_post(post_id):
     post = Post.query.get_or_404(post_id)
-    if post.author != current_user:
+    if post.author != current_user and current_user.is_admin != 1:
         abort(403)
     db.session.delete(post)
     db.session.commit()
@@ -231,8 +231,35 @@ def admin_login():
         if document and bcrypt.check_password_hash(document.password, form.password.data):
             login_user(document, remember=form.remember.data)
             flash('Login successful', 'success')
-            print(document)
             return redirect(url_for('account'))
         else:
-            flash('Email or Password is wrong', 'error')
+            flash('Email or Password is wrong', 'danger')
     return render_template('login.html', form=form, title='Admin Login Page')
+
+
+@app.route('/admin/all_users', methods=['GET'])
+@login_required
+def all_users():
+	if current_user.is_admin == True:
+		users = User.query.all()
+		return render_template('users_and_posts.html', users=users)
+
+@app.route('/admin/all_posts', methods=['GET'])
+@login_required
+def all_posts():
+	if current_user.is_admin == True:
+		posts = Post.query.all()
+		return render_template('users_and_posts.html', posts=posts)
+
+@app.route('/admin/block_user/<string:user_id>', methods=['POST'])
+@login_required
+def block_user(user_id):
+    if current_user.is_admin == True:
+        user = User.query.filter_by(id=user_id).first()
+        if user.is_blocked == False:
+        	user.is_blocked = True
+        else:
+            user.is_blocked = False
+        db.session.commit()
+        flash('User blocked successfully', 'success')
+        return redirect(url_for('all_users'))

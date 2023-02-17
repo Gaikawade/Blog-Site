@@ -1,0 +1,167 @@
+{% extends 'layout.html' %}
+
+{% block contents %}
+	<!-- Show Posts -->
+	{% if posts %}
+		<h5 class="mb-2">Posts</h5>
+		{% for post in posts[::-1] %}
+			<div class="shadow p-3 mb-5 bg-body rounded">
+				<h4>
+					<a href="{{ url_for('read_post', post_id=post.id)}}"
+						>{{ post.title }}</a
+					>
+				</h4>
+				<br />
+				{{ post.content[0:120]|safe }}...
+				<br /><br />
+				<small
+					>By: {{ post.author.name }}<br />
+					{{ post.created_at.strftime('%D') }}</small
+				>
+				<a
+					href="{{ url_for('read_post', post_id=post.id)}}"
+					class="btn btn-outline-secondary btn-sm"
+					>View Post</a
+				>
+				{% if post.author.id == current_user.id %}
+					<a
+						href="{{ url_for('update_post', post_id=post.id)}}"
+						class="btn btn-outline-secondary btn-sm"
+						>Edit Post</a
+					>
+					<a
+						href="{{ url_for('delete_post', post_id=post.id)}}"
+						class="btn btn-outline-danger btn-sm"
+						data-bs-toggle="modal"
+						data-bs-target="deleteModal"
+						>Delete Post</a
+					>
+				{% elif current_user.is_admin == 1 %}
+					<a
+					href="{{url_for('delete_post', post_id=post.id)}}"
+					data-bs-toggle="modal"
+					data-bs-target="#deleteModal"
+					class="btn btn-outline-secondary btn-sm"
+					>
+						Delete
+					</a>
+				{% endif %}
+				<!-- Modal -->
+				<div
+					class="modal fade"
+					id="deleteModal"
+					tabindex="-1"
+					aria-labelledby="deleteModalLabel{{post.id}}"
+					aria-hidden="true"
+				>
+					<div class="modal-dialog">
+						<div class="modal-content">
+							<div class="modal-header">
+								<h5 class="modal-title" id="deleteModalLabel{{post.id}}">{{post.title}}</h5>
+								<button
+									type="button"
+									class="btn-close"
+									data-bs-dismiss="modal"
+									aria-label="Close"
+								></button>
+							</div>
+							<div class="modal-body">
+								Are you sure, you want to delete this article?
+							</div>
+							<div class="modal-footer">
+								<button
+									type="button"
+									class="btn btn-secondary"
+									data-bs-dismiss="modal"
+								>
+									Close
+								</button>
+								<form
+									action="{{url_for('delete_post', post_id=post.id)}}"
+									method="post"
+								>
+									<input
+										type="submit"
+										class="btn btn-danger"
+										value="Delete Article"
+									/>
+								</form>
+							</div>
+						</div>
+					</div>
+				</div>
+				<br /><br />
+			</div>
+			<br />
+		{% endfor %}
+	<!-- Show Users -->
+	{% elif users %}
+		<h5 class="mb-2">Users</h5>
+		{% for user in users[::-1] %}
+			<div class="shadow p-3 mb-5 bg-body rounder">
+				<a href="{{url_for('users_posts', user_id=user.id)}}">{{user.name}}</a>
+				<p>{{user.email}}</p>
+				<a
+					class="btn btn-outline-secondary btn-sm"
+					data-bs-toggle="modal"
+					data-bs-target="#{{user.id}}"
+					>
+					{% if user.is_blocked == 1 %}
+						Unblock
+					{% else %}
+						Block
+					{% endif %}
+				</a>
+			</div>
+
+			<!-- Modal -->
+			<div
+			class="modal fade"
+			id="{{user.id}}"
+			tabindex="-1"
+			aria-labelledby="blockModalLabel{{user.id}}"
+			aria-hidden="true"
+			>
+				<div class="modal-dialog">
+					<div class="modal-content">
+						<div class="modal-header">
+							<h5 class="modal-title" id="blockModalLabel{{user.id}}">Block Users</h5>
+							<button
+								type="button"
+								class="btn-close"
+								data-bs-dismiss="modal"
+								aria-label="Close"
+							></button>
+						</div>
+						<div class="modal-body">
+							{% if user.is_blocked == 0 %}
+								Are you sure, you want to Block {{user.name}}?
+							{% else %}
+								Are you sure, you want to Unblock {{user.name}}?
+							{% endif %}
+						</div>
+						<div class="modal-footer">
+							<button
+								type="button"
+								class="btn btn-secondary"
+								data-bs-dismiss="modal"
+							>
+								Close
+							</button>
+							<form
+								action="{{url_for('block_user', user_id=user.id)}}"
+								method="post"
+							>
+								<input
+									type="submit"
+									class="btn btn-danger"
+									value="Yes"
+								/>
+							</form>
+						</div>
+					</div>
+				</div>
+			</div>
+		{% endfor %}
+	{% endif %}
+{% endblock contents %}
