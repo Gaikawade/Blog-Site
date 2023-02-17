@@ -20,9 +20,9 @@ class Register(FlaskForm):
         render_kw=form_css('Email')
     )
     def validate_email(self, email):
-      document = User.query.filter_by(email=email.data).first()
-      if document:
-        raise ValidationError("Email address already registered")
+        document = User.query.filter_by(email=email.data).first()
+        if document:
+            raise ValidationError("Email address already registered")
     password = PasswordField(
         'Password',
         validators=[DataRequired()],
@@ -92,3 +92,46 @@ class SearchForm(FlaskForm):
         'Submit',
         render_kw={'class': 'btn btn-outline-primary'}
     )
+
+
+class AdminRegister(FlaskForm):
+    name = StringField(
+        'Name',
+        validators=[DataRequired(), Length(min=3, max=30), Regexp(name_regex)],
+        render_kw=form_css('Name')
+    )
+    email = StringField(
+        'Email',
+        validators=[DataRequired(), Email()],
+        render_kw=form_css('Email')
+    )
+    def validate_email(self, email):
+        document = Admin.query.filter_by(email=email.data).first()
+        if document:
+            raise ValidationError("Email address already registered")
+    password = PasswordField(
+        'Password',
+        validators=[DataRequired()],
+        render_kw=form_css('Password')
+    )
+    confirm_password = PasswordField(
+        'Confirm Password',
+        validators=[DataRequired(), EqualTo('password')],
+        render_kw=form_css('Confirm Password')
+    )
+    submit = SubmitField('Sign up')
+
+
+class AdminLogin(FlaskForm):
+    email = StringField(
+        'Email',
+        validators=[DataRequired(), Email()],
+        render_kw=form_css('Email')
+    )
+    password = PasswordField(
+        'Password',
+        validators=[DataRequired()],
+        render_kw=form_css('Password')
+    )
+    submit = SubmitField('Login')
+    remember = BooleanField('Remember Me')

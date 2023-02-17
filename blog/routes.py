@@ -1,5 +1,5 @@
 from flask import render_template, redirect, url_for, flash, request, abort, jsonify
-from blog.forms import Register, Login, Account, PostForm, SearchForm, AdminRegister
+from blog.forms import Register, Login, Account, PostForm, SearchForm, AdminRegister, AdminLogin
 from blog.models import add_user, add_admin, User, Post, Comment, Like, Admin
 from blog import app, bcrypt, db
 from flask_login import login_required, login_user, logout_user, current_user
@@ -212,3 +212,26 @@ def search():
         return error
 
 
+@app.route('/admin/register', methods=['POST', 'GET'])
+def admin_register():
+    form = AdminRegister()
+    if form.validate_on_submit():
+        add_admin(form)
+        flash('Registration Successful', 'success')
+        return redirect(url_for('login'))
+    return render_template('register.html', title='Registration Page', form=form)
+
+
+@app.route('/admin/login', methods=['POST', 'GET'])
+def admin_login():
+    form = AdminLogin()
+    if form.validate_on_submit():
+        document = Admin.query.filter_by(email=form.email.data).first()
+        if document and bcrypt.check_password_hash(document.password, form.password.data):
+            login_user(document, remember=form.remember.data)
+            flash('Login successful', 'success')
+            print(document)
+            return redirect(url_for('account'))
+        else:
+            flash('Please check you email and password', 'error')
+    return render_template('admin_login.html', form=form, title='Admin Login Page')

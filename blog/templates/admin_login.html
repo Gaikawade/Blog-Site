@@ -15,12 +15,9 @@
 		{% endif %}
 	{% endwith %}
 	<br />
-	{% if 'admin' in request.url %}
-		<h3>Admin Login Page</h3> <br />
-	{% else %}
-		<h3>Login Page</h3>
-	{% endif %}
-	<form action="" method="post">
+
+	<h3>Admin Login Page</h3> <br />
+	<form action="", method="post">
 		{{ form.csrf_token }}
 
 		<div class="form-floating">
@@ -48,11 +45,5 @@
 		<div id="success">{{ form.submit() }}</div>
 	</form>
 
-	{% if 'admin' is not in request.url %}
-		<br />
-		<p class="small">Don't have an account
-			<a href="{{url_for('register')}}">Create a Account</a>
-		</p>
-	{% endif %}
 </div>
 {% endblock contents %}
