@@ -12,28 +12,28 @@
 		</ul>
 		{% endif %}
 	{% endwith %}
-{{current_user.name}}
-{{current_user.email}}
-{% for post in posts %}
-<div class="card text-center m-5">
-	<div class="card-header">{{ post.title }}</div>
-	<div class="card-body">
-		<p class="card-text">
-			{{ post.content[0:120] }}...
-			<a href="{{url_for('read_post', post_id=post.id)}}">Read more</a>
-		</p>
-	</div>
-	<div class="small fs-6 card-footer text-muted">
-		<div class="row">
-			<div class="col-sm-6 text-start">
-				Author: {{ post.author.name }}
-			</div>
-			<div class="col-sm-6 text-end">
-				Date Created: {{ post.created_at.strftime('%b %d %Y %H:%M:%S') }}
+
+	{% for post in posts %}
+	<div class="card text-center m-5">
+		<div class="card-header">{{ post.title }}</div>
+		<div class="card-body">
+			<p class="card-text">
+				{{ post.content[0:120] }}...
+				<a href="{{url_for('read_post', post_id=post.id)}}">Read more</a>
+			</p>
+		</div>
+		<div class="small fs-6 card-footer text-muted">
+			<div class="row">
+				<div class="col-sm-6 text-start">
+					Author: <a href="{{url_for('users_posts', user_id=post.author.id)}}" class="text-dark text-decoration-none">
+						{{ post.author.name }} </a>
+				</div>
+				<div class="col-sm-6 text-end">
+					Posted on: {{ post.created_at.strftime('%D %H:%M') }}
+				</div>
 			</div>
 		</div>
 	</div>
-</div>
-{% endfor %}
+	{% endfor %}
 
 {% endblock %}

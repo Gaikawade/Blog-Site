@@ -1,24 +1,22 @@
 from datetime import datetime
-from sqlalchemy import func
 from blog import db, bcrypt, login_manager
 from flask_login import UserMixin
 import uuid
 
 @login_manager.user_loader
 def load_user(id):
-    # First, try to load the user as a regular user
+    # Load the user as a regular user
     user = User.query.get(id)
     if user:
         return user
-    # If the user is not found, try to load the user as an admin
+    # If the user is not found, load the user as an admin
     admin = Admin.query.get(id)
     if admin:
         return admin
 
 class User(db.Model, UserMixin):
     __tablename__ = 'user'
-    # id = db.Column(db.String(20), primary_key=True, default='U' + str(uuid.uuid4().int >> 64))
-    id = db.Column(db.String(80), primary_key=True, default='U' + str(uuid.uuid4().int >> 64))
+    id = db.Column(db.String(40), primary_key=True, default='U' + str(uuid.uuid4().int >> 64))
     name = db.Column(db.String(80), nullable=False)
     email = db.Column(db.String(80), nullable=False, unique=True)
     password = db.Column(db.String(80), nullable=False)
@@ -63,7 +61,7 @@ class Like(db.Model):
 
 
 class Admin(db.Model, UserMixin):
-    id = db.Column(db.String(20), primary_key=True, default='A' + str(uuid.uuid4().int >> 64))
+    id = db.Column(db.String(40), primary_key=True, default='A' + str(uuid.uuid4().int >> 64))
     name = db.Column(db.String(80), nullable=False)
     email = db.Column(db.String(80), nullable=False)
     password = db.Column(db.String(80), nullable=False)

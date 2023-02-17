@@ -51,7 +51,7 @@ def login():
             flash('Login successful', 'success')
             return redirect(url_for('home'))
         else:
-            flash('Login failed', 'danger')
+            flash('Email or Password is wrong', 'danger')
     return render_template('login.html', title='Login Page', form=form)
 
 
@@ -82,14 +82,14 @@ def account():
     return render_template('account.html', title='Account', form=form)
 
 
-@app.route('/post/<int:post_id>')
+@app.route('/post/<string:post_id>')
 @login_required
 def read_post(post_id):
     post = Post.query.get_or_404(post_id)
     return render_template('read_post.html', title=post.title, post=post)
 
 
-@app.route('/post/update/<int:post_id>', methods=['POST', "GET"])
+@app.route('/post/update/<string:post_id>', methods=['POST', "GET"])
 @login_required
 def update_post(post_id):
     post = Post.query.get_or_404(post_id)
@@ -108,7 +108,7 @@ def update_post(post_id):
     return render_template('add_update_post.html', title=post.title, form=form, type='update')
 
 
-@app.route('/post/delete/<int:post_id>', methods=['POST', "GET"])
+@app.route('/post/delete/<string:post_id>', methods=['POST', "GET"])
 @login_required
 def delete_post(post_id):
     post = Post.query.get_or_404(post_id)
@@ -120,7 +120,7 @@ def delete_post(post_id):
     return redirect(url_for('home'))
 
 
-@app.route('/add_comment/<int:post_id>', methods=['POST', 'GET'])
+@app.route('/add_comment/<string:post_id>', methods=['POST', 'GET'])
 @login_required
 def add_comment(post_id):
     text = request.form.get('text')
@@ -140,7 +140,7 @@ def add_comment(post_id):
     return redirect(url_for('read_post', post_id=post_id))
 
 
-@app.route('/delete_comment/<int:comment_id>', methods=['GET'])
+@app.route('/delete_comment/<string:comment_id>', methods=['GET'])
 @login_required
 def delete_comment(comment_id):
     comment = Comment.query.filter_by(id=comment_id).first()
@@ -155,7 +155,7 @@ def delete_comment(comment_id):
     return redirect(url_for('read_post', post_id=comment.post_id))
 
 
-@app.route('/like_post/<int:post_id>', methods=['POST'])
+@app.route('/like_post/<string:post_id>', methods=['POST'])
 @login_required
 def like_post(post_id):
     post = Post.query.filter_by(id=post_id).first()
@@ -181,7 +181,7 @@ def my_posts():
     return render_template('all_posts.html', posts=posts)
 
 
-@app.route('/users/<int:user_id>/posts')
+@app.route('/users/<string:user_id>/posts')
 @login_required
 def users_posts(user_id):
     posts = Post.query.filter_by(user_id=user_id).all()
@@ -213,12 +213,13 @@ def search():
 
 
 @app.route('/admin/register', methods=['POST', 'GET'])
+@login_required
 def admin_register():
     form = AdminRegister()
     if form.validate_on_submit():
         add_admin(form)
         flash('Registration Successful', 'success')
-        return redirect(url_for('login'))
+        return redirect(url_for('home'))
     return render_template('register.html', title='Registration Page', form=form)
 
 
@@ -233,5 +234,5 @@ def admin_login():
             print(document)
             return redirect(url_for('account'))
         else:
-            flash('Please check you email and password', 'error')
-    return render_template('admin_login.html', form=form, title='Admin Login Page')
+            flash('Email or Password is wrong', 'error')
+    return render_template('login.html', form=form, title='Admin Login Page')

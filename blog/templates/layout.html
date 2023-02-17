@@ -70,6 +70,7 @@
                                 </li>
                             {% else %}
                                 <li><a class="dropdown-item" href="#">Dashboard</a></li>
+                                <li><a class="dropdown-item" href="{{url_for('admin_register')}}">Register Admin</a></li>
                                 <li><a class="dropdown-item" href="{{url_for('logout')}}">Logout</a></li>
                             {% endif %}
                         </ul>

@@ -42,7 +42,7 @@ if (currentURL.includes("post")) {
     });
 }
 
-if (currentURL.includes("search")) {
+if (currentURL.includes("search", 'admin')) {
     const posts = document.querySelector("#posts");
     const expandPosts = document.querySelector("#expand-posts");
     const users = document.querySelector("#users");

@@ -119,7 +119,7 @@ class AdminRegister(FlaskForm):
         validators=[DataRequired(), EqualTo('password')],
         render_kw=form_css('Confirm Password')
     )
-    submit = SubmitField('Sign up')
+    submit = SubmitField('Register Admin')
 
 
 class AdminLogin(FlaskForm):
