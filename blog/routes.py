@@ -24,7 +24,8 @@ def about():
     return render_template('about.html', title='AboutPage')
 
 
-@app.route('/register', methods=['POST'])
+# Register User API
+@app.route('/register', methods=['POST', 'GET'])
 def register():
     try: 
         # Create a new instance of the Register form
@@ -33,7 +34,7 @@ def register():
         if form.validate_on_submit():
             add_user(form)
             flash('Registration successful', 'success')
-            return redirect(url_for('login')), 201
+            return redirect(url_for('login'), 301)
     except Exception as e:
         # If an error occurs during the registration process, log the error and return a 500 Internal Server Error response
         flash(f'Error registering user: {str(e)}', 'danger')
@@ -42,29 +43,7 @@ def register():
     return render_template('register.html', title='RegisterPage', form=form)
 
 
-@app.route('/add_post', methods=['POST', 'GET'])
-@login_required
-def add_post():
-    try:
-        form = PostForm()
-        # Check if the form is submitted and valid
-        if form.validate_on_submit():
-            # Create a new post instance and add it to the database
-            post = Post(title=form.title.data, content=form.content.data, author=current_user)
-            db.session.add(post)
-            print(len(current_user.id))
-            db.session.commit()
-            # Display a success message and redirect to home page
-            flash('Post added successfully', 'success')
-            return redirect(url_for('home')), 201
-    except Exception as e:
-        # If an error occurs during the post creation process, log the error and return a 500 Internal Server Error response
-        flash('Error adding post', 'danger')
-        return abort(500)
-    # Render the add/update post template with the post form
-    return render_template('add_update_post.html', title='Add Post', form=form, type='post')
-
-
+# User Login API
 @app.route('/login', methods=['POST', 'GET'])
 def login():
     try:
@@ -83,7 +62,7 @@ def login():
                     # Log the user in and redirect to home page
                     login_user(document, remember=form.remember.data)
                     flash('Login successful', 'success')
-                    return redirect(url_for('home')), 200
+                    return redirect(url_for('home'), 301)
             else:
                 # Display an error message if the email or password is incorrect
                 flash('Email or Password is wrong', 'danger')
@@ -95,6 +74,43 @@ def login():
         return abort(500)
 
 
+@app.route('/add_post', methods=['POST', 'GET'])
+@login_required
+def add_post():
+    try:
+        form = PostForm()
+        # Check if the form is submitted and valid
+        if form.validate_on_submit():
+            # Create a new post instance and add it to the database
+            post = Post(title=form.title.data, content=form.content.data, author=current_user)
+            db.session.add(post)
+            print(len(current_user.id))
+            db.session.commit()
+            # Display a success message and redirect to home page
+            flash('Post added successfully', 'success')
+            return redirect(url_for('home'), 301)
+    except Exception as e:
+        # If an error occurs during the post creation process, log the error and return a 500 Internal Server Error response
+        flash('Error adding post', 'danger')
+        return abort(500)
+    # Render the add/update post template with the post form
+    return render_template('add_update_post.html', title='Add Post', form=form, type='post')
+
+
+@app.route('/post/<int:post_id>', methods=['GET'])
+@login_required
+def read_post(post_id):
+    try:
+        post = Post.query.filter_by(id=post_id).first()
+        if not post:
+            # create not found page and render
+            return 'None'
+        return render_template('read_post.html', title='Read Post', post=post), 200
+    except Exception as e:
+        flash(f'There was an error reading this post {e}', 'danger')
+        return redirect(url_for('home'),301)
+
+
 @app.route('/logout')
 @login_required
 def logout():
@@ -102,11 +118,11 @@ def logout():
         if current_user.is_authenticated:
             logout_user()
             flash('Successfully logged out', 'success')
-            return redirect(url_for('home')), 200
+            return redirect(url_for('home'), 301)
     except Exception as e:
         flash('Error logging out','danger')
     # If the user is not authenticated, redirect to the login page with a status code of 400
-    return redirect(url_for('login')), 400
+    return redirect(url_for('login'), 301)
 
 
 @app.route('/account', methods=['POST', 'GET'])
@@ -125,26 +141,14 @@ def account():
             current_user.email = form.email.data
             db.session.commit()
             flash('Your account details have been updated', 'success')
-            return redirect(url_for('account')), 200
+            return redirect(url_for('account'), 301)
     except Exception as e:
         flash('Error updating your account details', 'danger')
     # Render the account.html template with the Account form
     return render_template('account.html', title='Account', form=form), 400
 
 
-@app.route('/post/<string:post_id>', methods=['GET'])
-@login_required
-def read_post(post_id):
-    try:
-        post = Post.query.get_or_404(post_id)
-        abort(404)
-        return render_template('read_post.html', title=post.title, post=post), 200
-    except Exception as e:
-        flash('There was an error reading this post', 'danger')
-        return redirect(url_for('home')), 500
-
-
-@app.route('/post/update/<string:post_id>', methods=['POST', "GET"])
+@app.route('/post/update/<int:post_id>', methods=['POST', "GET"])
 @login_required
 def update_post(post_id):
     try:
@@ -160,14 +164,14 @@ def update_post(post_id):
             post.content = form.content.data
             db.session.commit()
             flash('The Article has been updated', 'success')
-            return redirect(url_for('read_post', post_id=post.id)), 200
+            return redirect(url_for('read_post', post_id=post.id), 301)
         return render_template('add_update_post.html', title=post.title, form=form, type='update'), 200
     except Exception as e:
         flash('Error updating the article', 'danger')
         return redirect(url_for('home')), 500
 
 
-@app.route('/post/delete/<string:post_id>', methods=['DELETE'])
+@app.route('/post/delete/<int:post_id>', methods=['DELETE'])
 @login_required
 def delete_post(post_id):
     try:
@@ -183,7 +187,7 @@ def delete_post(post_id):
         return redirect(url_for('home')), 500
 
 
-@app.route('/add_comment/<string:post_id>', methods=['POST', 'GET'])
+@app.route('/add_comment/<int:post_id>', methods=['POST', 'GET'])
 @login_required
 def add_comment(post_id):
     try:
@@ -193,7 +197,7 @@ def add_comment(post_id):
         if not text:
             # Return error message with status code 400
             flash('Comment cannot be empty', 'danger')
-            return redirect(url_for('read_post', post_id=post_id)), 400
+            return redirect(url_for('read_post', post_id=post_id), 301)
         else:
             # Query the post by ID
             post = Post.query.filter_by(id=post_id).first()
@@ -205,15 +209,15 @@ def add_comment(post_id):
                 db.session.commit()
                 # Return success message with status code 200 (OK)
                 flash('Comment added successfully', 'success')
-                return redirect(url_for('read_post', post_id=post_id)), 200
+                return redirect(url_for('read_post', post_id=post_id), 301)
             else:
                 # Return error message with status code 404 (not found)
                 flash('Post does not exist', 'error')
-                return redirect(url_for('read_post', post_id=post_id)), 404
+                return redirect(url_for('read_post', post_id=post_id), 301)
     except Exception as e:
         # Return error message with status code 500
         flash('Error in posting a comment', 'danger')
-        return redirect(url_for('read_post', post_id=post_id)), 500
+        return redirect(url_for('read_post', post_id=post_id), 301)
 
 
 @app.route('/delete_comment/<int:comment_id>', methods=['DELETE'])
@@ -358,10 +362,10 @@ def admin_login():
                 return redirect(url_for('home')), 200
             else:
                 flash('Email or Password is wrong', 'danger')
-                return redirect(url_for('admin_login')), 401
+                return redirect(url_for('admin_login'), 401)
         except Exception as e:
             flash('Login Failed', 'danger')
-            return redirect(url_for('admin_login')), 500
+            return redirect(url_for('admin_login'), 500)
     return render_template('login.html', form=form, title='Admin Login Page')
 
 
