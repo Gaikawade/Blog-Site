@@ -41,9 +41,9 @@ class Post(db.Model):
     title = db.Column(db.String(120), nullable=False)
     content = db.Column(db.Text, nullable=False)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
-    user_id = db.Column(db.String(20), db.ForeignKey('user.id'), nullable=False)
-    comments = db.relationship('Comment', backref='post', lazy=True)
-    likes = db.relationship('Like', backref='post', lazy=True)
+    user_id = db.Column(db.String(40), db.ForeignKey('user.id'), nullable=False)
+    comments = db.relationship('Comment', backref='post', lazy=True, cascade='all, delete')
+    likes = db.relationship('Like', backref='post', lazy=True, cascade='all, delete')
 
     def __repr__(self):
       return f'title: {self.title}, author: {self.author}'
@@ -54,7 +54,7 @@ class Comment(db.Model):
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     text = db.Column(db.String(200), nullable=False)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
-    commented_by = db.Column(db.String(20), db.ForeignKey('user.id'), nullable=False)
+    commented_by = db.Column(db.String(40), db.ForeignKey('user.id'), nullable=False)
     post_id = db.Column(db.Integer, db.ForeignKey('post.id'), nullable=False)
     
     def __repr__(self):
@@ -65,7 +65,7 @@ class Comment(db.Model):
 class Like(db.Model):
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
-    liked_by = db.Column(db.String(20), db.ForeignKey('user.id'), nullable=False)
+    liked_by = db.Column(db.String(40), db.ForeignKey('user.id'), nullable=False)
     post_id = db.Column(db.Integer, db.ForeignKey('post.id'), nullable=False)
 
 

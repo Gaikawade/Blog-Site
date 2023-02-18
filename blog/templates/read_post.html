@@ -5,11 +5,9 @@
         {% if messages %}
             <ul class="flashes">
                 {% for category, message in messages %}
-                    <div class="alert alert-{{category}}" role="alert">
-                        <div class="alert alert-warning alert-dismissible fade show" role="alert">
+                    <div class="alert alert-{{category}} alert-dismissible" role="alert">
                             {{ message }}
                             <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                        </div>
                     </div>
                 {% endfor %}
             </ul>
@@ -108,7 +106,11 @@
             <div class="col-sm-6 text-end">
                 {{ post.created_at.strftime('%D') }}
                 {% if current_user == comment.author or current_user == post.author or current_user.is_admin == 1 %}
-                <a href="{{url_for('delete_comment', comment_id=comment.id)}}"> <i class="fas fa-trash"></i> </a>
+                <!-- <a
+                    onclick="delComment({{comment.id}})"
+                > -->
+                    <i class="fas fa-trash" onclick="delComment({{comment.id}})"></i>
+                <!-- </a> -->
                 <!-- #Implement javascript (just like we did in likes component) inorder to avoid page reloading -->
                 {% endif %}
             </div>
@@ -149,7 +151,7 @@
                     </button>
                     <form
                         action="{{url_for('delete_post', post_id=post.id)}}"
-                        method="post"
+                        method="delete"
                     >
                         <input
                             type="submit"

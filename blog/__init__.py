@@ -3,16 +3,20 @@ from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 from flask_bcrypt import Bcrypt
 from flask_login import LoginManager
+from dotenv import load_dotenv
+import os
+
+load_dotenv()
 
 # creating a new instance of Flask
 app = Flask(__name__)
 
 #The secret key is used to sign cookies and other sensitive data
-app.config['SECRET_KEY'] = '897ry8fu76y7u3d@j#4rfr&'
+app.config['SECRET_KEY'] = os.getenv('SECRET_KEY')
 # This variable tells SQLAlchemy how to connect to the app's database
-app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql://root:mahesh123@localhost/test'
+app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv('DATABASE_URI')
 # This variable tells SQLAlchemy whether to track modifications to the app's database models
-app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = os.getenv('TRACK_MODIFICATION')
 
 db = SQLAlchemy(app)
 

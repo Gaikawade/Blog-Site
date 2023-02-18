@@ -42,7 +42,7 @@ if (currentURL.includes("post")) {
     });
 }
 
-if (currentURL.includes("search") || currentURL.includes("account")) {
+if (currentURL.includes("search")) {
     const posts = document.querySelector("#posts");
     const expandPosts = document.querySelector("#expand-posts");
     const users = document.querySelector("#users");
@@ -67,4 +67,14 @@ if (currentURL.includes("search") || currentURL.includes("account")) {
             posts.style.display = "block";
         }
     });
+}
+
+function delComment(commentId){
+    // const delButton = document.getElementById('delete-comment-button');
+
+    fetch(`/delete_comment/${commentId}`, {method: 'DELETE'})
+        .then((res)=> res.json())
+        .then((data)=> console.log(data))
+        .catch((err)=> console.error(err))
+
 }

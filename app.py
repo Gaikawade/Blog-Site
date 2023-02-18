@@ -1,6 +1,7 @@
 # importing all require packages
 from blog import app, db
 
+
 # Checks whether the script is being run as the main program
 if __name__ == '__main__':
     # This context is used to provide access to the app's resources within the code block

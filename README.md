@@ -40,3 +40,4 @@ When you first open the application, you will see the home page. From there, you
 * Edit or delete blog posts that you have created
 * Add comments to blog posts
 * Like blog posts
+
