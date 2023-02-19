@@ -7,8 +7,12 @@ function like(postId) {
     fetch(`/like_post/${postId}`, { method: "POST" })
         .then((res) => res.json())
         .then((data) => {
-            console.log(data);
+            // console.log(data);
             likeCount.innerHTML = data[`likes`];
+            if (data[`error`] == 'Access denied'){
+                alert('You are not allowed to do this operation')
+                return
+            }
             if (data[`likes`] == true) {
                 likeButton.className = "fas fa-thumbs-up";
             } else {
@@ -16,6 +20,26 @@ function like(postId) {
             }
         })
         .catch((e) => alert("Please try after some time."));
+}
+
+function block(userId) {
+    const blockButton = document.getElementById(`block-button-${userId}`).value;
+console.log(userId);
+    fetch(`/admin/block_user/${userId}`, { method: "POST" })
+        .then((res) => res.json())
+        .then((data) => {
+            // console.log(data);
+            if (data[`block`] == true) {
+                blockButton.innerHTML = "Unblock";
+            } else {
+                blockButton.innerHTML = "Block";
+            }
+        })
+        .catch((e) => {
+            console.log(e);
+            console.log(userId);
+            alert("Please try after some time.")
+        });
 }
 
 if (currentURL.includes("post")) {
@@ -67,14 +91,4 @@ if (currentURL.includes("search")) {
             posts.style.display = "block";
         }
     });
-}
-
-function delComment(commentId){
-    // const delButton = document.getElementById('delete-comment-button');
-
-    fetch(`/delete_comment/${commentId}`, {method: 'DELETE'})
-        .then((res)=> res.json())
-        .then((data)=> console.log(data))
-        .catch((err)=> console.error(err))
-
 }

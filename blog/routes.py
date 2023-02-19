@@ -1,9 +1,16 @@
 from flask import render_template, redirect, url_for, flash, request, abort, jsonify, Response
+from sqlalchemy import text
 from blog.forms import Register, Login, Account, PostForm, SearchForm, AdminRegister, AdminLogin
 from blog.models import add_user, add_admin, User, Post, Comment, Like, Admin
 from blog import app, bcrypt, db
 from flask_login import login_required, login_user, logout_user, current_user
 
+
+def check_access():
+    if current_user.is_admin == True:
+        return True
+    else:
+        return False
 
 @app.route('/')
 @app.route('/home')
@@ -48,28 +55,20 @@ def register():
 def login():
     try:
         form = Login()
-        # Check if the form is submitted and valid
         if form.validate_on_submit():
-            # Retrieve the user with the matching email
             document = User.query.filter_by(email=form.email.data).first()
-            # Check if the user exists and the password matches the hashed password in the database
             if document and bcrypt.check_password_hash(document.password, form.password.data):
-                # Check if the user is blocked
                 if document.is_blocked == 1:
-                    # Display a message if the user is blocked and do not log them in
                     flash('Your account is blocked, please contact our support', 'danger')
                 else:
-                    # Log the user in and redirect to home page
                     login_user(document, remember=form.remember.data)
                     flash('Login successful', 'success')
                     return redirect(url_for('home'), 301)
             else:
-                # Display an error message if the email or password is incorrect
-                flash('Email or Password is wrong', 'danger')
-        # Render the login template with the login form
+                flash('Incorrect Email or Password', 'danger')
+                return redirect(url_for('login'), 301)
         return render_template('login.html', title='Login Page', form=form), 200
     except Exception as e:
-        # If an error occurs during the login process, log the error and return a 500 Internal Server Error response
         flash('Error logging in', 'danger')
         return abort(500)
 
@@ -78,6 +77,8 @@ def login():
 @login_required
 def add_post():
     try:
+        if check_access() == True:
+            return render_template('access_error.html')
         form = PostForm()
         # Check if the form is submitted and valid
         if form.validate_on_submit():
@@ -129,6 +130,8 @@ def logout():
 @login_required 
 def account():
     try:
+        if check_access():
+            return render_template('access_error.html')
         # Create an instance of the Account form
         form = Account()
         # Prepopulate the form fields with the user's current details
@@ -171,7 +174,7 @@ def update_post(post_id):
         return redirect(url_for('home')), 500
 
 
-@app.route('/post/delete/<int:post_id>', methods=['DELETE'])
+@app.route('/post/delete/<int:post_id>', methods=['POST'])
 @login_required
 def delete_post(post_id):
     try:
@@ -181,46 +184,38 @@ def delete_post(post_id):
         db.session.delete(post)
         db.session.commit()
         flash('The article has been deleted', 'success')
-        return redirect(url_for('home')), 200
+        return redirect(url_for('home'))
     except Exception as e:
         flash('Error updating the article', 'danger')
-        return redirect(url_for('home')), 500
+        return render_template('500_error.html',)
 
 
-@app.route('/add_comment/<int:post_id>', methods=['POST', 'GET'])
+@app.route('/add_comment/<int:post_id>', methods=['POST'])
 @login_required
 def add_comment(post_id):
     try:
-        # Get the text of the comment from the form data
+        if check_access() == True:
+            return render_template('access_error.html')
         text = request.form.get('text')
-        # Check if the comment is empty
         if not text:
-            # Return error message with status code 400
             flash('Comment cannot be empty', 'danger')
             return redirect(url_for('read_post', post_id=post_id), 301)
+        post = Post.query.filter_by(id=post_id).first()
+        if post:
+            comment = Comment(text=text, commented_by=current_user.id, post_id=post_id)
+            db.session.add(comment)
+            db.session.commit()
+            flash('Comment added successfully', 'success')
+            return redirect(url_for('read_post', post_id=post_id), 301)
         else:
-            # Query the post by ID
-            post = Post.query.filter_by(id=post_id).first()
-            # Check if the post exists
-            if post:
-                # Create a new comment and add it to the database
-                comment = Comment(text=text, commented_by=current_user.id, post_id=post_id)
-                db.session.add(comment)
-                db.session.commit()
-                # Return success message with status code 200 (OK)
-                flash('Comment added successfully', 'success')
-                return redirect(url_for('read_post', post_id=post_id), 301)
-            else:
-                # Return error message with status code 404 (not found)
-                flash('Post does not exist', 'error')
-                return redirect(url_for('read_post', post_id=post_id), 301)
+            flash('Post does not exist', 'error')
+            return redirect(url_for('read_post', post_id=post_id), 301)
     except Exception as e:
-        # Return error message with status code 500
         flash('Error in posting a comment', 'danger')
-        return redirect(url_for('read_post', post_id=post_id), 301)
+        return e
 
 
-@app.route('/delete_comment/<int:comment_id>', methods=['DELETE'])
+@app.route('/delete_comment/<int:comment_id>', methods=['POST'])
 @login_required
 def delete_comment(comment_id):
     try:
@@ -230,18 +225,18 @@ def delete_comment(comment_id):
         if not comment:
             # Return error message with status code 404
             flash('Comment does not exist', 'danger')
-            return redirect(url_for('read_post', post_id=comment.post_id)), 404
+            return redirect(url_for('read_post', post_id=comment.post_id), 301)
         # Check if user is authorized to delete comment
         if current_user.id == comment.author and current_user.id == comment.post.author:
             # Return error message with status code 403 (forbidden)
             flash('You are not allowed to delete this comment', 'danger')
-            return redirect(url_for('read_post', post_id=comment.post_id)), 403
+            return redirect(url_for('read_post', post_id=comment.post_id), 301), 403
         # Delete comment from database and commit changes
         db.session.delete(comment)
         db.session.commit()
         # Return success message with status code 200 (OK)
         flash('Comment deleted successfully', 'success'), 200
-        return redirect(url_for('read_post', post_id=comment.post_id))
+        return redirect(url_for('read_post', post_id=comment.post_id), 301)
     except Exception as e:
         # Return error message with status code 500
         flash('Something went wrong')
@@ -252,10 +247,11 @@ def delete_comment(comment_id):
 @login_required
 def like_post(post_id):
     try:
-        # Query post and like by IDs
         post = Post.query.filter_by(id=post_id).first()
         like = Like.query.filter_by(liked_by=current_user.id, post_id=post_id).first()
         
+        if check_access():
+            return jsonify({'error': 'Access denied', 'likes': len(post.likes)})
         # Check if post exists
         if not post:
             # Return error message with status code 404
@@ -274,7 +270,7 @@ def like_post(post_id):
         return jsonify({'likes': len(post.likes), 'liked': current_user.id in map(lambda x: x.liked_by, post.likes)}), 200
     except Exception as e:
         # Return error message with status code 500 (internal server error)
-        return jsonify({'error': f'{str(e)}'}), 500
+        return render_template('500_error.html'), 500
 
 
 
@@ -285,7 +281,7 @@ def my_posts():
         # Query all posts by the current user
         posts = Post.query.filter_by(user_id=current_user.id).all()
         # Return rendered template with posts
-        return render_template('all_posts.html', posts=posts), 200
+        return render_template('all_posts.html', posts=posts)
     except Exception as e:
         # Return error message with status code 500
         return jsonify({'error': f'{str(e)}'}), 500
@@ -298,7 +294,7 @@ def users_posts(user_id):
         # Query all posts by the specified user
         posts = Post.query.filter_by(user_id=user_id).all()
         # Return rendered template with posts
-        return render_template('all_posts.html', posts=posts), 200
+        return render_template(url_for('all_posts.html', posts=posts), 301)
     except Exception as e:
         # Return error message with status code 500
         return jsonify({'error': f'{str(e)}'}), 500
@@ -316,23 +312,21 @@ def base():
 @app.route('/search', methods=['POST'])
 @login_required
 def search():
-    form = SearchForm()
+    search_form = SearchForm()
     posts = Post.query
-    users = User.query
-    try:
-        if form.validate_on_submit():
-            # Get the search term from the form and filter the posts and users accordingly
-            searched = form.searched.data
-            posts = posts.filter(Post.content.like('%' + searched + '%')).order_by(Post.title).all()
-            users = users.filter(User.name.like('%' + searched + '%')).order_by(User.name).all()
-            # Render the search results template with the posts, users, and search term
-            return render_template('search.html', search_form=form, posts=posts, users=users, searched=searched), 200
-        else:
-            # If the form is not valid, flash an error message and return a 400 Bad Request status code
-            flash('Invalid Data'), 400
-    except Exception as error:
-        # If an error occurs, return the error message and a 500
-        return error
+    users= User.query
+    if search_form.validate_on_submit():
+        try:
+            searched = search_form.searched.data
+            posts = posts.filter(Post.content.like('%' + searched + '%')).order_by(text('Post.title')).all()
+            users = users.filter(User.name.like('%' + searched + '%')).order_by(text('User.name')).all()
+            return render_template('search.html', users=users, posts=posts, searched=searched, search_form=search_form)
+        except Exception as e:
+            return render_template('500_error.html')
+            # return e
+    else:
+        flash('Invalid Data for search term', 'danger')
+        return redirect(url_for('home'))
 
 
 @app.route('/admin/register', methods=['POST', 'GET'])
@@ -343,11 +337,13 @@ def admin_register():
         try:
             add_admin(form)
             flash('Registration Successful', 'success')
-            return redirect(url_for('home')), 201
+            return redirect(url_for('home'), 301)
         except Exception as e:
             flash('Registration Failed', 'danger')
-            return redirect(url_for('admin_register')), 500
-    return render_template('register.html', title='Registration Page', form=form)
+            return redirect(url_for('admin_register'), 301)
+    else:
+        # render the registration form for a GET request
+        return render_template('register.html', title='Registration Page', form=form)
 
 
 @app.route('/admin/login', methods=['POST', 'GET'])
@@ -359,13 +355,13 @@ def admin_login():
             if document and bcrypt.check_password_hash(document.password, form.password.data):
                 login_user(document, remember=form.remember.data)
                 flash('Login successful', 'success')
-                return redirect(url_for('home')), 200
+                return redirect(url_for('home'), 301)
             else:
-                flash('Email or Password is wrong', 'danger')
-                return redirect(url_for('admin_login'), 401)
+                flash('Incorrect Email or Password', 'danger')
+                return redirect(url_for('admin_login'), 301)
         except Exception as e:
             flash('Login Failed', 'danger')
-            return redirect(url_for('admin_login'), 500)
+            return redirect(url_for('admin_login'), 301)
     return render_template('login.html', form=form, title='Admin Login Page')
 
 
@@ -377,24 +373,25 @@ def all_users():
             users = User.query.all()
             return render_template('users_and_posts.html', users=users), 200
         else:
-            return redirect(url_for('home')), 403
+            return redirect(url_for('home'), 301)
     except Exception as e:
             flash('Failed to fetch data', 'danger')
-            return redirect(url_for('admin_login')), 500
+            return render_template('500_error.html')
 
 
 @app.route('/admin/all_posts', methods=['GET'])
 @login_required
 def all_posts():
-    try:
-        if current_user.is_admin == True:
+    if current_user.is_admin == True:
+        try:
             posts = Post.query.all()
-            return render_template('users_and_posts.html', posts=posts), 200
-        else:
-            return redirect(url_for('home')), 403
-    except Exception as e:
+            return render_template('users_and_posts.html', posts=posts)
+        except Exception as e:
             flash('Failed to fetch data', 'danger')
-            return redirect(url_for('admin_login')), 500
+            return render_template('500_error.html')
+    else:
+        return redirect(url_for('home'), 301)
+
 
 @app.route('/admin/block_user/<string:user_id>', methods=['POST'])
 @login_required
@@ -405,14 +402,19 @@ def block_user(user_id):
             if user:
                 if user.is_blocked == False:
                     user.is_blocked = True
+                    db.session.commit()
+                    flash('User blocked successfully', 'success')
+                    return jsonify({'blocked': 'true'}, 200)
                 else:
                     user.is_blocked = False
-                db.session.commit()
-            flash('User blocked/unblocked successfully', 'success')
-            return redirect(url_for('all_users')), 200
+                    db.session.commit()
+                    flash('User unblocked successfully', 'success')
+                    return jsonify({'blocked': 'false'}, 200)
+            else:
+                return render_template('404_error.html'), 404
         else:
             flash('Unauthorized access', 'danger')
-            return redirect(url_for('all_users')), 403
+            return redirect(url_for('home'), 301)
     except Exception as e:
             flash('Failed to block/unblock user', 'danger')
-            return redirect(url_for('all_users')), 500
+            return render_template('500_error.html')

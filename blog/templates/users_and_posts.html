@@ -15,9 +15,11 @@
 				{{ post.content[0:120]|safe }}...
 				<br /><br />
 				<small
-					>By: {{ post.author.name }}<br />
-					{{ post.created_at.strftime('%D') }}</small
-				>
+					>By: <strong>
+							<a href="{{url_for('users_posts', user_id=post.author.id)}}"></a> {{ post.author.name }}
+						</strong> <br />
+					{{ post.created_at.strftime('%D') }}
+				</small>
 				<a
 					href="{{ url_for('read_post', post_id=post.id)}}"
 					class="btn btn-outline-secondary btn-sm"
