@@ -66,6 +66,7 @@ class Account(FlaskForm):
       document = User.query.filter_by(email=email.data).count()
       if document > 1:
         raise ValidationError("Email address already registered")
+    
     submit = SubmitField('Update details')
 
 class PostForm(FlaskForm):

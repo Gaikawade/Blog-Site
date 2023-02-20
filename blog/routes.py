@@ -1,5 +1,5 @@
 from flask import render_template, redirect, url_for, flash, request, abort, jsonify, Response
-from sqlalchemy import text
+from sqlalchemy import text, or_
 from blog.forms import Register, Login, Account, PostForm, SearchForm, AdminRegister, AdminLogin
 from blog.models import add_user, add_admin, User, Post, Comment, Like, Admin
 from blog import app, bcrypt, db
@@ -20,8 +20,7 @@ def home(page_num=1):
         posts = Post.query.order_by(Post.id.desc())
         return render_template('home.html', title='HomePage', posts=posts)
     except Exception as e:
-        return str(e)
-        # return render_template('500_error.html', title='Internal Server Error')
+        return render_template('500_error.html', title='Internal Server Error')
 
 
 @app.route('/about')
@@ -33,18 +32,13 @@ def about():
 @app.route('/register', methods=['POST', 'GET'])
 def register():
     try: 
-        # Create a new instance of the Register form
         form = Register()
-        # Validate the form data and add the user to the database if valid
         if form.validate_on_submit():
             add_user(form)
             flash('Registration successful', 'success')
             return redirect(url_for('login'), 301)
     except Exception as e:
-        # If an error occurs during the registration process, log the error and return a 500 Internal Server Error response
-        flash(f'Error registering user: {str(e)}', 'danger')
-        return abort(500)
-    # If the form is not valid or the registration process fails, render the register template with the form
+        return render_template('500_error.html', title='Internal Server Error')
     return render_template('register.html', title='RegisterPage', form=form)
 
 
@@ -68,7 +62,7 @@ def login():
         return render_template('login.html', title='Login Page', form=form), 200
     except Exception as e:
         flash('Error logging in', 'danger')
-        return abort(500)
+        return render_template('500_error.html', title='Internal Server Error')
 
 
 @app.route('/add_post', methods=['POST', 'GET'])
@@ -83,13 +77,11 @@ def add_post():
             # Create a new post instance and add it to the database
             post = Post(title=form.title.data, content=form.content.data, author=current_user)
             db.session.add(post)
-            print(len(current_user.id))
             db.session.commit()
-            # Display a success message and redirect to home page
             flash('Post added successfully', 'success')
-            return redirect(url_for('home'), 301)
+            return redirect(url_for('read_post', post_id=post.id), 301)
     except Exception as e:
-        return str(e)
+        return render_template('500_error.html', title='Internal Server Error')
     # Render the add/update post template with the post form
     return render_template('add_update_post.html', title='Add Post', form=form, type='post')
 
@@ -104,8 +96,7 @@ def read_post(post_id):
             return 'None'
         return render_template('read_post.html', title='Read Post', post=post), 200
     except Exception as e:
-        flash(f'There was an error reading this post {e}', 'danger')
-        return redirect(url_for('home'),301)
+        return render_template('500_error.html', title='Internal Server Error')
 
 
 @app.route('/logout')
@@ -138,11 +129,13 @@ def account():
         elif form.validate_on_submit():
             current_user.name = form.name.data
             current_user.email = form.email.data
+            
             db.session.commit()
             flash('Your account details have been updated', 'success')
             return redirect(url_for('account'), 301)
     except Exception as e:
         flash('Error updating your account details', 'danger')
+        return render_template('500_error.html', title='Internal Server Error')
     # Render the account.html template with the Account form
     return render_template('account.html', title='Account', form=form), 400
 
@@ -170,7 +163,7 @@ def update_post(post_id):
         return redirect(url_for('home')), 500
 
 
-@app.route('/post/delete/<int:post_id>', methods=['GET'])
+@app.route('/post/delete/<int:post_id>', methods=['POST'])
 @login_required
 def delete_post(post_id):
     try:
@@ -270,7 +263,7 @@ def like_post(post_id):
 
 
 
-@app.route('/user/all_posts')
+@app.route('/user/all_posts', methods=['GET'])
 @login_required
 def my_posts():
     try:
@@ -280,10 +273,10 @@ def my_posts():
         return render_template('all_posts.html', posts=posts)
     except Exception as e:
         # Return error message with status code 500
-        return jsonify({'error': f'{str(e)}'}), 500
+        return render_tamplate('500_error.html')
 
 
-@app.route('/users/<string:user_id>/posts')
+@app.route('/users/<string:user_id>/posts', methods=['GET'])
 @login_required
 def users_posts(user_id):
     try:
@@ -293,15 +286,13 @@ def users_posts(user_id):
         return render_template(url_for('all_posts.html', posts=posts), 301)
     except Exception as e:
         # Return error message with status code 500
-        return jsonify({'error': f'{str(e)}'}), 500
+        return render_tamplate('500_error.html')
 
 
 # Context processors(decorator) allow you to inject variables into the context of all templates (from layout.html to search.html) to access the search parameters
 @app.context_processor
 def base():
-    # Create a new instance of the SearchForm class
     form = SearchForm()
-    # Add the form to the template context as a variable named 'form'
     return dict(form=form)
 
 
@@ -314,11 +305,20 @@ def search():
     if search_form.validate_on_submit():
         try:
             searched = search_form.searched.data
-            posts = posts.filter(Post.content.like('%' + searched + '%')).order_by(text('Post.title')).all()
-            users = users.filter(User.name.like('%' + searched + '%')).order_by(text('User.name')).all()
+            posts = posts.filter(
+                or_(Post.content.like('%' + searched + '%'),
+                Post.title.like('%' + searched + '%'))
+            ).order_by(text('Post.title')).all()
+            if hasattr(current_user, 'is_admin'):
+                users = users.filter(
+                    or_(User.name.like('%' + searched + '%'),
+                    User.email.like('%' + searched + '%'))
+                ).order_by(text('User.name')).all()
+            else:
+                users = users.filter(User.name.like('%' + searched + '%')).order_by(text('User.name')).all()
             return render_template('search.html', users=users, posts=posts, searched=searched, search_form=search_form)
         except Exception as e:
-            return render_template('500_error.html')
+            return str(e)#render_template('500_error.html')
     else:
         flash('Invalid Data for search term', 'danger')
         return redirect(url_for('home'))

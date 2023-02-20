@@ -53,7 +53,7 @@
                     <br />
                 {% endfor %}
             {% else %}
-                Sorry, your search term: <strong>{{ searched }}</strong> was not found...
+                Sorry, no post found with such keyword <strong>{{ searched }}</strong>
             {% endif %}
         </div>
         <!-- Search results for users -->
@@ -64,8 +64,10 @@
                         <tr>
                             <th>Name</th>
                             <th>Email</th>
-                            <th>Created At</th>
-                            <th>Block/Unblock</th>
+                            <th>Joined on</th>
+                            {% if current_user.isadmin == true %}
+                                <th>Block/Unblock</th>
+                            {% endif %}
                         </tr>
                     </thead>
                     <tbody class="table-group-divider">
@@ -76,9 +78,10 @@
                                 </td>
                                 <td>{{ user.email }}</td>
                                 <td>{{ user.created_at.strftime('%D') }}</td>
+                                {% if current_user.is_admin == true %}
                                 <td>
                                     <a
-                                        class="text-danger text-decoration-none"
+                                        class="btn text-danger text-decoration-none"
                                         id="block-btn-{{user.id}}"
                                         data-bs-toggle="modal"
                                         data-bs-target="#blockModal{{user.id}}"
@@ -90,6 +93,7 @@
                                         {% endif %}
                                     </a>
                                 </td>
+                                {% endif %}
                             </tr>
                             <!-- Modal -->
                             <div
@@ -143,7 +147,7 @@
                     </tbody>
                 </table>
             {% else %}
-                Sorry, your search term: <strong>{{ searched }}</strong> was not found...
+                Sorry, no users with name <strong>{{ searched }}</strong>
             {% endif %}
         </div>
     </div>

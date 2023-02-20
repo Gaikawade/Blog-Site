@@ -1,6 +1,19 @@
 {% extends 'layout.html' %}
 
 {% block contents %}
+
+	{% with messages = get_flashed_messages(with_categories=true) %}
+		{% if messages %}
+			<ul class="flashes">
+				{% for category, message in messages %}
+					<div class="alert alert-{{category}} alert-dismissible" role="alert">
+							{{ message }}
+							<button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+					</div>
+				{% endfor %}
+			</ul>
+		{% endif %}
+	{% endwith %}
 	<!-- Show Posts -->
 	{% if posts %}
 		<h5 class="mb-2">Posts</h5>
@@ -29,18 +42,20 @@
 					<a
 						href="{{ url_for('update_post', post_id=post.id)}}"
 						class="btn btn-outline-secondary btn-sm"
-						>Edit Post</a
 					>
+						Edit Post
+					</a>
 					<a
-						href="{{ url_for('delete_post', post_id=post.id)}}"
 						class="btn btn-outline-danger btn-sm"
 						data-bs-toggle="modal"
 						data-bs-target="deleteModal"
-						>Delete Post</a
 					>
+						Delete Post
+					</a>
 				{% elif current_user.is_admin == 1 %}
 					<a
 					href="{{url_for('delete_post', post_id=post.id)}}"
+					class="btn btn-outline-danger btn-sm"
 					data-bs-toggle="modal"
 					data-bs-target="#deleteModal"
 					class="btn btn-outline-secondary btn-sm"
@@ -92,7 +107,7 @@
 						</div>
 					</div>
 				</div>
-				<br /><br />
+				<br />
 			</div>
 			<br />
 		{% endfor %}
@@ -118,7 +133,7 @@
 						<td>{{ user.created_at.strftime('%D') }}</td>
 						<td>
 							<a
-								class="text-danger text-decoration-none"
+								class="btn text-danger text-decoration-none"
 								id="block-btn-{{user.id}}"
 								data-bs-toggle="modal"
 								data-bs-target="#blockModal{{user.id}}"
