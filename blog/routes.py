@@ -323,7 +323,6 @@ def search():
             return render_template('search.html', users=users, posts=posts, searched=searched, search_form=search_form)
         except Exception as e:
             return render_template('500_error.html')
-            # return e
     else:
         flash('Invalid Data for search term', 'danger')
         return redirect(url_for('home'))
@@ -404,12 +403,12 @@ def block_user(user_id):
                     user.is_blocked = True
                     db.session.commit()
                     flash('User blocked successfully', 'success')
-                    return jsonify({'blocked': 'true'}, 200)
+                    return redirect(url_for('home'))
                 else:
                     user.is_blocked = False
                     db.session.commit()
                     flash('User unblocked successfully', 'success')
-                    return jsonify({'blocked': 'false'}, 200)
+                    return redirect(url_for('home'))
             else:
                 return render_template('404_error.html'), 404
         else:

@@ -59,10 +59,6 @@
         <!-- Search results for users -->
         <div id="users" style="display: none">
             {% if users %}
-                <!-- <h5 class="mb-2">Users</h5>
-                {% for user in users %}
-                    <a href="{{url_for('users_posts', user_id=user.id)}}">{{user.name}}</a>
-                {% endfor %} -->
                 <table class="table table-hover">
                     <thead>
                         <tr>
@@ -75,16 +71,17 @@
                     <tbody class="table-group-divider">
                         {% for user in users %}
                             <tr>
-                                <td>{{ user.name }}</td>
+                                <td>
+                                    <a href="{{url_for('users_posts', user_id=user.id)}}">{{ user.name }}</a>
+                                </td>
                                 <td>{{ user.email }}</td>
                                 <td>{{ user.created_at.strftime('%D') }}</td>
                                 <td>
                                     <a
                                         class="text-danger text-decoration-none"
-                                        id="block-button-{{user.id}}"
+                                        id="block-btn-{{user.id}}"
                                         data-bs-toggle="modal"
-                                        data-bs-target="#{{user.id}}"
-                                        onclick="block({{user.id}})"
+                                        data-bs-target="#blockModal{{user.id}}"
                                     >
                                         {% if user.is_blocked == true %}
                                             Unblock
@@ -97,7 +94,7 @@
                             <!-- Modal -->
                             <div
                             class="modal fade"
-                            id="{{user.id}}"
+                            id="blockModal{{user.id}}"
                             tabindex="-1"
                             aria-labelledby="blockModalLabel{{user.id}}"
                             aria-hidden="true"

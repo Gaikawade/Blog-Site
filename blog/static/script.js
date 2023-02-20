@@ -9,9 +9,9 @@ function like(postId) {
         .then((data) => {
             // console.log(data);
             likeCount.innerHTML = data[`likes`];
-            if (data[`error`] == 'Access denied'){
-                alert('You are not allowed to do this operation')
-                return
+            if (data[`error`] == "Access denied") {
+                alert("You are not allowed to do this operation");
+                return;
             }
             if (data[`likes`] == true) {
                 likeButton.className = "fas fa-thumbs-up";
@@ -22,25 +22,25 @@ function like(postId) {
         .catch((e) => alert("Please try after some time."));
 }
 
-function block(userId) {
-    const blockButton = document.getElementById(`block-button-${userId}`).value;
-console.log(userId);
-    fetch(`/admin/block_user/${userId}`, { method: "POST" })
-        .then((res) => res.json())
-        .then((data) => {
-            // console.log(data);
-            if (data[`block`] == true) {
-                blockButton.innerHTML = "Unblock";
-            } else {
-                blockButton.innerHTML = "Block";
-            }
-        })
-        .catch((e) => {
-            console.log(e);
-            console.log(userId);
-            alert("Please try after some time.")
-        });
-}
+// function block(userId) {
+//     const blockButton = document.getElementById(`block-button-${userId}`).value;
+// console.log(userId);
+//     fetch(`/admin/block_user/${userId}`, { method: "POST" })
+//         .then((res) => res.json())
+//         .then((data) => {
+//             // console.log(data);
+//             if (data[`block`] == true) {
+//                 blockButton.innerHTML = "Unblock";
+//             } else {
+//                 blockButton.innerHTML = "Block";
+//             }
+//         })
+//         .catch((e) => {
+//             console.log(e);
+//             console.log(userId);
+//             alert("Please try after some time.")
+//         });
+// }
 
 if (currentURL.includes("post")) {
     const expandcommentInput = document.querySelector("#expand-comment-input");
