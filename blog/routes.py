@@ -7,23 +7,21 @@ from flask_login import login_required, login_user, logout_user, current_user
 
 
 def check_access():
-    if current_user.is_admin == True:
+    if hasattr(current_user, 'is_admin') and current_user.is_admin == True:
         return True
     else:
         return False
 
 @app.route('/')
 @app.route('/home')
-def home():
+@app.route('/home/<int:page_num>')
+def home(page_num=1):
     try:
-        # Query the database for all posts and order them by creation time
-        posts = Post.query.order_by(-Post.created_at).all()
-        # If the query is successful, render the home template with the posts
+        posts = Post.query.order_by(Post.id.desc())
         return render_template('home.html', title='HomePage', posts=posts)
     except Exception as e:
-        # If an error occurs during the query, log the error and return a 500 Internal Server Error response
-        flash(f'Error quering database: {str(e)}', 'danger')
-        return abort(500)
+        return str(e)
+        # return render_template('500_error.html', title='Internal Server Error')
 
 
 @app.route('/about')
@@ -91,9 +89,7 @@ def add_post():
             flash('Post added successfully', 'success')
             return redirect(url_for('home'), 301)
     except Exception as e:
-        # If an error occurs during the post creation process, log the error and return a 500 Internal Server Error response
-        flash('Error adding post', 'danger')
-        return abort(500)
+        return str(e)
     # Render the add/update post template with the post form
     return render_template('add_update_post.html', title='Add Post', form=form, type='post')
 
@@ -174,7 +170,7 @@ def update_post(post_id):
         return redirect(url_for('home')), 500
 
 
-@app.route('/post/delete/<int:post_id>', methods=['POST'])
+@app.route('/post/delete/<int:post_id>', methods=['GET'])
 @login_required
 def delete_post(post_id):
     try:
