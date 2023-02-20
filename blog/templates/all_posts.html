@@ -49,7 +49,10 @@
                     </div>
                 </div>
                 <div class="card-body">
-                    <p class="card-text">{{ post.content }}</p>
+                    <p class="card-text">
+                        {{ post.content[0:120]}}...
+                        <a href="{{url_for('read_post', post_id=post.id)}}">Read more</a>
+                    </p>
                 </div>
                 <div class="small fs-6 card-footer text-muted">
                     <div class="row">

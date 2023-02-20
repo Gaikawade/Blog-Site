@@ -273,7 +273,8 @@ def my_posts():
         return render_template('all_posts.html', posts=posts)
     except Exception as e:
         # Return error message with status code 500
-        return render_tamplate('500_error.html')
+        return e
+        # return render_tamplate('500_error.html')
 
 
 @app.route('/users/<string:user_id>/posts', methods=['GET'])
