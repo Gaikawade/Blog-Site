@@ -117,17 +117,16 @@ def logout():
             return redirect(url_for('home'), 301)
     except Exception as e:
         flash('Error logging out','danger')
+        return render_template('500_error.html', title='Server Error')
     # If the user is not authenticated, redirect to the login page with a status code of 400
     return redirect(url_for('login'), 301)
 
 
-# User Account details API
+# User Account details and Update Account API
 @app.route('/account', methods=['POST', 'GET'])
 @login_required 
 def account():
     try:
-        if check_access():
-            return render_template('access_denied.html')
         # Create an instance of the Account form
         form = Account()
         # Prepopulate the form fields with the user's current details
@@ -138,15 +137,23 @@ def account():
         elif form.validate_on_submit():
             current_user.name = form.name.data
             current_user.email = form.email.data
-            
+            if form.old_password.data:
+                if bcrypt.check_password_hash(current_user.password, form.old_password.data):
+                    current_user.password = bcrypt.generate_password_hash(form.new_password.data)
+                else:
+                    flash('Password does not match', 'danger')
+                    return render_template('account.html', title='Account', form=form)
+            if current_user.name == form.name.data and current_user.email == form.email.data:
+                flash('No changes were made', 'danger')
+                return render_template('account.html', title='Account', form=form)
             db.session.commit()
             flash('Your account details have been updated', 'success')
             return redirect(url_for('account'), 301)
     except Exception as e:
+        db.session.rollback()
         flash('Error updating your account details', 'danger')
         return render_template('500_error.html', title='Internal Server Error')
-    # Render the account.html template with the Account form
-    return render_template('account.html', title='Account', form=form), 400
+    return render_template('account.html', title='Account', form=form)
 
 
 # Update post API
@@ -272,7 +279,6 @@ def like_post(post_id):
         # Return updated like count and whether user has liked the post
         return jsonify({'likes': len(post.likes), 'liked': current_user.id in map(lambda x: x.liked_by, post.likes)}), 200
     except Exception as e:
-        # Return error message with status code 500 (internal server error)
         return render_template('500_error.html'), 500
 
 
@@ -286,9 +292,7 @@ def my_posts():
         # Return rendered template with posts
         return render_template('all_posts.html', posts=posts)
     except Exception as e:
-        # Return error message with status code 500
-        return e
-        # return render_tamplate('500_error.html')
+        return render_template('500_error.html', title='Server error')
 
 
 # API to get all posts of other users
@@ -371,7 +375,9 @@ def admin_login():
     if form.validate_on_submit():
         try:
             document = Admin.query.filter_by(email=form.email.data).first()
-            if document and bcrypt.check_password_hash(document.password, form.password.data):
+            if document and document.is_blocked == True:
+                flash('Your account is blocked', 'danger')
+            elif document and bcrypt.check_password_hash(document.password, form.password.data):
                 login_user(document, remember=form.remember.data)
                 flash('Login successful', 'success')
                 return redirect(url_for('home'), 301)
@@ -389,9 +395,9 @@ def admin_login():
 @login_required
 def all_users():
     try:
-        if current_user.is_admin == True:
+        if check_access():
             users = User.query.all()
-            return render_template('users_and_posts.html', users=users), 200
+            return render_template('users_posts_admins.html', users=users), 200
         else:
             flash('You are not authorized', 'danger')
             return redirect(url_for('home'), 301)
@@ -400,14 +406,31 @@ def all_users():
             return render_template('500_error.html')
 
 
+# Fetch all users API, which is available to admins only
+@app.route('/admin/all_admins', methods=['GET'])
+@login_required
+def all_admins():
+    try:
+        if check_access():
+            admins = Admin.query.all()
+            return render_template('users_posts_admins.html', admins=admins), 200
+        else:
+            flash('You are not authorized', 'danger')
+            return redirect(url_for('home'), 301)
+    except Exception as e:
+        return str(e)
+        flash('Failed to fetch data', 'danger')
+        # return render_template('500_error.html')
+
+
 # Fetch all posts API, which is available to admins only
 @app.route('/admin/all_posts', methods=['GET'])
 @login_required
 def all_posts():
-    if current_user.is_admin == True:
+    if check_access():
         try:
             posts = Post.query.all()
-            return render_template('users_and_posts.html', posts=posts)
+            return render_template('users_posts_admins.html', posts=posts)
         except Exception as e:
             flash('Failed to fetch data', 'danger')
             return render_template('500_error.html')
@@ -419,9 +442,10 @@ def all_posts():
 @app.route('/admin/block_user/<string:user_id>', methods=['POST'])
 @login_required
 def block_user(user_id):
-    try:
-        if current_user.is_admin == True:
+    if check_access():
+        try:
             user = User.query.filter_by(id=user_id).first()
+            admin = Admin.query.filter_by(id=user_id).first()
             if user:
                 if user.is_blocked == False:
                     user.is_blocked = True
@@ -433,11 +457,23 @@ def block_user(user_id):
                     db.session.commit()
                     flash('User unblocked successfully', 'success')
                     return redirect(url_for('home'))
+            elif admin:
+                if admin.is_blocked == False:
+                    admin.is_blocked = True
+                    db.session.commit()
+                    flash('User blocked successfully', 'success')
+                    return redirect(url_for('home'))
+                else:
+                    admin.is_blocked = False
+                    db.session.commit()
+                    flash('User unblocked successfully', 'success')
+                    return redirect(url_for('home'))
             else:
                 return render_template('404_error.html'), 404
-        else:
-            flash('Unauthorized access', 'danger')
-            return redirect(url_for('home'), 301)
-    except Exception as e:
+        except Exception as e:
+            db.session.rollback()
             flash('Failed to block/unblock user', 'danger')
             return render_template('500_error.html')
+    else:
+        flash('Unauthorized access', 'danger')
+        return redirect(url_for('home'), 301)

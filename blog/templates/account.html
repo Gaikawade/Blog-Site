@@ -15,7 +15,7 @@
 		{% endif %}
 	{% endwith %}
 
-	<div class="card">
+	<div class="card" id="show-details" style="display: block">
 		<div class="card-header">
 			Account Details
 		</div>
@@ -31,32 +31,70 @@
 		</div>
 	</div>
 	<br />
-	<strong>You can update your details here</strong>
-	<form action="" method="post">
-		{{ form.csrf_token }}
 
-		<div class="form-floating">
-			{{ form.name() }} {{ form.name.label }}
-			<br />
-			{% if form.name.errors %}
-				{% for error in form.name.errors %}
-					<div class="text-danger"> {{ error }} </div> <br />
-				{% endfor %}
+	{% if current_user.is_admin == false %}
+	<div class="btn btn-primary" id="update-btn">Update Details</div>
+	<br />
+		<div class="container-fluid col-md-4" id="update-form" style="display: none">
+		<form action="" method="post">
+			{{ form.csrf_token }}
+
+			<div class="form-floating">
+				{{ form.name() }} {{ form.name.label }}
+				<br />
+				{% if form.name.errors %}
+					{% for error in form.name.errors %}
+						<div class="text-danger"> {{ error }} </div> <br />
+					{% endfor %}
+				{% endif %}
+			</div>
+
+			{% if current_user.is_admin != true %}
+			<div class="form-floating">
+				{{ form.email() }} {{ form.email.label }}
+				<br />
+				{% if form.email.errors %}
+					{% for error in form.email.errors %}
+						<div class="text-danger"> {{ error }} </div> <br />
+					{% endfor %}
+				{% endif %}
+			</div>
 			{% endif %}
-		</div>
 
-		<div class="form-floating">
-			{{ form.email() }} {{ form.email.label }}
-			<br />
-			{% if form.email.errors %}
-				{% for error in form.email.errors %}
-					<div class="text-danger"> {{ error }} </div> <br />
-				{% endfor %}
-			{% endif %}
-		</div>
+			<div class="form-floating">
+				{{ form.old_password() }} {{ form.old_password.label }}
+				<br />
+				{% if form.old_password.errors %}
+					{% for error in form.old_password.errors %}
+						<div class="text-danger"> {{ error }} </div> <br />
+					{% endfor %}
+				{% endif %}
+			</div>
 
-		<div id="success"></div>
-		{{ form.submit() }}
-	</form>
+			<div class="form-floating">
+				{{ form.new_password() }} {{ form.new_password.label }}
+				<br />
+				{% if form.new_password.errors %}
+					{% for error in form.new_password.errors %}
+						<div class="text-danger"> {{ error }} </div> <br />
+					{% endfor %}
+				{% endif %}
+			</div>
+
+			<div class="form-floating">
+				{{ form.confirm_new_password() }} {{ form.confirm_new_password.label }}
+				<br />
+				{% if form.confirm_new_password.errors %}
+					{% for error in form.confirm_new_password.errors %}
+						<div class="text-danger"> {{ error }} </div> <br />
+					{% endfor %}
+				{% endif %}
+			</div>
+
+			<div id="success"></div>
+			{{ form.submit() }}
+		</form>
+	</div>
+	{% endif %}
 
 {% endblock contents %}

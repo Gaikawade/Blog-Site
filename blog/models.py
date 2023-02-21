@@ -76,6 +76,7 @@ class Admin(db.Model, UserMixin):
     email = db.Column(db.String(80), nullable=False)
     password = db.Column(db.String(80), nullable=False)
     is_admin = db.Column(db.Boolean, default=True)
+    is_blocked = db.Column(db.Boolean, default=False)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
     def __repr__(self):
@@ -96,7 +97,7 @@ def add_user(form):
 def add_admin(form):
     name = form.name.data
     email = form.email.data
-    password = bcrypt.generate_password_hash(form.password.data).decode('utf8')
+    password = bcrypt.generate_password_hash(form.password.data).decode('utf-8')
     admin = Admin(name=name, email=email, password=password)
     db.session.add(admin)
     db.session.commit()

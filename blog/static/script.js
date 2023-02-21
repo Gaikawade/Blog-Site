@@ -73,3 +73,22 @@ if (currentURL.includes("search")) {
         }
     });
 }
+
+
+if (currentURL.includes("account")) {
+    const showDetails = document.querySelector("#show-details");
+    const updateForm = document.querySelector("#update-form");
+    const updateBtn = document.querySelector("#update-btn");
+
+    updateBtn.addEventListener("click", () => {
+        if (showDetails.style.display === "none") {
+            updateBtn.innerHTML = 'Updata Details';
+            showDetails.style.display = "block";
+            updateForm.style.display = "none";
+        } else {
+            updateBtn.innerHTML = 'Show Details';
+            updateForm.style.display = "block";
+            showDetails.style.display = "none";
+        }
+    });
+}

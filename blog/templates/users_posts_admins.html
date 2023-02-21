@@ -111,7 +111,7 @@
 			</div>
 			<br />
 		{% endfor %}
-	<!-- Show Users -->
+	<!-- Show Admins -->
 	{% elif users %}
 		<h5 class="mb-2">Users</h5>
 		<table class="table table-hover">
@@ -182,6 +182,90 @@
 									</button>
 									<form
 										action="{{url_for('block_user', user_id=user.id)}}"
+										method="post"
+									>
+										<input
+											type="submit"
+											class="btn btn-danger"
+											value="Yes"
+										/>
+									</form>
+								</div>
+							</div>
+						</div>
+					</div>
+				{% endfor %}
+			</tbody>
+		</table>
+	<!-- Show Admins -->
+	{% elif admins %}
+		<h5 class="mb-2">Admins</h5>
+		<table class="table table-hover">
+			<thead>
+				<tr>
+					<th>Admin Name</th>
+					<th>Email</th>
+					<th>Joined on</th>
+					<th>Block/Unblock</th>
+				</tr>
+			</thead>
+			<tbody class="table-group-divider">
+				{% for admin in admins %}
+					<tr>
+						<td>{{ admin.name }}</td>
+						<td>{{ admin.email }}</td>
+						<td>{{ admin.created_at.strftime('%D') }}</td>
+						<td>
+							<a
+								class="btn text-danger text-decoration-none"
+								id="block-btn-{{admin.id}}"
+								data-bs-toggle="modal"
+								data-bs-target="#blockModal{{admin.id}}"
+							>
+								{% if admin.is_blocked == true %}
+									Unblock
+								{% else %}
+									Block
+								{% endif %}
+							</a>
+						</td>
+					</tr>
+					<!-- Modal -->
+					<div
+					class="modal fade"
+					id="blockModal{{admin.id}}"
+					tabindex="-1"
+					aria-labelledby="blockModalLabel{{admin.id}}"
+					aria-hidden="true"
+					>
+						<div class="modal-dialog">
+							<div class="modal-content">
+								<div class="modal-header">
+									<h5 class="modal-title" id="blockModalLabel{{admin.id}}">Block Admins</h5>
+									<button
+										type="button"
+										class="btn-close"
+										data-bs-dismiss="modal"
+										aria-label="Close"
+									></button>
+								</div>
+								<div class="modal-body">
+									{% if admin.is_blocked == 0 %}
+										Are you sure, you want to Block {{admin.name}}?
+									{% else %}
+										Are you sure, you want to Unblock {{admin.name}}?
+									{% endif %}
+								</div>
+								<div class="modal-footer">
+									<button
+										type="button"
+										class="btn btn-secondary"
+										data-bs-dismiss="modal"
+									>
+										Close
+									</button>
+									<form
+										action="{{url_for('block_user', user_id=admin.id)}}"
 										method="post"
 									>
 										<input

@@ -54,7 +54,7 @@ class Login(FlaskForm):
 class Account(FlaskForm):
     name = StringField(
         'Name',
-        validators=[DataRequired(), Length(min=3, max=30), Regexp(name_regex)],
+        validators=[DataRequired(), Length(min=2, max=30), Regexp(name_regex)],
         render_kw=form_css('Name')
     )
     email = StringField(
@@ -66,6 +66,19 @@ class Account(FlaskForm):
       document = User.query.filter_by(email=email.data).count()
       if document > 1:
         raise ValidationError("Email address already registered")
+    old_password = PasswordField(
+        'Old Password',
+        render_kw=form_css('Old Password')
+    )
+    new_password = PasswordField(
+        'New Password',
+        render_kw=form_css('New Password')
+    )
+    confirm_new_password = PasswordField(
+        'Confirm New Password',
+        validators=[EqualTo('new_password')],
+        render_kw=form_css('Confirm New Password')
+    )
     
     submit = SubmitField('Update details')
 
@@ -78,7 +91,7 @@ class PostForm(FlaskForm):
     content = TextAreaField(
         'Article Content',
         validators=[DataRequired()],
-        render_kw=form_css('Article Content') #Add row for larger text area
+        render_kw={'class': 'form-control vh-100', 'placeholder': 'Article Content'},
     )
     submit = SubmitField('Post')
 
