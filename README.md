@@ -8,6 +8,13 @@ This is a simple blogging site built using the Flask web framework and SQLAlchem
 * Comment on blog posts
 * Like blog posts
 
+## Technologies Used
+* Flask: A lightweight web framework written in Python
+* SQLAlchemy: A Object Relation Mapping (ORM) database
+* Flask-Login: User session management
+* Flask-WTF: Form validation
+* Bootstrap: Front-end framework for responsive design
+
 ## Requirements
 To run this application, you will need:
 
@@ -40,4 +47,7 @@ When you first open the application, you will see the home page. From there, you
 * Edit or delete blog posts that you have created
 * Add comments to blog posts
 * Like blog posts
-
+* For Admin's
+    * Register an admin
+    * Delete posts and comments
+    * Block and Unblock users

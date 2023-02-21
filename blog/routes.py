@@ -6,16 +6,20 @@ from blog import app, bcrypt, db
 from flask_login import login_required, login_user, logout_user, current_user
 
 
+# Function to check weather the logged in user is admin or not
+# By checking 'is_admin' attribute and its value
 def check_access():
     if hasattr(current_user, 'is_admin') and current_user.is_admin == True:
         return True
     else:
         return False
 
+
+# Home page of the web app
+# Showing all the posts in home page
 @app.route('/')
 @app.route('/home')
-@app.route('/home/<int:page_num>')
-def home(page_num=1):
+def home():
     try:
         posts = Post.query.order_by(Post.id.desc())
         return render_template('home.html', title='HomePage', posts=posts)
@@ -29,6 +33,7 @@ def about():
 
 
 # Register User API
+# Function used to registration end-user for the web application
 @app.route('/register', methods=['POST', 'GET'])
 def register():
     try: 
@@ -65,12 +70,13 @@ def login():
         return render_template('500_error.html', title='Internal Server Error')
 
 
+# App post API
 @app.route('/add_post', methods=['POST', 'GET'])
 @login_required
 def add_post():
     try:
         if check_access() == True:
-            return render_template('access_error.html')
+            return render_template('access_denied.html')
         form = PostForm()
         # Check if the form is submitted and valid
         if form.validate_on_submit():
@@ -86,6 +92,7 @@ def add_post():
     return render_template('add_update_post.html', title='Add Post', form=form, type='post')
 
 
+# Read post data API
 @app.route('/post/<int:post_id>', methods=['GET'])
 @login_required
 def read_post(post_id):
@@ -93,12 +100,13 @@ def read_post(post_id):
         post = Post.query.filter_by(id=post_id).first()
         if not post:
             # create not found page and render
-            return 'None'
+            return render_template('404_error.html')
         return render_template('read_post.html', title='Read Post', post=post), 200
     except Exception as e:
         return render_template('500_error.html', title='Internal Server Error')
 
 
+# Logout API
 @app.route('/logout')
 @login_required
 def logout():
@@ -113,12 +121,13 @@ def logout():
     return redirect(url_for('login'), 301)
 
 
+# User Account details API
 @app.route('/account', methods=['POST', 'GET'])
 @login_required 
 def account():
     try:
         if check_access():
-            return render_template('access_error.html')
+            return render_template('access_denied.html')
         # Create an instance of the Account form
         form = Account()
         # Prepopulate the form fields with the user's current details
@@ -140,13 +149,14 @@ def account():
     return render_template('account.html', title='Account', form=form), 400
 
 
+# Update post API
 @app.route('/post/update/<int:post_id>', methods=['POST', "GET"])
 @login_required
 def update_post(post_id):
     try:
         post = Post.query.get_or_404(post_id)
         if post.author != current_user:
-            abort(403)
+            return render_template('access_denied.html', title='Unauthorized')
         form = PostForm()
         if request.method =='GET':
             form.title.data = post.title
@@ -163,13 +173,14 @@ def update_post(post_id):
         return redirect(url_for('home')), 500
 
 
+# Delete post API
 @app.route('/post/delete/<int:post_id>', methods=['POST'])
 @login_required
 def delete_post(post_id):
     try:
         post = Post.query.get_or_404(post_id)
         if post.author != current_user and current_user.is_admin != 1:
-            abort(403)
+            return render_template('access_denied.html', title='Unauthorized')
         db.session.delete(post)
         db.session.commit()
         flash('The article has been deleted', 'success')
@@ -179,12 +190,13 @@ def delete_post(post_id):
         return render_template('500_error.html',)
 
 
+# Add comment to article API
 @app.route('/add_comment/<int:post_id>', methods=['POST'])
 @login_required
 def add_comment(post_id):
     try:
         if check_access() == True:
-            return render_template('access_error.html')
+            return render_template('access_denied.html')
         text = request.form.get('text')
         if not text:
             flash('Comment cannot be empty', 'danger')
@@ -201,9 +213,10 @@ def add_comment(post_id):
             return redirect(url_for('read_post', post_id=post_id), 301)
     except Exception as e:
         flash('Error in posting a comment', 'danger')
-        return e
+        return render_template('500_error.html', title='Server error')
 
 
+# Delete commment API
 @app.route('/delete_comment/<int:comment_id>', methods=['POST'])
 @login_required
 def delete_comment(comment_id):
@@ -232,6 +245,7 @@ def delete_comment(comment_id):
         return redirect(url_for('read_post', post_id=comment.post.id)), 500
 
 
+# Likes API - like or unlike the article 
 @app.route('/like_post/<int:post_id>', methods=['POST'])
 @login_required
 def like_post(post_id):
@@ -262,7 +276,7 @@ def like_post(post_id):
         return render_template('500_error.html'), 500
 
 
-
+# API to get all the posts of logged in users
 @app.route('/user/all_posts', methods=['GET'])
 @login_required
 def my_posts():
@@ -277,6 +291,7 @@ def my_posts():
         # return render_tamplate('500_error.html')
 
 
+# API to get all posts of other users
 @app.route('/users/<string:user_id>/posts', methods=['GET'])
 @login_required
 def users_posts(user_id):
@@ -290,13 +305,15 @@ def users_posts(user_id):
         return render_tamplate('500_error.html')
 
 
-# Context processors(decorator) allow you to inject variables into the context of all templates (from layout.html to search.html) to access the search parameters
+# Context processors(decorator) allow you to inject variables into the context of all templates 
+# from layout.html to search.html to access the search parameters
 @app.context_processor
 def base():
     form = SearchForm()
     return dict(form=form)
 
 
+# Search API for posts or users
 @app.route('/search', methods=['POST'])
 @login_required
 def search():
@@ -310,21 +327,25 @@ def search():
                 or_(Post.content.like('%' + searched + '%'),
                 Post.title.like('%' + searched + '%'))
             ).order_by(text('Post.title')).all()
-            if hasattr(current_user, 'is_admin'):
+            # if the logged in user is admin, then we are able to search with user email as well
+            if check_access():
                 users = users.filter(
                     or_(User.name.like('%' + searched + '%'),
                     User.email.like('%' + searched + '%'))
                 ).order_by(text('User.name')).all()
             else:
+                # if the logged in user is not admin, then the user can search only by names
                 users = users.filter(User.name.like('%' + searched + '%')).order_by(text('User.name')).all()
             return render_template('search.html', users=users, posts=posts, searched=searched, search_form=search_form)
         except Exception as e:
-            return str(e)#render_template('500_error.html')
+            return render_template('500_error.html')
     else:
         flash('Invalid Data for search term', 'danger')
         return redirect(url_for('home'))
 
 
+# Admin Registration API
+# Only a admin can register other admins
 @app.route('/admin/register', methods=['POST', 'GET'])
 @login_required
 def admin_register():
@@ -342,6 +363,8 @@ def admin_register():
         return render_template('register.html', title='Registration Page', form=form)
 
 
+
+# Admin login API
 @app.route('/admin/login', methods=['POST', 'GET'])
 def admin_login():
     form = AdminLogin()
@@ -361,6 +384,7 @@ def admin_login():
     return render_template('login.html', form=form, title='Admin Login Page')
 
 
+# Fetch all users API, which is available to admins only
 @app.route('/admin/all_users', methods=['GET'])
 @login_required
 def all_users():
@@ -369,12 +393,14 @@ def all_users():
             users = User.query.all()
             return render_template('users_and_posts.html', users=users), 200
         else:
+            flash('You are not authorized', 'danger')
             return redirect(url_for('home'), 301)
     except Exception as e:
             flash('Failed to fetch data', 'danger')
             return render_template('500_error.html')
 
 
+# Fetch all posts API, which is available to admins only
 @app.route('/admin/all_posts', methods=['GET'])
 @login_required
 def all_posts():
@@ -389,6 +415,7 @@ def all_posts():
         return redirect(url_for('home'), 301)
 
 
+# Block/Unblock user API
 @app.route('/admin/block_user/<string:user_id>', methods=['POST'])
 @login_required
 def block_user(user_id):
