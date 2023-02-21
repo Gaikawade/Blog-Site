@@ -98,7 +98,7 @@ class PostForm(FlaskForm):
 
 class SearchForm(FlaskForm):
     searched = StringField(
-        'Searched',
+        'q',
         validators=[DataRequired()],
         render_kw=form_css('Search')
     )

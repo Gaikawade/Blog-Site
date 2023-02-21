@@ -1,4 +1,4 @@
-from flask import render_template, redirect, url_for, flash, request, abort, jsonify, Response
+from flask import render_template, redirect, url_for, flash, request, jsonify
 from sqlalchemy import text, or_
 from blog.forms import Register, Login, Account, PostForm, SearchForm, AdminRegister, AdminLogin
 from blog.models import add_user, add_admin, User, Post, Comment, Like, Admin
@@ -36,13 +36,14 @@ def about():
 # Function used to registration end-user for the web application
 @app.route('/register', methods=['POST', 'GET'])
 def register():
-    try: 
+    try:
         form = Register()
         if form.validate_on_submit():
             add_user(form)
             flash('Registration successful', 'success')
             return redirect(url_for('login'), 301)
     except Exception as e:
+        db.session.rollback()
         return render_template('500_error.html', title='Internal Server Error')
     return render_template('register.html', title='RegisterPage', form=form)
 
@@ -116,15 +117,15 @@ def logout():
             flash('Successfully logged out', 'success')
             return redirect(url_for('home'), 301)
     except Exception as e:
-        flash('Error logging out','danger')
+        flash('Error logging out', 'danger')
         return render_template('500_error.html', title='Server Error')
-    # If the user is not authenticated, redirect to the login page with a status code of 400
+    # If the user is not authenticated, redirect to the login page
     return redirect(url_for('login'), 301)
 
 
 # User Account details and Update Account API
 @app.route('/account', methods=['POST', 'GET'])
-@login_required 
+@login_required
 def account():
     try:
         # Create an instance of the Account form
@@ -165,7 +166,7 @@ def update_post(post_id):
         if post.author != current_user:
             return render_template('access_denied.html', title='Unauthorized')
         form = PostForm()
-        if request.method =='GET':
+        if request.method == 'GET':
             form.title.data = post.title
             form.content.data = post.content
         elif request.method == 'POST':
@@ -176,6 +177,7 @@ def update_post(post_id):
             return redirect(url_for('read_post', post_id=post.id), 301)
         return render_template('add_update_post.html', title=post.title, form=form, type='update'), 200
     except Exception as e:
+        db.session.rollback()
         flash('Error updating the article', 'danger')
         return redirect(url_for('home')), 500
 
@@ -193,6 +195,7 @@ def delete_post(post_id):
         flash('The article has been deleted', 'success')
         return redirect(url_for('home'))
     except Exception as e:
+        db.session.rollback()
         flash('Error updating the article', 'danger')
         return render_template('500_error.html',)
 
@@ -219,7 +222,7 @@ def add_comment(post_id):
             flash('Post does not exist', 'error')
             return redirect(url_for('read_post', post_id=post_id), 301)
     except Exception as e:
-        flash('Error in posting a comment', 'danger')
+        db.session.rollback()
         return render_template('500_error.html', title='Server error')
 
 
@@ -239,7 +242,7 @@ def delete_comment(comment_id):
         if current_user.id == comment.author and current_user.id == comment.post.author:
             # Return error message with status code 403 (forbidden)
             flash('You are not allowed to delete this comment', 'danger')
-            return redirect(url_for('read_post', post_id=comment.post_id), 301), 403
+            return redirect(url_for('read_post', post_id=comment.post_id), 301)
         # Delete comment from database and commit changes
         db.session.delete(comment)
         db.session.commit()
@@ -247,19 +250,19 @@ def delete_comment(comment_id):
         flash('Comment deleted successfully', 'success'), 200
         return redirect(url_for('read_post', post_id=comment.post_id), 301)
     except Exception as e:
-        # Return error message with status code 500
+        db.session.rollback()
         flash('Something went wrong')
         return redirect(url_for('read_post', post_id=comment.post.id)), 500
 
 
-# Likes API - like or unlike the article 
+# Likes API - like or unlike the article
 @app.route('/like_post/<int:post_id>', methods=['POST'])
 @login_required
 def like_post(post_id):
     try:
         post = Post.query.filter_by(id=post_id).first()
         like = Like.query.filter_by(liked_by=current_user.id, post_id=post_id).first()
-        
+
         if check_access():
             return jsonify({'error': 'Access denied', 'likes': len(post.likes)})
         # Check if post exists
@@ -279,6 +282,7 @@ def like_post(post_id):
         # Return updated like count and whether user has liked the post
         return jsonify({'likes': len(post.likes), 'liked': current_user.id in map(lambda x: x.liked_by, post.likes)}), 200
     except Exception as e:
+        db.session.rollback()
         return render_template('500_error.html'), 500
 
 
@@ -309,42 +313,29 @@ def users_posts(user_id):
         return render_tamplate('500_error.html')
 
 
-# Context processors(decorator) allow you to inject variables into the context of all templates 
-# from layout.html to search.html to access the search parameters
-@app.context_processor
-def base():
-    form = SearchForm()
-    return dict(form=form)
-
 
 # Search API for posts or users
-@app.route('/search', methods=['POST'])
+@app.route('/search', methods=['GET'])
 @login_required
 def search():
-    search_form = SearchForm()
+    q = request.args.get('q')
     posts = Post.query
     users= User.query
-    if search_form.validate_on_submit():
+    if q:
         try:
-            searched = search_form.searched.data
             posts = posts.filter(
-                or_(Post.content.like('%' + searched + '%'),
-                Post.title.like('%' + searched + '%'))
+                or_(Post.content.like('%' + q + '%'),
+                Post.title.like('%' + q + '%'))
             ).order_by(text('Post.title')).all()
-            # if the logged in user is admin, then we are able to search with user email as well
-            if check_access():
-                users = users.filter(
-                    or_(User.name.like('%' + searched + '%'),
-                    User.email.like('%' + searched + '%'))
-                ).order_by(text('User.name')).all()
-            else:
-                # if the logged in user is not admin, then the user can search only by names
-                users = users.filter(User.name.like('%' + searched + '%')).order_by(text('User.name')).all()
-            return render_template('search.html', users=users, posts=posts, searched=searched, search_form=search_form)
+            users = users.filter(
+                or_(User.name.like('%' + q + '%'),
+                User.email.like('%' + q + '%'))
+            ).order_by(text('User.name')).all()
+            return render_template('search.html', users=users, posts=posts, q=q)
         except Exception as e:
             return render_template('500_error.html')
     else:
-        flash('Invalid Data for search term', 'danger')
+        flash('Invalid Data for search', 'danger')
         return redirect(url_for('home'))
 
 
@@ -365,7 +356,6 @@ def admin_register():
     else:
         # render the registration form for a GET request
         return render_template('register.html', title='Registration Page', form=form)
-
 
 
 # Admin login API
@@ -402,8 +392,8 @@ def all_users():
             flash('You are not authorized', 'danger')
             return redirect(url_for('home'), 301)
     except Exception as e:
-            flash('Failed to fetch data', 'danger')
-            return render_template('500_error.html')
+        flash('Failed to fetch data', 'danger')
+        return render_template('500_error.html')
 
 
 # Fetch all users API, which is available to admins only

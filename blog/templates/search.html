@@ -1,7 +1,7 @@
 {% extends 'layout.html' %}
 {% block contents %}
 
-    <h4>You searched for: <em>{{searched}}</em></h4>
+    <h4>You searched for: <em>{{q}}</em></h4>
 
 	<!-- Search results for posts -->
     <div class="btn btn-outline-secondary border-0 border-bottom" id="expand-posts">Posts</div>
@@ -53,7 +53,7 @@
                     <br />
                 {% endfor %}
             {% else %}
-                Sorry, no post found with such keyword <strong>{{ searched }}</strong>
+                Sorry, no post found with such keyword <strong>{{ q }}</strong>
             {% endif %}
         </div>
         <!-- Search results for users -->
@@ -147,7 +147,7 @@
                     </tbody>
                 </table>
             {% else %}
-                Sorry, no users with name <strong>{{ searched }}</strong>
+                Sorry, no users with name <strong>{{ q }}</strong>
             {% endif %}
         </div>
     </div>

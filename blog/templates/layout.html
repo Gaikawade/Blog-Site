@@ -60,17 +60,17 @@
                         </li>
                     {% endif %}
                 </ul>
-                <form method="post" action="{{ url_for('search')}}" class="d-flex">
-                    {{ form.hidden_tag() }}
+                <form method="get" action="{{ url_for('search')}}" class="d-flex">
                     <input class="form-control me-2" type="search" placeholder="Search" aria-label="Search"
-                        name="searched">
+                        name="q">
                     <button class="btn btn-outline-secondary" type="submit">Search</button>
                 </form>
                 &NonBreakingSpace;
                 <ul class="navbar-nav mb-2 mb-lg-0">
                     <li class="nav-item dropdown">
                         <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button"
-                            data-bs-toggle="dropdown" data-bs-display="static" aria-expanded="false">
+                            data-bs-toggle="dropdown" data-bs-display="static" aria-expanded="false"
+                        >
                             More
                         </a>
                         <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarDropdown">
