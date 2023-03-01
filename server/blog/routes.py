@@ -22,7 +22,18 @@ def check_access():
 def home():
     try:
         posts = Post.query.order_by(Post.id.desc())
-        return render_template('home.html', title='HomePage', posts=posts)
+        # return render_template('home.html', title='HomePage', posts=posts)
+        post_list = []
+        for post in posts:
+            post_dict = {
+                'id': post.id,
+                'title': post.title,
+                'content': post.content,
+                'created_at': post.created_at,
+                'user_id': post.user_id
+            }
+            post_list.append(post_dict)
+        return jsonify(post_list)
     except Exception as e:
         return render_template('500_error.html', title='Internal Server Error')
 
