@@ -5,3 +5,5 @@ MySQLClient
 Email_Validator
 Flask-Bcrypt
 Flask-Login
+Flask-Cors
+Python-Dotenv

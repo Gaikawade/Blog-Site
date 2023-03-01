@@ -3,12 +3,14 @@ from flask_sqlalchemy import SQLAlchemy
 from flask_bcrypt import Bcrypt
 from flask_login import LoginManager
 from dotenv import load_dotenv
+from flask_cors import CORS
 import os
 
 load_dotenv()
 
 # creating a new instance of Flask
 app = Flask(__name__)
+CORS(app)
 
 #The secret key is used to sign cookies and other sensitive data
 # This variable tells SQLAlchemy how to connect to the app's database
