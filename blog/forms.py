@@ -5,9 +5,12 @@ from blog.models import User, Admin
 
 name_regex = r'^[a-zA-Z]+ ?[a-zA-Z ]*$'
 
+# function to define the class of a field
 def form_css(placeholder):
     return {'class': 'form-control', 'placeholder': placeholder}
 
+
+# Registration Form
 class Register(FlaskForm):
     name = StringField(
         'Name',
@@ -36,6 +39,7 @@ class Register(FlaskForm):
     submit = SubmitField('Sign up')
 
 
+# Login Form
 class Login(FlaskForm):
     email = StringField(
         'Email',
@@ -51,6 +55,8 @@ class Login(FlaskForm):
     remember = BooleanField('Remember Me')
 
 
+
+# Account Form for view or update details
 class Account(FlaskForm):
     name = StringField(
         'Name',
@@ -82,6 +88,8 @@ class Account(FlaskForm):
     
     submit = SubmitField('Update details')
 
+
+# Posting Article form
 class PostForm(FlaskForm):
     title = StringField(
         'Title',
@@ -96,6 +104,7 @@ class PostForm(FlaskForm):
     submit = SubmitField('Post')
 
 
+# Form for searching operaion
 class SearchForm(FlaskForm):
     searched = StringField(
         'q',
@@ -108,6 +117,7 @@ class SearchForm(FlaskForm):
     )
 
 
+# Admin Registration  Form
 class AdminRegister(FlaskForm):
     name = StringField(
         'Name',
@@ -136,6 +146,7 @@ class AdminRegister(FlaskForm):
     submit = SubmitField('Register Admin')
 
 
+# Admin Login Form
 class AdminLogin(FlaskForm):
     email = StringField(
         'Email',

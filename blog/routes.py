@@ -27,11 +27,6 @@ def home():
         return render_template('500_error.html', title='Internal Server Error')
 
 
-@app.route('/about')
-def about():
-    return render_template('about.html', title='AboutPage')
-
-
 # Register User API
 # Function used to registration end-user for the web application
 @app.route('/register', methods=['POST', 'GET'])
@@ -65,45 +60,9 @@ def login():
             else:
                 flash('Incorrect Email or Password', 'danger')
                 return redirect(url_for('login'), 301)
-        return render_template('login.html', title='Login Page', form=form), 200
+        return render_template('login.html', title='Login Page', form=form)
     except Exception as e:
         flash('Error logging in', 'danger')
-        return render_template('500_error.html', title='Internal Server Error')
-
-
-# App post API
-@app.route('/add_post', methods=['POST', 'GET'])
-@login_required
-def add_post():
-    try:
-        if check_access() == True:
-            return render_template('access_denied.html')
-        form = PostForm()
-        # Check if the form is submitted and valid
-        if form.validate_on_submit():
-            # Create a new post instance and add it to the database
-            post = Post(title=form.title.data, content=form.content.data, author=current_user)
-            db.session.add(post)
-            db.session.commit()
-            flash('Post added successfully', 'success')
-            return redirect(url_for('read_post', post_id=post.id), 301)
-    except Exception as e:
-        return render_template('500_error.html', title='Internal Server Error')
-    # Render the add/update post template with the post form
-    return render_template('add_update_post.html', title='Add Post', form=form, type='post')
-
-
-# Read post data API
-@app.route('/post/<int:post_id>', methods=['GET'])
-@login_required
-def read_post(post_id):
-    try:
-        post = Post.query.filter_by(id=post_id).first()
-        if not post:
-            # create not found page and render
-            return render_template('404_error.html')
-        return render_template('read_post.html', title='Read Post', post=post), 200
-    except Exception as e:
         return render_template('500_error.html', title='Internal Server Error')
 
 
@@ -157,6 +116,42 @@ def account():
     return render_template('account.html', title='Account', form=form)
 
 
+# App post API
+@app.route('/add_post', methods=['POST', 'GET'])
+@login_required
+def add_post():
+    try:
+        if check_access() == True:
+            return render_template('403_error.html')
+        form = PostForm()
+        # Check if the form is submitted and valid
+        if form.validate_on_submit():
+            # Create a new post instance and add it to the database
+            post = Post(title=form.title.data, content=form.content.data, author=current_user)
+            db.session.add(post)
+            db.session.commit()
+            flash('Post added successfully', 'success')
+            return redirect(url_for('read_post', post_id=post.id), 301)
+    except Exception as e:
+        return render_template('500_error.html', title='Internal Server Error')
+    # Render the add/update post template with the post form
+    return render_template('add_update_post.html', title='Add Post', form=form, type='post')
+
+
+# Read post data API
+@app.route('/post/<int:post_id>', methods=['GET'])
+@login_required
+def read_post(post_id):
+    try:
+        post = Post.query.filter_by(id=post_id).first()
+        if not post:
+            # create not found page and render
+            return render_template('404_error.html')
+        return render_template('read_post.html', title='Read Post', post=post)
+    except Exception as e:
+        return render_template('500_error.html', title='Internal Server Error')
+
+
 # Update post API
 @app.route('/post/update/<int:post_id>', methods=['POST', "GET"])
 @login_required
@@ -164,7 +159,7 @@ def update_post(post_id):
     try:
         post = Post.query.get_or_404(post_id)
         if post.author != current_user:
-            return render_template('access_denied.html', title='Unauthorized')
+            return render_template('403_error.html', title='Unauthorized')
         form = PostForm()
         if request.method == 'GET':
             form.title.data = post.title
@@ -175,7 +170,7 @@ def update_post(post_id):
             db.session.commit()
             flash('The Article has been updated', 'success')
             return redirect(url_for('read_post', post_id=post.id), 301)
-        return render_template('add_update_post.html', title=post.title, form=form, type='update'), 200
+        return render_template('add_update_post.html', title=post.title, form=form, type='update')
     except Exception as e:
         db.session.rollback()
         flash('Error updating the article', 'danger')
@@ -189,7 +184,7 @@ def delete_post(post_id):
     try:
         post = Post.query.get_or_404(post_id)
         if post.author != current_user and current_user.is_admin != 1:
-            return render_template('access_denied.html', title='Unauthorized')
+            return render_template('403_error.html', title='Unauthorized')
         db.session.delete(post)
         db.session.commit()
         flash('The article has been deleted', 'success')
@@ -200,13 +195,13 @@ def delete_post(post_id):
         return render_template('500_error.html',)
 
 
-# Add comment to article API
+# Add comment to post API
 @app.route('/add_comment/<int:post_id>', methods=['POST'])
 @login_required
 def add_comment(post_id):
     try:
         if check_access() == True:
-            return render_template('access_denied.html')
+            return render_template('403_error.html')
         text = request.form.get('text')
         if not text:
             flash('Comment cannot be empty', 'danger')
@@ -246,8 +241,7 @@ def delete_comment(comment_id):
         # Delete comment from database and commit changes
         db.session.delete(comment)
         db.session.commit()
-        # Return success message with status code 200 (OK)
-        flash('Comment deleted successfully', 'success'), 200
+        flash('Comment deleted successfully', 'success')
         return redirect(url_for('read_post', post_id=comment.post_id), 301)
     except Exception as e:
         db.session.rollback()
@@ -280,10 +274,10 @@ def like_post(post_id):
             db.session.add(like)
             db.session.commit()
         # Return updated like count and whether user has liked the post
-        return jsonify({'likes': len(post.likes), 'liked': current_user.id in map(lambda x: x.liked_by, post.likes)}), 200
+        return jsonify({'likes': len(post.likes), 'liked': current_user.id in map(lambda x: x.liked_by, post.likes)})
     except Exception as e:
         db.session.rollback()
-        return render_template('500_error.html'), 500
+        return render_template('500_error.html')
 
 
 # API to get all the posts of logged in users
@@ -309,7 +303,6 @@ def users_posts(user_id):
         # Return rendered template with posts
         return render_template(url_for('all_posts.html', posts=posts), 301)
     except Exception as e:
-        # Return error message with status code 500
         return render_tamplate('500_error.html')
 
 
@@ -327,10 +320,12 @@ def search():
                 or_(Post.content.like('%' + q + '%'),
                 Post.title.like('%' + q + '%'))
             ).order_by(text('Post.title')).all()
+
             users = users.filter(
                 or_(User.name.like('%' + q + '%'),
                 User.email.like('%' + q + '%'))
             ).order_by(text('User.name')).all()
+
             return render_template('search.html', users=users, posts=posts, q=q)
         except Exception as e:
             return render_template('500_error.html')
@@ -341,7 +336,7 @@ def search():
 
 # Admin Registration API
 # Only a admin can register other admins
-@app.route('/admin/register', methods=['POST', 'GET'])
+@app.route('/admin/register', methods=['POST'])
 @login_required
 def admin_register():
     form = AdminRegister()
@@ -408,9 +403,8 @@ def all_admins():
             flash('You are not authorized', 'danger')
             return redirect(url_for('home'), 301)
     except Exception as e:
-        return str(e)
         flash('Failed to fetch data', 'danger')
-        # return render_template('500_error.html')
+        return render_template('500_error.html')
 
 
 # Fetch all posts API, which is available to admins only

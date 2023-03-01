@@ -1,14 +1,11 @@
-# importing all require packages
 from blog import app, db
 
-
 # Checks whether the script is being run as the main program
+# This context is used to provide access to the app's resources within the code block
+# Creates all tables defined in the app's database model
 if __name__ == '__main__':
-    # This context is used to provide access to the app's resources within the code block
     with app.app_context():
-        # Creates all tables defined in the app's database model
         db.create_all()
-        # Flask app running in debug mode
     app.run(debug=True)
 
 
