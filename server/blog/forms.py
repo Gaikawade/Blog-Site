@@ -31,7 +31,7 @@ class Register(FlaskForm):
         validators=[DataRequired()],
         render_kw=form_css('Password')
     )
-    confirm_password = PasswordField(
+    confirmPassword = PasswordField(
         'Confirm Password',
         validators=[DataRequired(), EqualTo('password')],
         render_kw=form_css('Confirm Password')

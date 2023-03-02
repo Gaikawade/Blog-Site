@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { Link } from 'react-router-dom';
 import axios from "axios";
 import Card from "react-bootstrap/Card";
 import Container from "react-bootstrap/esm/Container";
@@ -31,9 +32,9 @@ function Home() {
                     <Card.Body></Card.Body>
                     <Card.Text className="text-center">
                         {post.content.slice(0, 120)}...
-                        <a href="#" className="text-decoration-none">
+                        <Link to={`/post/${post.id}`} className="text-decoration-none">
                             Read More
-                        </a>
+                        </Link>
                     </Card.Text>
                     <Card.Footer>
                         <Row>

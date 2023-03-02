@@ -84,10 +84,8 @@ class Admin(db.Model, UserMixin):
 
 
 # Function to add new user to the database
-def add_user(form):
-    name = form.name.data
-    email = form.email.data
-    hashed_password = bcrypt.generate_password_hash(form.password.data).decode('utf-8')
+def add_user(name, email, password):
+    hashed_password = bcrypt.generate_password_hash(password).decode('utf-8')
     user = User(name=name, email=email, password=hashed_password)
     db.session.add(user)
     db.session.commit()

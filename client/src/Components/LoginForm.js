@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import Form from "react-bootstrap/Form";
 import axios from "axios";
+import Form from "react-bootstrap/Form";
 import Button from "react-bootstrap/Button";
 
 function LoginForm() {
@@ -32,49 +32,17 @@ function LoginForm() {
                 remember: remember,
             })
             .then((response) => {
-                console.log(response.data);
+                // console.log(response);
+                // console.log(response.data.status);
                 navigate("/home");
             })
             .catch((err) => {
                 setError(err.response.data.message);
-                console.log(error)
+                alert(error)
             });
     }
 
     return (
-        // <form onSubmit={handleSubmit} className='container-fluid col-md-4'>
-        //     <div className="form-floating">
-        //         <label className="floatingInput">Email:</label>
-        //         <input
-        //             className="form-control"
-        //             type="email"
-        //             value={email}
-        //             onChange={handleEmailChange}
-        //         />
-        //     </div>
-        //     <div className="form-floating">
-        //         <label className="floatingInput">Password:</label>
-        //         <input
-        //             className="form-control"
-        //             type="password"
-        //             value={password}
-        //             onChange={handlePasswordChange}
-        //         />
-        //     </div>
-        //     <div>
-        //         <input
-        //             type="checkbox"
-        //             checked={remember}
-        //             onChange={handleRememberChange}
-        //         />
-        //         <label>Remember Me</label>
-        //     </div>
-        //     <div>
-        //         <button type="submit">Log In</button>
-        //     </div>
-        //     {error && <div>{error}</div>}
-        // </form>
-
         <div className="container-fluid col-md-4">
             <Form.Floating className="mb-3">
                 <Form.Control

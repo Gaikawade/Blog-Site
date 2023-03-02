@@ -6,6 +6,11 @@ from blog import app, bcrypt, db
 from flask_login import login_required, login_user, logout_user, current_user
 
 
+# Function to check whether user is logged in or not
+def check_login():
+    return jsonify({ 'status': current_user.is_authenticated})
+
+
 # Function to check weather the logged in user is admin or not
 # By checking 'is_admin' attribute and its value
 def check_access():
@@ -22,7 +27,6 @@ def check_access():
 def home():
     try:
         posts = Post.query.order_by(Post.id.desc())
-        # return render_template('home.html', title='HomePage', posts=posts)
         post_list = []
         for post in posts:
             post_dict = {
@@ -34,9 +38,9 @@ def home():
                 'user_id': post.user_id
             }
             post_list.append(post_dict)
-        return jsonify(post_list)
+        return jsonify(post_list), 200
     except Exception as e:
-        return render_template('500_error.html', title='Internal Server Error')
+        return jsonify({ 'status': False, 'message': str(e) }), 500
 
 
 # Register User API
@@ -44,15 +48,23 @@ def home():
 @app.route('/register', methods=['POST', 'GET'])
 def register():
     try:
-        form = Register()
-        if form.validate_on_submit():
-            add_user(form)
-            flash('Registration successful', 'success')
-            return redirect(url_for('login'), 301)
+        name = request.json.get('name')
+        email = request.json.get('email')
+        password = request.json.get('password')
+        confirm_password = request.json.get('confirmPassword')
+        #validation part
+        user = User.query.filter_by(email=email).first()
+        if user:
+            return jsonify({ 'status': False, 'message': 'Email is already registered.'}), 400
+        
+        if password == confirm_password:
+            add_user(name, email, password)
+            return jsonify({ 'status': True, 'message': 'Registration successful' }), 201
+        else:
+            return jsonify({ 'status': False, 'message': 'Password mismatch' }), 400
     except Exception as e:
         db.session.rollback()
-        return render_template('500_error.html', title='Internal Server Error')
-    return render_template('register.html', title='RegisterPage', form=form)
+        return jsonify({ 'status': False, 'message': str(e) }), 500
 
 
 # User Login API
@@ -66,14 +78,14 @@ def login():
         document = User.query.filter_by(email=email).first()
         if document and bcrypt.check_password_hash(document.password, password):
             if document.is_blocked == 1:
-                return jsonify({'message': 'Your account is blocked, please contact our support team'}), 403
+                return jsonify({ 'status': False, 'message': 'Your account is blocked, please contact our support team'}), 403
             else:
                 login_user(document, remember=remember)
-                return jsonify({'message': 'Login successful'}), 200
+                return jsonify({ 'status': True, 'message': 'Login successful'}), 200
         else:
-            return jsonify({ 'message': 'Incorrect Email or Password' }), 401
+            return jsonify({ 'status': False, 'message': 'Incorrect Email or Password' }), 401
     except Exception as e:
-        return render_template('500_error.html', title='Internal Server Error')
+        return jsonify({ 'status': False, 'message':str(e) }), 500
 
 
 # Logout API
@@ -83,13 +95,11 @@ def logout():
     try:
         if current_user.is_authenticated:
             logout_user()
-            flash('Successfully logged out', 'success')
-            return redirect(url_for('home'), 301)
+            return jsonify({ 'status': True, 'message': 'Logout successfully'} ), 200
+        else:
+            return jsonify({ 'status': False, 'message': 'Please Login'}), 400
     except Exception as e:
-        flash('Error logging out', 'danger')
-        return render_template('500_error.html', title='Server Error')
-    # If the user is not authenticated, redirect to the login page
-    return redirect(url_for('login'), 301)
+        return jsonify({ 'status': False, 'message': str(e) }), 500
 
 
 # User Account details and Update Account API
@@ -150,16 +160,21 @@ def add_post():
 
 # Read post data API
 @app.route('/post/<int:post_id>', methods=['GET'])
-@login_required
+# @login_required
 def read_post(post_id):
     try:
         post = Post.query.filter_by(id=post_id).first()
         if not post:
-            # create not found page and render
-            return render_template('404_error.html')
-        return render_template('read_post.html', title='Read Post', post=post)
+            return jsonify({ 'message': 'No such post found'} ), 404
+        post_dict = {
+            'post_id' : post.id,
+            'post_content' : post.content,
+            'post_author' : post.author.name,
+            
+        }
+        return jsonify({ 'message': 'Post exists', 'post': post_dict} ), 200
     except Exception as e:
-        return render_template('500_error.html', title='Internal Server Error')
+        return jsonify({ 'error': str(e) })
 
 
 # Update post API
