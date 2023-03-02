@@ -1,4 +1,6 @@
 import { Link } from 'react-router-dom';
+import { useEffect, useState } from 'react';
+import axios from 'axios';
 
 import Button from 'react-bootstrap/Button';
 import Container from 'react-bootstrap/Container';
@@ -8,6 +10,19 @@ import Navbar from 'react-bootstrap/Navbar';
 import Dropdown from 'react-bootstrap/Dropdown';
 
 function NavScrollExample() {
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+
+  useEffect(() => {
+    axios.get('/check_login')
+    .then((response) => {
+      setIsLoggedIn(response.data.status);
+      // console.log(response.data)
+    })
+    .catch((error) => {
+      console.log(error)
+    })
+  })
+
   return (
     <Navbar bg="light" expand="lg" className='mb-3'>
       <Container fluid>
@@ -19,13 +34,21 @@ function NavScrollExample() {
             style={{ maxHeight: '100px' }}
             navbarScroll
           >
-            <Link className='nav-link' to=''>Add Post</Link>
-            <Link className='nav-link' to=''>My Posts</Link>
-            <Link className='nav-link' to=''>Users</Link>
-            <Link className='nav-link' to=''>Posts</Link>
-            <Link className='nav-link' to=''>Admins</Link>
-            <Link className='nav-link' to='/register'>Register</Link>
-            <Link className='nav-link' to="/login">Login</Link>
+            {isLoggedIn && 
+            <>
+              <Link className='nav-link' to='add_post'>Add Post</Link>
+              <Link className='nav-link' to=''>My Posts</Link>
+              <Link className='nav-link' to=''>Users</Link>
+              <Link className='nav-link' to=''>Posts</Link>
+              <Link className='nav-link' to=''>Admins</Link>
+             </>
+            }
+            {!isLoggedIn && 
+            <>
+              <Link className='nav-link' to='/register'>Register</Link>
+              <Link className='nav-link' to="/login">Login</Link>
+            </>
+            }
             
           </Nav>
           <Form className="d-flex">
@@ -45,7 +68,7 @@ function NavScrollExample() {
             <Dropdown.Menu>
               <Dropdown.Item href='#'>Admin Login</Dropdown.Item>
               <Dropdown.Item href='#'>Admin Register</Dropdown.Item>
-              <Dropdown.Item href='#'>Logout</Dropdown.Item>
+              <Dropdown.Item href='/logout'>Logout</Dropdown.Item>
             </Dropdown.Menu>
             </Dropdown>
         </Navbar.Collapse>

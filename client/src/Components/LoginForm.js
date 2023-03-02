@@ -34,7 +34,9 @@ function LoginForm() {
             .then((response) => {
                 // console.log(response);
                 // console.log(response.data.status);
-                navigate("/home");
+                localStorage.setItem('jwtToken', response.data.token);
+                navigate("/");
+                window.location.reload();
             })
             .catch((err) => {
                 setError(err.response.data.message);

@@ -33,6 +33,25 @@ class User(db.Model, UserMixin):
     # String representation of the User object
     def __repr__(self):
       return f'name: {self.name}, email: {self.email}'
+    
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'name': self.name,
+            'email': self.email,
+            'is_blocked': self.is_blocked,
+            'created_at': self.created_at.strftime('%D'),
+            # 'posts': [post.to_dict() for post in self.posts if post.used_id == self.id]
+        }
+
+    def get_posts(self):
+        return [post.to_dict() for post in self.posts]
+
+    def get_likes(self):
+        return [like.to_dict() for like in self.likes]
+
+    def get_comments(self):
+        return [comment.to_dict() for comment in self.comments]
 
 
 # Defining the structure of the 'post' table in the database
@@ -47,6 +66,17 @@ class Post(db.Model):
 
     def __repr__(self):
       return f'title: {self.title}, author: {self.author}'
+  
+    def to_dict(self):
+        return {
+            "id": self.id,
+            "title": self.title,
+            "content": self.content,
+            "created_at": self.created_at.strftime('%D'),
+            "author": self.author.to_dict(),
+            'comments': [comment.to_dict() for comment in self.comments if comment.post_id == self.id],
+            'likes': [like.to_dict() for like in self.likes if like.post_id == self.id]
+        }
 
 
 # Defining the structure of the 'comment' table in the database
@@ -59,6 +89,15 @@ class Comment(db.Model):
     
     def __repr__(self):
         return f'{self.author.name}: {self.text}'
+    
+    def to_dict(self):
+        return {
+            "id": self.id,
+            "text": self.text,
+            "created_at": self.created_at.strftime('%D'),
+            "commented_by": self.commented_by,
+            "post_id": self.post_id
+        }
 
 
 # Defining the structure of the 'like' table in the database
@@ -67,6 +106,14 @@ class Like(db.Model):
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     liked_by = db.Column(db.String(40), db.ForeignKey('user.id'), nullable=False)
     post_id = db.Column(db.Integer, db.ForeignKey('post.id'), nullable=False)
+    
+    def to_dict(self):
+        return {
+            "id": self.id,
+            "created_at": self.created_at,
+            "liked_by": self.liked_by,
+            "post_id": self.post_id
+        }
 
 
 # Defining the structure of the 'admin' table in the database

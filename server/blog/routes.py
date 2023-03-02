@@ -4,11 +4,16 @@ from blog.forms import Register, Login, Account, PostForm, SearchForm, AdminRegi
 from blog.models import add_user, add_admin, User, Post, Comment, Like, Admin
 from blog import app, bcrypt, db
 from flask_login import login_required, login_user, logout_user, current_user
+import jwt
 
 
 # Function to check whether user is logged in or not
+@app.route('/check_login', methods=['GET'])
 def check_login():
-    return jsonify({ 'status': current_user.is_authenticated})
+    if current_user.is_authenticated:
+        return jsonify({ 'status': current_user.is_authenticated, 'userId': current_user.id })
+    else:
+        return jsonify({ 'status': false, 'userId': None })
 
 
 # Function to check weather the logged in user is admin or not
@@ -81,7 +86,12 @@ def login():
                 return jsonify({ 'status': False, 'message': 'Your account is blocked, please contact our support team'}), 403
             else:
                 login_user(document, remember=remember)
-                return jsonify({ 'status': True, 'message': 'Login successful'}), 200
+                token = jwt.encode({
+                    'userId': document.id,
+                    'admin': check_access(),
+                    'expiration': str(datetime.utcnow() + timedelta(minutes=120))
+                }, app.config['SECRET_KEY'])
+                return jsonify({ 'status': True, 'message': 'Login successful', 'token': token}), 200
         else:
             return jsonify({ 'status': False, 'message': 'Incorrect Email or Password' }), 401
     except Exception as e:
@@ -89,7 +99,7 @@ def login():
 
 
 # Logout API
-@app.route('/logout')
+@app.route('/logout', methods=['POST'])
 @login_required
 def logout():
     try:
@@ -141,21 +151,21 @@ def account():
 @login_required
 def add_post():
     try:
-        if check_access() == True:
-            return render_template('403_error.html')
-        form = PostForm()
-        # Check if the form is submitted and valid
-        if form.validate_on_submit():
-            # Create a new post instance and add it to the database
-            post = Post(title=form.title.data, content=form.content.data, author=current_user)
-            db.session.add(post)
-            db.session.commit()
-            flash('Post added successfully', 'success')
-            return redirect(url_for('read_post', post_id=post.id), 301)
+        title = request.json.get('title')
+        content = request.json.get('content') #validation
+
+        document = Post.query.filter_by(title=title).first()
+        if document:
+            return jsonify({ 'status': False, 'message': 'Title should be unique/This title is already exists' })
+
+        post = Post(title=title, content=content, author=current_user)
+
+        db.session.add(post)
+        db.session.commit()
+
+        return jsonify({ 'status': True, 'message': 'Article added successfully' }), 201
     except Exception as e:
-        return render_template('500_error.html', title='Internal Server Error')
-    # Render the add/update post template with the post form
-    return render_template('add_update_post.html', title='Add Post', form=form, type='post')
+        return jsonify({ 'status': False, 'message': str(e) }), 500
 
 
 # Read post data API
@@ -166,12 +176,7 @@ def read_post(post_id):
         post = Post.query.filter_by(id=post_id).first()
         if not post:
             return jsonify({ 'message': 'No such post found'} ), 404
-        post_dict = {
-            'post_id' : post.id,
-            'post_content' : post.content,
-            'post_author' : post.author.name,
-            
-        }
+        post_dict = post.to_dict()
         return jsonify({ 'message': 'Post exists', 'post': post_dict} ), 200
     except Exception as e:
         return jsonify({ 'error': str(e) })
