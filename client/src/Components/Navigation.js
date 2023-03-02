@@ -1,3 +1,5 @@
+import { Link } from 'react-router-dom';
+
 import Button from 'react-bootstrap/Button';
 import Container from 'react-bootstrap/Container';
 import Form from 'react-bootstrap/Form';
@@ -7,9 +9,9 @@ import Dropdown from 'react-bootstrap/Dropdown';
 
 function NavScrollExample() {
   return (
-    <Navbar bg="light" expand="lg">
+    <Navbar bg="light" expand="lg" className='mb-3'>
       <Container fluid>
-        <Navbar.Brand href="#">Home</Navbar.Brand>
+        <Navbar.Brand href="/">Home</Navbar.Brand>
         <Navbar.Toggle aria-controls="navbarScroll" />
         <Navbar.Collapse id="navbarScroll">
           <Nav
@@ -17,11 +19,13 @@ function NavScrollExample() {
             style={{ maxHeight: '100px' }}
             navbarScroll
           >
-            <Nav.Link href="#action1">Add Post</Nav.Link>
-            <Nav.Link href="#action2">My Posts</Nav.Link>
-            <Nav.Link href="#action2">Users</Nav.Link>
-            <Nav.Link href="#action2">Posts</Nav.Link>
-            <Nav.Link href="#action2">Admins</Nav.Link>
+            <Link className='nav-link' to=''>Add Post</Link>
+            <Link className='nav-link' to=''>My Posts</Link>
+            <Link className='nav-link' to=''>Users</Link>
+            <Link className='nav-link' to=''>Posts</Link>
+            <Link className='nav-link' to=''>Admins</Link>
+            <Link className='nav-link' to='/register'>Register</Link>
+            <Link className='nav-link' to="/login">Login</Link>
             
           </Nav>
           <Form className="d-flex">

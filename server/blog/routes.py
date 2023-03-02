@@ -29,6 +29,7 @@ def home():
                 'id': post.id,
                 'title': post.title,
                 'content': post.content,
+                'author': post.author.name,
                 'created_at': post.created_at,
                 'user_id': post.user_id
             }
@@ -58,22 +59,20 @@ def register():
 @app.route('/login', methods=['POST', 'GET'])
 def login():
     try:
-        form = Login()
-        if form.validate_on_submit():
-            document = User.query.filter_by(email=form.email.data).first()
-            if document and bcrypt.check_password_hash(document.password, form.password.data):
-                if document.is_blocked == 1:
-                    flash('Your account is blocked, please contact our support', 'danger')
-                else:
-                    login_user(document, remember=form.remember.data)
-                    flash('Login successful', 'success')
-                    return redirect(url_for('home'), 301)
+        email = request.json.get('email')
+        password = request.json.get('password')
+        remember = request.json.get('remember')
+
+        document = User.query.filter_by(email=email).first()
+        if document and bcrypt.check_password_hash(document.password, password):
+            if document.is_blocked == 1:
+                return jsonify({'message': 'Your account is blocked, please contact our support team'}), 403
             else:
-                flash('Incorrect Email or Password', 'danger')
-                return redirect(url_for('login'), 301)
-        return render_template('login.html', title='Login Page', form=form)
+                login_user(document, remember=remember)
+                return jsonify({'message': 'Login successful'}), 200
+        else:
+            return jsonify({ 'message': 'Incorrect Email or Password' }), 401
     except Exception as e:
-        flash('Error logging in', 'danger')
         return render_template('500_error.html', title='Internal Server Error')
 
 
