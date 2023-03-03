@@ -130,6 +130,17 @@ class Admin(db.Model, UserMixin):
 
     def __repr__(self):
         return f'{self.name} {self.email}'
+    
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'name': self.name,
+            'email': self.email,
+            'password': self.password,
+            'is_admin': self.is_admin,
+            'is_blocked' : self.is_blocked,
+            'created_at': self.created_at
+        }
 
 
 # Function to add new user to the database
@@ -141,10 +152,8 @@ def add_user(name, email, password):
 
 
 # Function to add new admin to the database
-def add_admin(form):
-    name = form.name.data
-    email = form.email.data
-    password = bcrypt.generate_password_hash(form.password.data).decode('utf-8')
-    admin = Admin(name=name, email=email, password=password)
+def add_admin(name, email, password):
+    hashed_password = bcrypt.generate_password_hash(password).decode('utf-8')
+    admin = Admin(name=name, email=email, password=hashed_password)
     db.session.add(admin)
     db.session.commit()

@@ -12,7 +12,7 @@ from datetime import datetime, timedelta
 @app.route('/check_login', methods=['GET'])
 def check_login():
     if current_user.is_authenticated:
-        return jsonify({ 'status': current_user.is_authenticated, 'userId': current_user.id })
+        return jsonify({ 'status': current_user.is_authenticated, 'userId': current_user.id, 'is_admin': check_access() })
     else:
         return jsonify({ 'status': False, 'userId': None })
 
@@ -370,40 +370,52 @@ def search():
 @app.route('/admin/register', methods=['POST'])
 @login_required
 def admin_register():
-    form = AdminRegister()
-    if form.validate_on_submit():
-        try:
-            add_admin(form)
-            flash('Registration Successful', 'success')
-            return redirect(url_for('home'), 301)
-        except Exception as e:
-            flash('Registration Failed', 'danger')
-            return redirect(url_for('admin_register'), 301)
-    else:
-        # render the registration form for a GET request
-        return render_template('register.html', title='Registration Page', form=form)
+    name = request.json.get('name')
+    email = request.json.get('email')
+    password = request.json.get('password')
+    confirm_password = request.json.get('confirmPassword')
+    #validation part
+    try:
+        if not check_access():
+            return jsonify({'status': False, 'message': 'Access denied'})
+        user = Admin.query.filter_by(email=email).first()
+        if user:
+            return jsonify({ 'status': False, 'message': 'Email is already registered.'}), 400
+        
+        if password == confirm_password:
+            add_admin(name, email, password)
+            return jsonify({ 'status': True, 'message': 'Registration successful' }), 201
+        else:
+            return jsonify({ 'status': False, 'message': 'Password mismatch' }), 400
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({ 'status': False, 'message': str(e) }), 500
 
 
 # Admin login API
 @app.route('/admin/login', methods=['POST', 'GET'])
 def admin_login():
-    form = AdminLogin()
-    if form.validate_on_submit():
-        try:
-            document = Admin.query.filter_by(email=form.email.data).first()
-            if document and document.is_blocked == True:
-                flash('Your account is blocked', 'danger')
-            elif document and bcrypt.check_password_hash(document.password, form.password.data):
-                login_user(document, remember=form.remember.data)
-                flash('Login successful', 'success')
-                return redirect(url_for('home'), 301)
+    try:
+        email = request.json.get('email')
+        password = request.json.get('password')
+        remember = request.json.get('remember')
+
+        document = Admin.query.filter_by(email=email).first()
+        if document and bcrypt.check_password_hash(document.password, password):
+            if document.is_blocked == 1:
+                return jsonify({ 'status': False, 'message': 'Your account is blocked, please contact our support team'}), 403
             else:
-                flash('Incorrect Email or Password', 'danger')
-                return redirect(url_for('admin_login'), 301)
-        except Exception as e:
-            flash('Login Failed', 'danger')
-            return redirect(url_for('admin_login'), 301)
-    return render_template('login.html', form=form, title='Admin Login Page')
+                login_user(document, remember=remember)
+                token = jwt.encode({
+                    'userId': document.id,
+                    'admin': check_access(),
+                    'expiration': str(datetime.utcnow() + timedelta(minutes=120))
+                }, app.config['SECRET_KEY'])
+                return jsonify({ 'status': True, 'message': 'Login successful', 'token': token}), 200
+        else:
+            return jsonify({ 'status': False, 'message': 'Incorrect Email or Password' }), 401
+    except Exception as e:
+        return jsonify({ 'status': False, 'message':str(e) }), 500
 
 
 # Fetch all users API, which is available to admins only
@@ -413,13 +425,12 @@ def all_users():
     try:
         if check_access():
             users = User.query.all()
-            return render_template('users_posts_admins.html', users=users), 200
+            users = [user.to_dict() for user in users]
+            return jsonify({'status': True, 'users': users})
         else:
-            flash('You are not authorized', 'danger')
-            return redirect(url_for('home'), 301)
+            return jsonify({ 'status': False, 'message': 'Access denied' })
     except Exception as e:
-        flash('Failed to fetch data', 'danger')
-        return render_template('500_error.html')
+        return jsonify({ 'status': False, 'message':str(e) }), 500
 
 
 # Fetch all users API, which is available to admins only
@@ -429,13 +440,12 @@ def all_admins():
     try:
         if check_access():
             admins = Admin.query.all()
-            return render_template('users_posts_admins.html', admins=admins), 200
+            admins = [admin.to_dict() for admin in admins]
+            return jsonify({'status': True, 'admins': admins})
         else:
-            flash('You are not authorized', 'danger')
-            return redirect(url_for('home'), 301)
+            return jsonify({ 'status': False, 'message': 'Access denied' })
     except Exception as e:
-        flash('Failed to fetch data', 'danger')
-        return render_template('500_error.html')
+        return jsonify({ 'status': False, 'message':str(e) }), 500
 
 
 # Fetch all posts API, which is available to admins only
@@ -445,10 +455,10 @@ def all_posts():
     if check_access():
         try:
             posts = Post.query.all()
-            return render_template('users_posts_admins.html', posts=posts)
+            posts = [post.to_dict() for post in posts]
+            return jsonify({'status': True, 'posts': posts})
         except Exception as e:
-            flash('Failed to fetch data', 'danger')
-            return render_template('500_error.html')
+            return jsonify({ 'status': False, 'message':str(e) }), 500
     else:
         return redirect(url_for('home'), 301)
 

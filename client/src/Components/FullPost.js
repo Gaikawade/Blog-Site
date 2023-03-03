@@ -8,12 +8,14 @@ import Container from "react-bootstrap/esm/Container";
 import Col from "react-bootstrap/esm/Col";
 import Row from "react-bootstrap/esm/Row";
 import NavLink from "react-bootstrap/esm/NavLink";
+import Button from "react-bootstrap/esm/Button";
 
 export default function FullPost() {
     const { post_id } = useParams();
     const [posts, setPosts] = useState([]);
     const [currentUser, setCurrentUser] = useState({});
     const [isLoading, setIsLoading] = useState(true);
+    const [comment, setComment] = useState("");
 
     useLayoutEffect(() => {
         const token = localStorage.getItem("jwtToken");
@@ -34,6 +36,28 @@ export default function FullPost() {
             });
     }, []);
 
+    function handleCommentChange(e) {
+        setComment(e.target.value);
+    }
+
+    function showCommentInput() {
+        const commentField = document.querySelector("#comment-input");
+        if (commentField.style.display == "block") {
+            commentField.style.display = "none";
+        } else {
+            commentField.style.display = "block";
+        }
+    }
+
+    function showComments() {
+        const allComments = document.querySelector("#show-comments");
+        if (allComments.style.display == "block") {
+            allComments.style.display = "none";
+        } else {
+            allComments.style.display = "block";
+        }
+    }
+
     if (isLoading) {
         return <p className="text-center">Loading...</p>;
     }
@@ -48,22 +72,21 @@ export default function FullPost() {
                                 {posts.post.title}
                             </Col>
                             <Col className="text-end">
-                                {/* {currentUser.userId === posts.post.authorId && */}
+                                {currentUser.userId === posts.post.authorId &&
                                 <Link to={`/update_post/${posts.post.id}`}>
                                     <i className="fa fa-pen-to-square"></i>
                                 </Link>
-                                {/* } */}
+								}
                                 &nbsp;
-                                {/* {currentUser.userId === posts.post.authorId && */}
+                                {currentUser.userId === posts.post.authorId || currentUser.admin === true &&
                                 <Link to={`/delete_post/${posts.post.id}`}>
                                     <i className="fa fa-trash text-danger"></i>
                                 </Link>
-                                {/* } */}
+                                }
                             </Col>
                         </Row>
                     </Card.Header>
-                    <Card.Body></Card.Body>
-                    <Card.Text className="text-center">
+                    <Card.Text className="text-center p-3">
                         {posts.post.content}
                     </Card.Text>
                     <Card.Footer>
@@ -74,40 +97,68 @@ export default function FullPost() {
                                 </NavLink>
                             </Col>
                             <Col className="text-end">
-                                {" "}
-                                {posts.post.createdAt}{" "}
+                                Posted on: {posts.post.created_at}
                             </Col>
                         </Row>
                     </Card.Footer>
                 </Card>
 
+                {/* Show Likes and Comments icons with no of likes and no of comments */}
                 <div className="h6">
                     <i className="fas fa-thumbs-up"></i>
                     &nbsp;
                     {posts.likes.length}
                     &nbsp; &nbsp;
-                    <i className="far fa-comment"></i>
+                    <i
+                        className="far fa-comment"
+                        onClick={showCommentInput}
+                    ></i>
                     &nbsp;
                     {posts.comments.length}
                 </div>
-                <div className="small" id='expand-comments'>
+                <div
+                    className="small"
+                    id="expand-comments"
+                    onClick={showComments}
+                >
                     View all {posts.comments.length} comments
                 </div>
 
-                <Card style={{'display': 'none'}} id='comments'>
+                {/* Posting a Comment (Comment Input field) */}
+                <Card id="comment-input" style={{ display: "none" }}>
+                    <Card.Header className="text-center h6">
+                        {" "}
+                        Post your Comment{" "}
+                    </Card.Header>
+                    <Card.Body className="mb-3">
+                        <input
+                            type="text"
+                            className="border-bottom border-0"
+                            value={comment}
+                            onChange={handleCommentChange}
+                            placeholder="Write your comment"
+                        />
+                        <Button className="btn btn-primary"> Comment </Button>
+                    </Card.Body>
+                </Card>
+
+                {/* Displaying Comments (Showing all comments) */}
+                <Card style={{ display: "none" }} id="show-comments">
                     <Card.Header className="h6">All Comments</Card.Header>
                     {posts.comments.map((comment) => (
                         <Card.Body key={comment.id} className="px-3">
                             <Row>
                                 <Col className="col-sm-6 text-start small">
-									<NavLink href="#">
-                                    	{comment.commented_by.name}
-									</NavLink>
+                                    <NavLink href="#">
+                                        {comment.commented_by.name}
+                                    </NavLink>
                                 </Col>
                                 <Col className="col-sm-6 text-end small">
                                     {comment.created_at}
                                     &nbsp;
-                                    <i className="fa fa-trash text-danger "></i>
+									{currentUser.userId === comment.commented_by.id &&
+                                    	<i className="fa fa-trash text-danger "></i>
+									}
                                 </Col>
                             </Row>
                             {comment.text}
