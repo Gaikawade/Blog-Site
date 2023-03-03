@@ -69,13 +69,15 @@ class Post(db.Model):
   
     def to_dict(self):
         return {
-            "id": self.id,
-            "title": self.title,
-            "content": self.content,
-            "created_at": self.created_at.strftime('%D'),
+            "post": {
+                "id": self.id,
+                "title": self.title,
+                "content": self.content,
+                "created_at": self.created_at.strftime('%D')
+            },
             "author": self.author.to_dict(),
-            'comments': [comment.to_dict() for comment in self.comments if comment.post_id == self.id],
-            'likes': [like.to_dict() for like in self.likes if like.post_id == self.id]
+            'comments': [comment.to_dict() for comment in self.comments[::-1] if comment.post_id == self.id],
+            'likes': [like.to_dict() for like in self.likes[::-1] if like.post_id == self.id]
         }
 
 
@@ -95,7 +97,7 @@ class Comment(db.Model):
             "id": self.id,
             "text": self.text,
             "created_at": self.created_at.strftime('%D'),
-            "commented_by": self.commented_by,
+            "commented_by": self.author.to_dict(),
             "post_id": self.post_id
         }
 
@@ -110,7 +112,7 @@ class Like(db.Model):
     def to_dict(self):
         return {
             "id": self.id,
-            "created_at": self.created_at,
+            "created_at": self.created_at.strftime('%D'),
             "liked_by": self.liked_by,
             "post_id": self.post_id
         }

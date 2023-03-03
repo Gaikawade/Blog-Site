@@ -9,6 +9,7 @@ import FullPost from "./Components/FullPost";
 import RegisterForm from "./Components/RegisterForm";
 import Logout from "./Components/Logout";
 import AddPost from "./Components/AddPost";
+import UpdatePost from "./Components/UpdatePost";
 
 function App() {
     return (
@@ -23,6 +24,7 @@ function App() {
                     <Route path='/logout' element={ <Logout /> } />
                     <Route path='/add_post' element={ <AddPost /> } />
                     <Route path='/post/:post_id' element={ <FullPost />} />
+                    <Route path='/post/update/:post_id' element={ <UpdatePost />} />
                 </Routes>
                 <Footer />
             </div>

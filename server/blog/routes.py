@@ -5,6 +5,7 @@ from blog.models import add_user, add_admin, User, Post, Comment, Like, Admin
 from blog import app, bcrypt, db
 from flask_login import login_required, login_user, logout_user, current_user
 import jwt
+from datetime import datetime, timedelta
 
 
 # Function to check whether user is logged in or not
@@ -13,7 +14,7 @@ def check_login():
     if current_user.is_authenticated:
         return jsonify({ 'status': current_user.is_authenticated, 'userId': current_user.id })
     else:
-        return jsonify({ 'status': false, 'userId': None })
+        return jsonify({ 'status': False, 'userId': None })
 
 
 # Function to check weather the logged in user is admin or not
