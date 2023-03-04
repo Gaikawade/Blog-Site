@@ -1,6 +1,6 @@
 import axios from "axios";
 import React, { useEffect, useState } from "react";
-import { useNavigate, Link } from "react-router-dom";
+import { useNavigate, Link, useParams } from "react-router-dom";
 
 import Container from "react-bootstrap/esm/Container";
 import Card from "react-bootstrap/esm/Card";
@@ -11,12 +11,23 @@ export default function AllPosts() {
     const [posts, setPosts] = useState([]);
     const [isLoading, setIsLoading] = useState(true);
     const navigate = useNavigate();
+    const { userId } = useParams();
     const currentUser = JSON.parse(localStorage.getItem("currentUser"));
+    const URI = document.URL;
+    let api = "";
+
+    if (userId) {
+        api = `/user/${userId}/posts`;
+    } else if (URI.includes("admin")) {
+        api = `/admin/all_posts`;
+    } else {
+        api = `/user/all_posts`;
+    }
 
     useEffect(() => {
         if (currentUser.status) {
             axios
-                .get("/admin/all_posts")
+                .get(api)
                 .then((response) => {
                     // console.log(response.data);
                     setPosts(response.data.posts);
@@ -27,16 +38,16 @@ export default function AllPosts() {
                     // console.error(error);
                 });
         } else {
-            navigate("/admin/login");
+            URI.includes("admin")
+                ? navigate("/admin/login")
+                : navigate("/login");
         }
     }, []);
-
 
     if (isLoading) {
         return <div className="text-center">Loading...</div>;
     }
-
-
+    console.log(currentUser);
     return (
         <div>
             {posts.map((post) => (
@@ -48,23 +59,42 @@ export default function AllPosts() {
                                     {post.post.title}
                                 </Col>
                                 <Col className="text-end">
-                                    {currentUser.userId === post.author.id || currentUser.isAdmin === true &&
-                                        <Link to={`/delete_post/${post.post.id}`}>
+                                    {console.log(
+                                        currentUser.userId === post.author.id
+                                    )}
+                                    {currentUser.userId == post.author.id && (
+                                        <Link
+                                            to={`/update_post/${post.post.id}`}
+                                        >
+                                            <i className="fa fa-pen-to-square"></i>
+                                        </Link>
+                                    )}
+                                    &nbsp;
+                                    {currentUser.userId === post.author.id ||
+                                    currentUser.isAdmin === true ? (
+                                        <Link
+                                            to={`/delete_post/${post.post.id}`}
+                                        >
                                             <i className="fa fa-trash text-danger"></i>
                                         </Link>
-                                    }
+                                    ) : null}
                                 </Col>
                             </Row>
                         </Card.Header>
                         <Card.Text className="text-center p-3">
-                            {post.post.content.slice(0,120)}...
-                            <Link to={`/post/${post.post.id}`} className='text-decoration-none'>Read More</Link>
+                            {post.post.content.slice(0, 120)}...
+                            <Link
+                                to={`/post/${post.post.id}`}
+                                className="text-decoration-none"
+                            >
+                                Read More
+                            </Link>
                         </Card.Text>
                         <Card.Footer>
                             <Row>
                                 <Col className="text-start">
                                     <Link
-                                        href="author"
+                                        href={`/user/${post.author.id}/posts`}
                                         className="text-decoration-none"
                                     >
                                         {post.author.name}

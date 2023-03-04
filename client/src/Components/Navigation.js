@@ -41,7 +41,7 @@ function NavScrollExample() {
                     >
                         {currentUser.status ? (
                             <>
-                                {!currentUser.is_admin && (
+                                {!currentUser.isAdmin && (
                                     <>
                                         <Link
                                             className="nav-link"
@@ -49,12 +49,12 @@ function NavScrollExample() {
                                         >
                                             Add Post
                                         </Link>
-                                        <Link className="nav-link" to="">
+                                        <Link className="nav-link" to="/user/all_posts">
                                             My Posts
                                         </Link>
                                     </>
                                 )}
-                                {currentUser.is_admin && (
+                                {currentUser.isAdmin && (
                                     <>
                                         <Link className="nav-link" to="/admin/all_users">
                                             Users

@@ -13,6 +13,7 @@ import UpdatePost from "./Components/UpdatePost";
 import AllUsers from "./Components/AllUsers";
 import AllPosts from "./Components/AllPosts";
 import AllAdmins from "./Components/AllAdmins";
+import UserPosts from "./Components/UserPosts";
 
 function App() {
     return (
@@ -33,6 +34,8 @@ function App() {
                     <Route path='/admin/all_users' element={ <AllUsers />} />
                     <Route path='/admin/all_posts' element={ < AllPosts />} />
                     <Route path='/admin/all_admins' element={ < AllAdmins />} />
+                    <Route path='user/:userId/posts' element={ < AllPosts /> } />
+                    <Route path='user/all_posts' element={ < AllPosts /> } />
                 </Routes>
                 <Footer />
             </div>

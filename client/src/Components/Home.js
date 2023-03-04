@@ -16,7 +16,7 @@ function Home() {
             .get("/home")
             .then((res) => {
                 // console.log(res.data);
-                setPosts(res.data);
+                setPosts(res.data.posts);
                 setIsLoading(false);
             })
             .catch((err) => {
@@ -31,23 +31,23 @@ function Home() {
     return (
         <Container className="my-3">
             {posts.map((post) => (
-                <Card key={post.id} className="my-3">
+                <Card key={post.post.id} className="my-3">
                     <Card.Header className="text-center">
-                        <strong>{post.title}</strong>
+                        <strong>{post.post.title}</strong>
                     </Card.Header>
                     <Card.Body></Card.Body>
                     <Card.Text className="text-center">
-                        {post.content.slice(0, 120)}...
-                        <Link to={`/post/${post.id}`} className="text-decoration-none">
+                        {post.post.content.slice(0, 120)}...
+                        <Link to={`/post/${post.post.id}`} className="text-decoration-none">
                             Read More
                         </Link>
                     </Card.Text>
                     <Card.Footer>
                         <Row>
                             <Col className="text-start">
-                                <NavLink href="author">{post.author}</NavLink>
+                                <NavLink href={`/user/${post.author.id}/posts`}>{post.author.name}</NavLink>
                             </Col>
-                            <Col className="text-end"> {post.created_at} </Col>
+                            <Col className="text-end"> {post.post.created_at} </Col>
                         </Row>
                     </Card.Footer>
                 </Card>

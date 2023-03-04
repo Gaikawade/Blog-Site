@@ -32,7 +32,7 @@ export default function AllUsers() {
     if (isLoading) {
         return <div className="text-center">Loading...</div>;
     }
-	
+
     return (
         <Container>
             <Table hover>
@@ -50,7 +50,7 @@ export default function AllUsers() {
 						<tr key={user.id}>
 							<td>{i}</td>
 							<td>
-								<Link to='#' className='text-decoration-none'>
+								<Link to={`/user/${user.id}/posts`} className='text-decoration-none'>
 									{user.name}
 								</Link>
 							</td>

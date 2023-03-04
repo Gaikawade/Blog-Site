@@ -1,4 +1,4 @@
-import React, { useEffect, useLayoutEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import axios from "axios";
 import jwt_decode from "jwt-decode";
@@ -7,7 +7,6 @@ import Card from "react-bootstrap/Card";
 import Container from "react-bootstrap/esm/Container";
 import Col from "react-bootstrap/esm/Col";
 import Row from "react-bootstrap/esm/Row";
-import NavLink from "react-bootstrap/esm/NavLink";
 import Button from "react-bootstrap/esm/Button";
 
 export default function FullPost() {
@@ -17,7 +16,7 @@ export default function FullPost() {
     const [isLoading, setIsLoading] = useState(true);
     const [comment, setComment] = useState("");
 
-    useLayoutEffect(() => {
+    useEffect(() => {
         const token = localStorage.getItem("jwtToken");
         const decodedToken = jwt_decode(token);
         // console.log(decodedToken);
@@ -26,7 +25,7 @@ export default function FullPost() {
         axios
             .get(`/post/${post_id}`)
             .then((res) => {
-                // console.log(res.data);
+                console.log(res.data);
                 setPosts(res.data.post);
                 // console.log(posts);
                 setIsLoading(false);
@@ -72,17 +71,18 @@ export default function FullPost() {
                                 {posts.post.title}
                             </Col>
                             <Col className="text-end">
-                                {currentUser.userId === posts.post.authorId &&
-                                <Link to={`/update_post/${posts.post.id}`}>
-                                    <i className="fa fa-pen-to-square"></i>
-                                </Link>
-								}
+                                {currentUser.userId === posts.post.authorId && (
+                                    <Link to={`/update_post/${posts.post.id}`}>
+                                        <i className="fa fa-pen-to-square"></i>
+                                    </Link>
+                                )}
                                 &nbsp;
-                                {currentUser.userId === posts.post.authorId || currentUser.isAdmin &&
-                                <Link to={`/delete_post/${posts.post.id}`}>
-                                    <i className="fa fa-trash text-danger"></i>
-                                </Link>
-                                }
+                                {currentUser.userId === posts.author.id ||
+                                currentUser.isAdmin === true ? (
+                                    <Link to={`/delete_post/${posts.post.id}`}>
+                                        <i className="fa fa-trash text-danger"></i>
+                                    </Link>
+                                ) : null}
                             </Col>
                         </Row>
                     </Card.Header>
@@ -92,9 +92,12 @@ export default function FullPost() {
                     <Card.Footer>
                         <Row>
                             <Col className="text-start">
-                                <NavLink href="author">
+                                <Link
+                                    to={`/user/${posts.author.id}/posts`}
+                                    className="text-decoration-none"
+                                >
                                     {posts.author.name}
-                                </NavLink>
+                                </Link>
                             </Col>
                             <Col className="text-end">
                                 Posted on: {posts.post.created_at}
@@ -117,16 +120,16 @@ export default function FullPost() {
                     {posts.comments.length}
                 </div>
                 {posts.comments.length === 0 ? (
-                        <>No Comments</>
-                    ) : (
-                        <div
-                            className="small"
-                            id="expand-comments"
-                            onClick={showComments}
-                        >
-                            View all {posts.comments.length} comments
-                        </div>
-                    )}
+                    <>No Comments</>
+                ) : (
+                    <div
+                        className="small"
+                        id="expand-comments"
+                        onClick={showComments}
+                    >
+                        View all {posts.comments.length} comments
+                    </div>
+                )}
 
                 {/* Posting a Comment (Comment Input field) */}
                 <Card id="comment-input" style={{ display: "none" }}>
@@ -153,16 +156,21 @@ export default function FullPost() {
                         <Card.Body key={comment.id} className="px-3">
                             <Row>
                                 <Col className="col-sm-6 text-start small">
-                                    <NavLink href="#">
+                                    <Link
+                                        to={`/user/${comment.commented_by.id}/posts`}
+                                        className="text-decoration-none"
+                                    >
                                         {comment.commented_by.name}
-                                    </NavLink>
+                                    </Link>
                                 </Col>
                                 <Col className="col-sm-6 text-end small">
                                     {comment.created_at}
                                     &nbsp;
-									{currentUser.userId === comment.commented_by.id &&
-                                    	<i className="fa fa-trash text-danger "></i>
-									}
+                                    {currentUser.userId === comment.commented_by.id ||
+                                        currentUser.isAdmin ||
+                                        currentUser.userId === posts.post.id ? (
+                                            <i className="fa fa-trash text-danger "></i>
+                                    ) : null}
                                 </Col>
                             </Row>
                             {comment.text}

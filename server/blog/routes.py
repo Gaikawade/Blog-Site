@@ -12,9 +12,9 @@ from datetime import datetime, timedelta
 @app.route('/check_login', methods=['GET'])
 def check_login():
     if current_user.is_authenticated:
-        return jsonify({'status': current_user.is_authenticated, 'userId': current_user.id, 'isAadmin': check_access()})
+        return jsonify({'status': current_user.is_authenticated, 'userId': current_user.id, 'isAdmin': check_access()})
     else:
-        return jsonify({'status': False, 'userId': None, 'isAadmin': False})
+        return jsonify({'status': False, 'userId': None, 'isAdmin': False})
 
 
 # Function to check weather the logged in user is admin or not
@@ -33,18 +33,8 @@ def check_access():
 def home():
     try:
         posts = Post.query.order_by(Post.id.desc())
-        post_list = []
-        for post in posts:
-            post_dict = {
-                'id': post.id,
-                'title': post.title,
-                'content': post.content,
-                'author': post.author.name,
-                'created_at': post.created_at,
-                'user_id': post.user_id
-            }
-            post_list.append(post_dict)
-        return jsonify(post_list), 200
+        posts = [post.to_dict() for post in posts]
+        return jsonify({'status': True, 'posts': posts}), 200
     except Exception as e:
         return jsonify({'status': False, 'message': str(e)}), 500
 
@@ -149,7 +139,7 @@ def account():
 
 
 # App post API
-@app.route('/add_post', methods=['POST', 'GET'])
+@app.route('/add_post', methods=['POST'])
 @login_required
 def add_post():
     try:
@@ -320,24 +310,28 @@ def like_post(post_id):
 def my_posts():
     try:
         # Query all posts by the current user
-        posts = Post.query.filter_by(user_id=current_user.id).all()
-        # Return rendered template with posts
-        return render_template('all_posts.html', posts=posts)
+        posts = Post.query.filter_by(user_id=current_user.id).order_by(
+            Post.created_at.desc()).all()
+        posts = [post.to_dict() for post in posts]
+
+        return jsonify({'status': True, 'posts': posts})
     except Exception as e:
-        return render_template('500_error.html', title='Server error')
+        return jsonify({'status': False, 'message': str(e)}), 500
 
 
 # API to get all posts of other users
-@app.route('/users/<string:user_id>/posts', methods=['GET'])
+@app.route('/user/<string:user_id>/posts', methods=['GET'])
 @login_required
 def users_posts(user_id):
     try:
         # Query all posts by the specified user
-        posts = Post.query.filter_by(user_id=user_id).all()
+        posts = Post.query.filter_by(user_id=user_id).order_by(
+            Post.created_at.desc()).all()
+        posts = [post.to_dict() for post in posts]
         # Return rendered template with posts
-        return render_template(url_for('all_posts.html', posts=posts), 301)
+        return jsonify({'status': True, 'posts': posts})
     except Exception as e:
-        return render_tamplate('500_error.html')
+        return jsonify({'status': False, 'message': str(e)}), 500
 
 
 # Search API for posts or users
