@@ -17,7 +17,9 @@ function NavScrollExample() {
         axios
             .get("/check_login")
             .then((response) => {
-                setIsLoggedIn(response.data);
+                setIsLoggedIn(true);
+                setCurrentUser(response.data);
+                localStorage.setItem("currentUser", JSON.stringify(response.data));
                 // console.log(response.data);
                 // console.log(isLoggedIn);
             })
@@ -37,9 +39,9 @@ function NavScrollExample() {
                         style={{ maxHeight: "100px" }}
                         navbarScroll
                     >
-                        {isLoggedIn.status ? (
+                        {currentUser.status ? (
                             <>
-                                {!isLoggedIn.is_admin && (
+                                {!currentUser.is_admin && (
                                     <>
                                         <Link
                                             className="nav-link"
@@ -52,15 +54,15 @@ function NavScrollExample() {
                                         </Link>
                                     </>
                                 )}
-                                {isLoggedIn.is_admin && (
+                                {currentUser.is_admin && (
                                     <>
-                                        <Link className="nav-link" to="">
+                                        <Link className="nav-link" to="/admin/all_users">
                                             Users
                                         </Link>
-                                        <Link className="nav-link" to="">
+                                        <Link className="nav-link" to="/admin/all_posts">
                                             Posts
                                         </Link>
-                                        <Link className="nav-link" to="">
+                                        <Link className="nav-link" to="/admin/all_admins">
                                             Admins
                                         </Link>
                                     </>
@@ -90,13 +92,13 @@ function NavScrollExample() {
                     <Dropdown drop="start">
                         <Dropdown.Toggle>More</Dropdown.Toggle>
                         <Dropdown.Menu>
-                            {!isLoggedIn.status ? (
+                            {!currentUser.status ? (
                                 <Dropdown.Item href="admin/login">
                                     Admin Login
                                 </Dropdown.Item>
                             ) : (
                                 <>
-                                    {isLoggedIn.is_admin == true && (
+                                    {currentUser.is_admin == true && (
                                         <Dropdown.Item href="admin/register">
                                             Admin Register
                                         </Dropdown.Item>

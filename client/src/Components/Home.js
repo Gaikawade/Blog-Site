@@ -9,6 +9,7 @@ import NavLink from "react-bootstrap/esm/NavLink";
 
 function Home() {
     const [posts, setPosts] = useState([]);
+    const [isLoading, setIsLoading] = useState(true);
 
     useEffect(() => {
         axios
@@ -16,11 +17,16 @@ function Home() {
             .then((res) => {
                 // console.log(res.data);
                 setPosts(res.data);
+                setIsLoading(false);
             })
             .catch((err) => {
                 console.error(err);
             });
     }, []);
+
+    if(isLoading) {
+        return <p className="text-center">Loading...</p>;
+    }
 
     return (
         <Container className="my-3">

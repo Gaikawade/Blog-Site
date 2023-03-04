@@ -12,9 +12,9 @@ from datetime import datetime, timedelta
 @app.route('/check_login', methods=['GET'])
 def check_login():
     if current_user.is_authenticated:
-        return jsonify({ 'status': current_user.is_authenticated, 'userId': current_user.id, 'is_admin': check_access() })
+        return jsonify({'status': current_user.is_authenticated, 'userId': current_user.id, 'isAadmin': check_access()})
     else:
-        return jsonify({ 'status': False, 'userId': None })
+        return jsonify({'status': False, 'userId': None, 'isAadmin': False})
 
 
 # Function to check weather the logged in user is admin or not
@@ -46,7 +46,7 @@ def home():
             post_list.append(post_dict)
         return jsonify(post_list), 200
     except Exception as e:
-        return jsonify({ 'status': False, 'message': str(e) }), 500
+        return jsonify({'status': False, 'message': str(e)}), 500
 
 
 # Register User API
@@ -58,19 +58,19 @@ def register():
         email = request.json.get('email')
         password = request.json.get('password')
         confirm_password = request.json.get('confirmPassword')
-        #validation part
+        # validation part
         user = User.query.filter_by(email=email).first()
         if user:
-            return jsonify({ 'status': False, 'message': 'Email is already registered.'}), 400
-        
+            return jsonify({'status': False, 'message': 'Email is already registered.'}), 400
+
         if password == confirm_password:
             add_user(name, email, password)
-            return jsonify({ 'status': True, 'message': 'Registration successful' }), 201
+            return jsonify({'status': True, 'message': 'Registration successful'}), 201
         else:
-            return jsonify({ 'status': False, 'message': 'Password mismatch' }), 400
+            return jsonify({'status': False, 'message': 'Password mismatch'}), 400
     except Exception as e:
         db.session.rollback()
-        return jsonify({ 'status': False, 'message': str(e) }), 500
+        return jsonify({'status': False, 'message': str(e)}), 500
 
 
 # User Login API
@@ -84,19 +84,19 @@ def login():
         document = User.query.filter_by(email=email).first()
         if document and bcrypt.check_password_hash(document.password, password):
             if document.is_blocked == 1:
-                return jsonify({ 'status': False, 'message': 'Your account is blocked, please contact our support team'}), 403
+                return jsonify({'status': False, 'message': 'Your account is blocked, please contact our support team'}), 403
             else:
                 login_user(document, remember=remember)
                 token = jwt.encode({
                     'userId': document.id,
-                    'admin': check_access(),
+                    'isAdmin': check_access(),
                     'expiration': str(datetime.utcnow() + timedelta(minutes=120))
                 }, app.config['SECRET_KEY'])
-                return jsonify({ 'status': True, 'message': 'Login successful', 'token': token}), 200
+                return jsonify({'status': True, 'message': 'Login successful', 'token': token}), 200
         else:
-            return jsonify({ 'status': False, 'message': 'Incorrect Email or Password' }), 401
+            return jsonify({'status': False, 'message': 'Incorrect Email or Password'}), 401
     except Exception as e:
-        return jsonify({ 'status': False, 'message':str(e) }), 500
+        return jsonify({'status': False, 'message': str(e)}), 500
 
 
 # Logout API
@@ -106,11 +106,11 @@ def logout():
     try:
         if current_user.is_authenticated:
             logout_user()
-            return jsonify({ 'status': True, 'message': 'Logout successfully'} ), 200
+            return jsonify({'status': True, 'message': 'Logout successfully'}), 200
         else:
-            return jsonify({ 'status': False, 'message': 'Please Login'}), 400
+            return jsonify({'status': False, 'message': 'Please Login'}), 400
     except Exception as e:
-        return jsonify({ 'status': False, 'message': str(e) }), 500
+        return jsonify({'status': False, 'message': str(e)}), 500
 
 
 # User Account details and Update Account API
@@ -130,7 +130,8 @@ def account():
             current_user.email = form.email.data
             if form.old_password.data:
                 if bcrypt.check_password_hash(current_user.password, form.old_password.data):
-                    current_user.password = bcrypt.generate_password_hash(form.new_password.data)
+                    current_user.password = bcrypt.generate_password_hash(
+                        form.new_password.data)
                 else:
                     flash('Password does not match', 'danger')
                     return render_template('account.html', title='Account', form=form)
@@ -153,20 +154,20 @@ def account():
 def add_post():
     try:
         title = request.json.get('title')
-        content = request.json.get('content') #validation
+        content = request.json.get('content')  # validation
 
         document = Post.query.filter_by(title=title).first()
         if document:
-            return jsonify({ 'status': False, 'message': 'Title should be unique/This title is already exists' })
+            return jsonify({'status': False, 'message': 'Title should be unique/This title is already exists'})
 
         post = Post(title=title, content=content, author=current_user)
 
         db.session.add(post)
         db.session.commit()
 
-        return jsonify({ 'status': True, 'message': 'Article added successfully' }), 201
+        return jsonify({'status': True, 'message': 'Article added successfully'}), 201
     except Exception as e:
-        return jsonify({ 'status': False, 'message': str(e) }), 500
+        return jsonify({'status': False, 'message': str(e)}), 500
 
 
 # Read post data API
@@ -176,11 +177,11 @@ def read_post(post_id):
     try:
         post = Post.query.filter_by(id=post_id).first()
         if not post:
-            return jsonify({ 'message': 'No such post found'} ), 404
+            return jsonify({'message': 'No such post found'}), 404
         post_dict = post.to_dict()
-        return jsonify({ 'message': 'Post exists', 'post': post_dict} ), 200
+        return jsonify({'message': 'Post exists', 'post': post_dict}), 200
     except Exception as e:
-        return jsonify({ 'error': str(e) })
+        return jsonify({'error': str(e)})
 
 
 # Update post API
@@ -239,7 +240,8 @@ def add_comment(post_id):
             return redirect(url_for('read_post', post_id=post_id), 301)
         post = Post.query.filter_by(id=post_id).first()
         if post:
-            comment = Comment(text=text, commented_by=current_user.id, post_id=post_id)
+            comment = Comment(
+                text=text, commented_by=current_user.id, post_id=post_id)
             db.session.add(comment)
             db.session.commit()
             flash('Comment added successfully', 'success')
@@ -286,7 +288,8 @@ def delete_comment(comment_id):
 def like_post(post_id):
     try:
         post = Post.query.filter_by(id=post_id).first()
-        like = Like.query.filter_by(liked_by=current_user.id, post_id=post_id).first()
+        like = Like.query.filter_by(
+            liked_by=current_user.id, post_id=post_id).first()
 
         if check_access():
             return jsonify({'error': 'Access denied', 'likes': len(post.likes)})
@@ -337,24 +340,23 @@ def users_posts(user_id):
         return render_tamplate('500_error.html')
 
 
-
 # Search API for posts or users
 @app.route('/search', methods=['GET'])
 @login_required
 def search():
     q = request.args.get('q')
     posts = Post.query
-    users= User.query
+    users = User.query
     if q:
         try:
             posts = posts.filter(
                 or_(Post.content.like('%' + q + '%'),
-                Post.title.like('%' + q + '%'))
+                    Post.title.like('%' + q + '%'))
             ).order_by(text('Post.title')).all()
 
             users = users.filter(
                 or_(User.name.like('%' + q + '%'),
-                User.email.like('%' + q + '%'))
+                    User.email.like('%' + q + '%'))
             ).order_by(text('User.name')).all()
 
             return render_template('search.html', users=users, posts=posts, q=q)
@@ -374,22 +376,22 @@ def admin_register():
     email = request.json.get('email')
     password = request.json.get('password')
     confirm_password = request.json.get('confirmPassword')
-    #validation part
+    # validation part
     try:
         if not check_access():
             return jsonify({'status': False, 'message': 'Access denied'})
         user = Admin.query.filter_by(email=email).first()
         if user:
-            return jsonify({ 'status': False, 'message': 'Email is already registered.'}), 400
-        
+            return jsonify({'status': False, 'message': 'Email is already registered.'}), 400
+
         if password == confirm_password:
             add_admin(name, email, password)
-            return jsonify({ 'status': True, 'message': 'Registration successful' }), 201
+            return jsonify({'status': True, 'message': 'Registration successful'}), 201
         else:
-            return jsonify({ 'status': False, 'message': 'Password mismatch' }), 400
+            return jsonify({'status': False, 'message': 'Password mismatch'}), 400
     except Exception as e:
         db.session.rollback()
-        return jsonify({ 'status': False, 'message': str(e) }), 500
+        return jsonify({'status': False, 'message': str(e)}), 500
 
 
 # Admin login API
@@ -403,49 +405,49 @@ def admin_login():
         document = Admin.query.filter_by(email=email).first()
         if document and bcrypt.check_password_hash(document.password, password):
             if document.is_blocked == 1:
-                return jsonify({ 'status': False, 'message': 'Your account is blocked, please contact our support team'}), 403
+                return jsonify({'status': False, 'message': 'Your account is blocked, please contact our support team'}), 403
             else:
                 login_user(document, remember=remember)
                 token = jwt.encode({
                     'userId': document.id,
-                    'admin': check_access(),
+                    'isAdmin': check_access(),
                     'expiration': str(datetime.utcnow() + timedelta(minutes=120))
                 }, app.config['SECRET_KEY'])
-                return jsonify({ 'status': True, 'message': 'Login successful', 'token': token}), 200
+                return jsonify({'status': True, 'message': 'Login successful', 'token': token}), 200
         else:
-            return jsonify({ 'status': False, 'message': 'Incorrect Email or Password' }), 401
+            return jsonify({'status': False, 'message': 'Incorrect Email or Password'}), 401
     except Exception as e:
-        return jsonify({ 'status': False, 'message':str(e) }), 500
+        return jsonify({'status': False, 'message': str(e)}), 500
 
 
 # Fetch all users API, which is available to admins only
 @app.route('/admin/all_users', methods=['GET'])
 @login_required
 def all_users():
-    try:
-        if check_access():
-            users = User.query.all()
+    if check_access():
+        try:
+            users = User.query.order_by(User.created_at.desc())
             users = [user.to_dict() for user in users]
-            return jsonify({'status': True, 'users': users})
-        else:
-            return jsonify({ 'status': False, 'message': 'Access denied' })
-    except Exception as e:
-        return jsonify({ 'status': False, 'message':str(e) }), 500
+            return jsonify({'status': True, 'users': users}), 200
+        except Exception as e:
+            return jsonify({'status': False, 'message': str(e)}), 500
+    else:
+        return jsonify({'status': False, 'message': 'Access denied'}), 403
 
 
 # Fetch all users API, which is available to admins only
 @app.route('/admin/all_admins', methods=['GET'])
 @login_required
 def all_admins():
-    try:
-        if check_access():
-            admins = Admin.query.all()
+    if check_access():
+        try:
+            admins = Admin.query.order_by(Admin.created_at.desc())
             admins = [admin.to_dict() for admin in admins]
-            return jsonify({'status': True, 'admins': admins})
-        else:
-            return jsonify({ 'status': False, 'message': 'Access denied' })
-    except Exception as e:
-        return jsonify({ 'status': False, 'message':str(e) }), 500
+            return jsonify({'status': True, 'admins': admins}), 200
+        except Exception as e:
+            return jsonify({'status': False, 'message': str(e)}), 500
+    else:
+        return jsonify({'status': False, 'message': 'Access denied'}), 403
 
 
 # Fetch all posts API, which is available to admins only
@@ -454,13 +456,13 @@ def all_admins():
 def all_posts():
     if check_access():
         try:
-            posts = Post.query.all()
+            posts = Post.query.order_by(Post.created_at.desc())
             posts = [post.to_dict() for post in posts]
-            return jsonify({'status': True, 'posts': posts})
+            return jsonify({'status': True, 'posts': posts}), 200
         except Exception as e:
-            return jsonify({ 'status': False, 'message':str(e) }), 500
+            return jsonify({'status': False, 'message': str(e)}), 500
     else:
-        return redirect(url_for('home'), 301)
+        return redirect(url_for('home'), 301), 403
 
 
 # Block/Unblock user API

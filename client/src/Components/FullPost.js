@@ -78,7 +78,7 @@ export default function FullPost() {
                                 </Link>
 								}
                                 &nbsp;
-                                {currentUser.userId === posts.post.authorId || currentUser.admin === true &&
+                                {currentUser.userId === posts.post.authorId || currentUser.isAdmin &&
                                 <Link to={`/delete_post/${posts.post.id}`}>
                                     <i className="fa fa-trash text-danger"></i>
                                 </Link>
@@ -116,13 +116,17 @@ export default function FullPost() {
                     &nbsp;
                     {posts.comments.length}
                 </div>
-                <div
-                    className="small"
-                    id="expand-comments"
-                    onClick={showComments}
-                >
-                    View all {posts.comments.length} comments
-                </div>
+                {posts.comments.length === 0 ? (
+                        <>No Comments</>
+                    ) : (
+                        <div
+                            className="small"
+                            id="expand-comments"
+                            onClick={showComments}
+                        >
+                            View all {posts.comments.length} comments
+                        </div>
+                    )}
 
                 {/* Posting a Comment (Comment Input field) */}
                 <Card id="comment-input" style={{ display: "none" }}>
