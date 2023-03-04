@@ -223,29 +223,27 @@ def delete_post(post_id):
 def add_comment(post_id):
     try:
         if check_access() == True:
-            return render_template('403_error.html')
-        text = request.form.get('text')
-        if not text:
-            flash('Comment cannot be empty', 'danger')
-            return redirect(url_for('read_post', post_id=post_id), 301)
+            return jsonify({'status': False, 'message': 'Access denied'}), 403
+        text = request.json.get('text')
+        commented_by = request.json.get('commented_by')
+        
         post = Post.query.filter_by(id=post_id).first()
         if post:
             comment = Comment(
-                text=text, commented_by=current_user.id, post_id=post_id)
+                text=text, commented_by=commented_by, post_id=post_id)
             db.session.add(comment)
             db.session.commit()
             flash('Comment added successfully', 'success')
-            return redirect(url_for('read_post', post_id=post_id), 301)
+            return jsonify({'status': True, 'message': 'Comment added successfully'}), 201
         else:
-            flash('Post does not exist', 'error')
-            return redirect(url_for('read_post', post_id=post_id), 301)
+            return jsonify({'status': False, 'message': 'Post does not exist'}), 404
     except Exception as e:
         db.session.rollback()
-        return render_template('500_error.html', title='Server error')
+        return jsonify({'status': False, 'message': str(e)}), 500
 
 
 # Delete commment API
-@app.route('/delete_comment/<int:comment_id>', methods=['POST'])
+@app.route('/delete_comment/<int:comment_id>', methods=['DELETE'])
 @login_required
 def delete_comment(comment_id):
     try:
@@ -253,23 +251,18 @@ def delete_comment(comment_id):
         comment = Comment.query.filter_by(id=comment_id).first()
         # Check if comment exists
         if not comment:
-            # Return error message with status code 404
-            flash('Comment does not exist', 'danger')
-            return redirect(url_for('read_post', post_id=comment.post_id), 301)
+            return jsonify({'status': False, 'message': 'Comment not found'}), 404
         # Check if user is authorized to delete comment
         if current_user.id == comment.author and current_user.id == comment.post.author:
             # Return error message with status code 403 (forbidden)
-            flash('You are not allowed to delete this comment', 'danger')
-            return redirect(url_for('read_post', post_id=comment.post_id), 301)
+            return jsonify({'status': False, 'message': 'Unauthorized access'}), 403
         # Delete comment from database and commit changes
         db.session.delete(comment)
         db.session.commit()
-        flash('Comment deleted successfully', 'success')
-        return redirect(url_for('read_post', post_id=comment.post_id), 301)
+        return jsonify({'status': True, 'message': 'Comment deleted successfully'}), 200
     except Exception as e:
         db.session.rollback()
-        flash('Something went wrong')
-        return redirect(url_for('read_post', post_id=comment.post.id)), 500
+        return jsonify({'stauts': False, 'message': str(e)}), 500
 
 
 # Likes API - like or unlike the article

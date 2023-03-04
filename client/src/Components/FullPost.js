@@ -15,6 +15,7 @@ export default function FullPost() {
     const [currentUser, setCurrentUser] = useState({});
     const [isLoading, setIsLoading] = useState(true);
     const [comment, setComment] = useState("");
+    const [commentError, setCommentError] = useState("");
 
     useEffect(() => {
         const token = localStorage.getItem("jwtToken");
@@ -25,14 +26,14 @@ export default function FullPost() {
         axios
             .get(`/post/${post_id}`)
             .then((res) => {
-                console.log(res.data);
+                // console.log(res.data);
                 setPosts(res.data.post);
-                // console.log(posts);
                 setIsLoading(false);
+                // console.log(posts);
             })
             .catch((err) => {
                 console.error(err);
-            });
+            })
     }, []);
 
     function handleCommentChange(e) {
@@ -55,6 +56,42 @@ export default function FullPost() {
         } else {
             allComments.style.display = "block";
         }
+    }
+
+    function handleSubmit(e) {
+        e.preventDefault();
+        if (!comment) {
+            setCommentError("Please enter your comment");
+        }
+
+        axios.post(`/add_comment/${posts.post.id}`, {
+            'text' : comment,
+            'commented_by': currentUser.userId
+        })
+        .then((response) => {
+            // console.log(response.data);
+            alert(response.data.message);
+            window.location.reload();
+            setComment('')
+        })
+        .catch((error) => {
+            alert('Something went wrong');
+        })
+    }
+
+    function handleDeleteComment(commentId){
+        axios.delete(`/delete_comment/${commentId}`)
+        .then((response) => {
+            // console.log(response);
+            alert('Comment deleted successfully');
+            window.location.reload();
+        })
+        .catch((error) => {
+            if (! error.response.data.status){
+                alert(error.response.data.message);
+            }
+            console.log(error.response)
+        })
     }
 
     if (isLoading) {
@@ -145,7 +182,17 @@ export default function FullPost() {
                             onChange={handleCommentChange}
                             placeholder="Write your comment"
                         />
-                        <Button className="btn btn-primary"> Comment </Button>
+                        {commentError && (
+                            <div className="text-danger">{commentError}</div>
+                        )}
+                        <Button
+                            className="btn btn-primary"
+                            type="submit"
+                            onClick={handleSubmit}
+                        >
+                            {" "}
+                            Comment{" "}
+                        </Button>
                     </Card.Body>
                 </Card>
 
@@ -167,9 +214,9 @@ export default function FullPost() {
                                     {comment.created_at}
                                     &nbsp;
                                     {currentUser.userId === comment.commented_by.id ||
-                                        currentUser.isAdmin ||
-                                        currentUser.userId === posts.post.id ? (
-                                            <i className="fa fa-trash text-danger "></i>
+                                    currentUser.isAdmin ||
+                                    currentUser.userId === posts.post.id ? (
+                                        <i className="fa fa-trash text-danger" onClick={()=>handleDeleteComment(comment.id)}></i>
                                     ) : null}
                                 </Col>
                             </Row>

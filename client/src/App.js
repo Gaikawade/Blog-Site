@@ -34,8 +34,8 @@ function App() {
                     <Route path='/admin/all_users' element={ <AllUsers />} />
                     <Route path='/admin/all_posts' element={ < AllPosts />} />
                     <Route path='/admin/all_admins' element={ < AllAdmins />} />
-                    <Route path='user/:userId/posts' element={ < AllPosts /> } />
-                    <Route path='user/all_posts' element={ < AllPosts /> } />
+                    <Route path='/user/:userId/posts' element={ < AllPosts /> } />
+                    <Route path='/user/all_posts' element={ < AllPosts /> } />
                 </Routes>
                 <Footer />
             </div>
