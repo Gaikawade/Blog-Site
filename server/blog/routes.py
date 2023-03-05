@@ -175,28 +175,24 @@ def read_post(post_id):
 
 
 # Update post API
-@app.route('/post/update/<int:post_id>', methods=['POST', "GET"])
+@app.route('/post/update/<int:post_id>', methods=['PUT'])
 @login_required
 def update_post(post_id):
     try:
         post = Post.query.get_or_404(post_id)
         if post.author != current_user:
-            return render_template('403_error.html', title='Unauthorized')
-        form = PostForm()
-        if request.method == 'GET':
-            form.title.data = post.title
-            form.content.data = post.content
-        elif request.method == 'POST':
-            post.title = form.title.data
-            post.content = form.content.data
-            db.session.commit()
-            flash('The Article has been updated', 'success')
-            return redirect(url_for('read_post', post_id=post.id), 301)
-        return render_template('add_update_post.html', title=post.title, form=form, type='update')
+            return jsonify({ 'status': False, 'message': 'Unauthorized Access'})
+
+        title = request.json.get('title')
+        content = request.json.get('content')
+        post.title = title
+        post.content = content
+        db.session.commit()
+        flash('The Article has been updated', 'success')
+        return jsonify({ 'status': True, 'message': 'Article updated successfully' })
     except Exception as e:
         db.session.rollback()
-        flash('Error updating the article', 'danger')
-        return redirect(url_for('home')), 500
+        return jsonify({ 'status': False, 'message': str(e) })
 
 
 # Delete post API

@@ -29,8 +29,7 @@ function App() {
                     <Route path='/logout' element={ <Logout /> } />
                     <Route path='/add_post' element={ <AddPost /> } />
                     <Route path='/post/:post_id' element={ <FullPost />} />
-                    <Route path='/post/update/:post_id' element={ <UpdatePost />} />
-                    {/* <Route path='/post/delete/:post_id' element={ <Home />} /> */}
+                    <Route path='/post/update/:postId' element={ <UpdatePost />} />
                     <Route path='/admin/all_users' element={ <AllUsers />} />
                     <Route path='/admin/all_posts' element={ < AllPosts />} />
                     <Route path='/admin/all_admins' element={ < AllAdmins />} />

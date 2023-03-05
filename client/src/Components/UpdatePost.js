@@ -3,23 +3,29 @@ import jwt_decode from "jwt-decode";
 import React, { useEffect, useState } from "react";
 import Button from "react-bootstrap/esm/Button";
 import Form from "react-bootstrap/Form";
-import { useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 
 export default function UpdatePost() {
-    const [post, setPost] = useState({});
+    const [article, setArticle] = useState({});
     const [currentUser, setCurrentUser] = useState({});
     const [isLoading, setIsLoading] = useState(true);
-    const { post_id } = useParams();
+    const [title, setTitle] = useState('');
+    const [content, setContent] = useState('');
+    const [error, setError] = useState('');
+    const { postId } = useParams();
+    const navigate = useNavigate();
 
     useEffect(() => {
         const token = localStorage.getItem("jwtToken");
         const decodedToken = jwt_decode(token);
         setCurrentUser(decodedToken);
         axios
-			.get(`/post/${post_id}`)
+			.get(`/post/${postId}`)
 			.then((res) => {
-				console.log(res.data.post);
-				setPost(res.data.post);
+				// console.log(res.data.post);
+				setArticle(res.data.post);
+                setContent(res.data.post.post.content);
+                setTitle(res.data.post.post.title);
                 setIsLoading(false)
 				// console.log(posts);
 			})
@@ -38,21 +44,27 @@ export default function UpdatePost() {
 
     function handleSubmit(e) {
         e.preventDefault();
+        if( article.post.title === title && article.post.content === content){
+            setError(`You haven't update anything in your article yet`);
+            return 
+        }
         axios
-            .post(`{/post/update/${post_id}}`, {
+            .put(`/post/update/${postId}`, {
                 title: title,
                 content: content,
-                userId: userId,
+                userId: currentUser.userId,
             })
             .then((response) => {
                 if (response.data.status) {
+                    navigate(`/post/${postId}`);
                     alert(response.data.message);
-                    navigate("/");
                 } else {
+                    console.log(response.data);
                     alert(response.data.message);
                 }
             })
             .catch((error) => {
+                console.log(error.response)
                 alert(error.message);
             });
     }
@@ -63,13 +75,12 @@ export default function UpdatePost() {
 
     return (
         <div className="container">
-            {post.post.title}
             <h3>UpdatePost</h3>
             <Form.Floating className="mb-3">
                 <Form.Control
                     type="text"
                     placeholder="Title of the Article"
-                    value={post.post.title}
+                    value={title}
                     onChange={handleTitleChange}
                 />
                 <label htmlFor="floatingInputCustom">
@@ -81,13 +92,15 @@ export default function UpdatePost() {
                 <Form.Control
                     as="textarea"
                     placeholder="Content of the Article"
-                    value={post.post.content} 
+                    value={content} 
                     onChange={handleContentChange}
                 />
                 <label htmlFor="floatingPasswordCustom">
                     Content of the Article
                 </label>
             </Form.Floating>
+
+            {error ? <Form.Text className="text-danger">{error}</Form.Text> : null}
 
             <Form.Floating>
                 <Button variant="primary" type="submit" onClick={handleSubmit}>
