@@ -20,6 +20,7 @@ export default function AllAdmins() {
 				setIsLoading(false);
 			})
 			.catch((error) => {
+				navigate('/')
 				alert(error.response.data.message);
 				// console.error(error);
 			});

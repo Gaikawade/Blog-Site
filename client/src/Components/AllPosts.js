@@ -34,6 +34,7 @@ export default function AllPosts() {
                     setIsLoading(false);
                 })
                 .catch((error) => {
+                    navigate('/')
                     alert(error.response.data.message);
                     // console.error(error);
                 });
@@ -59,12 +60,9 @@ export default function AllPosts() {
                                     {post.post.title}
                                 </Col>
                                 <Col className="text-end">
-                                    {console.log(
-                                        currentUser.userId === post.author.id
-                                    )}
                                     {currentUser.userId == post.author.id && (
                                         <Link
-                                            to={`/update_post/${post.post.id}`}
+                                            to={`/post/update/${post.post.id}`}
                                         >
                                             <i className="fa fa-pen-to-square"></i>
                                         </Link>
@@ -73,7 +71,7 @@ export default function AllPosts() {
                                     {currentUser.userId === post.author.id ||
                                     currentUser.isAdmin === true ? (
                                         <Link
-                                            to={`/delete_post/${post.post.id}`}
+                                            to={`/post/delete/${post.post.id}`}
                                         >
                                             <i className="fa fa-trash text-danger"></i>
                                         </Link>

@@ -10,14 +10,14 @@ import Navbar from "react-bootstrap/Navbar";
 import Dropdown from "react-bootstrap/Dropdown";
 
 function NavScrollExample() {
-    const [isLoggedIn, setIsLoggedIn] = useState(false);
+    // const [isLoggedIn, setIsLoggedIn] = useState(false);
     const [currentUser, setCurrentUser] = useState({});
 
     useEffect(() => {
         axios
             .get("/check_login")
             .then((response) => {
-                setIsLoggedIn(true);
+                // setIsLoggedIn(true);
                 setCurrentUser(response.data);
                 localStorage.setItem("currentUser", JSON.stringify(response.data));
                 // console.log(response.data);

@@ -13,7 +13,6 @@ import UpdatePost from "./Components/UpdatePost";
 import AllUsers from "./Components/AllUsers";
 import AllPosts from "./Components/AllPosts";
 import AllAdmins from "./Components/AllAdmins";
-import UserPosts from "./Components/UserPosts";
 
 function App() {
     return (
@@ -31,6 +30,7 @@ function App() {
                     <Route path='/add_post' element={ <AddPost /> } />
                     <Route path='/post/:post_id' element={ <FullPost />} />
                     <Route path='/post/update/:post_id' element={ <UpdatePost />} />
+                    {/* <Route path='/post/delete/:post_id' element={ <Home />} /> */}
                     <Route path='/admin/all_users' element={ <AllUsers />} />
                     <Route path='/admin/all_posts' element={ < AllPosts />} />
                     <Route path='/admin/all_admins' element={ < AllAdmins />} />

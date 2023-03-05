@@ -113,7 +113,7 @@ class Like(db.Model):
         return {
             "id": self.id,
             "created_at": self.created_at.strftime('%D'),
-            "liked_by": self.liked_by,
+            "liked_by": self.author.to_dict(),
             "post_id": self.post_id
         }
 

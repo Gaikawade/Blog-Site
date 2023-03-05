@@ -200,21 +200,19 @@ def update_post(post_id):
 
 
 # Delete post API
-@app.route('/post/delete/<int:post_id>', methods=['POST'])
+@app.route('/post/delete/<int:post_id>', methods=['DELETE'])
 @login_required
 def delete_post(post_id):
     try:
         post = Post.query.get_or_404(post_id)
         if post.author != current_user and current_user.is_admin != 1:
-            return render_template('403_error.html', title='Unauthorized')
+            return jsonify({'status': False, 'message': 'Access denied'})
         db.session.delete(post)
         db.session.commit()
-        flash('The article has been deleted', 'success')
-        return redirect(url_for('home'))
+        return jsonify({'status': True, 'message': 'The article has been deleted successfully'}), 200
     except Exception as e:
         db.session.rollback()
-        flash('Error updating the article', 'danger')
-        return render_template('500_error.html',)
+        return jsonify({'status': False, 'message': str(e)})
 
 
 # Add comment to post API
@@ -449,7 +447,7 @@ def all_posts():
         except Exception as e:
             return jsonify({'status': False, 'message': str(e)}), 500
     else:
-        return redirect(url_for('home'), 301), 403
+        return jsonify({'status': False, 'message': 'Access denied'}), 403
 
 
 # Block/Unblock user API
