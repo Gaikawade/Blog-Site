@@ -104,38 +104,37 @@ def logout():
 
 
 # User Account details and Update Account API
-@app.route('/account', methods=['POST', 'GET'])
-@login_required
+@app.route('/account', methods=['GET', 'PUT'])
 def account():
+    user_id = request.args.get('userId')
+    member = ''
     try:
-        # Create an instance of the Account form
-        form = Account()
-        # Prepopulate the form fields with the user's current details
+        if user_id.startswith('A'):
+            member = Admin.query.filter_by(id=user_id).first()
+        else:
+            member = User.query.filter_by(id=user_id).first()
+        
+        if not member:
+            return jsonify({'stauts': False, 'message': 'No such member exists '}), 404
+
         if request.method == 'GET':
-            form.name.data = current_user.name
-            form.email.data = current_user.email
-        # Update the user's account details if the form is submitted and validated
-        elif form.validate_on_submit():
-            current_user.name = form.name.data
-            current_user.email = form.email.data
-            if form.old_password.data:
-                if bcrypt.check_password_hash(current_user.password, form.old_password.data):
-                    current_user.password = bcrypt.generate_password_hash(
-                        form.new_password.data)
-                else:
-                    flash('Password does not match', 'danger')
-                    return render_template('account.html', title='Account', form=form)
-            if current_user.name == form.name.data and current_user.email == form.email.data:
-                flash('No changes were made', 'danger')
-                return render_template('account.html', title='Account', form=form)
+            result = member.to_dict()
+            return jsonify({
+                'status': True,
+                'member': result,
+                'message': 'Data fetched successfully'
+            }), 200
+
+        elif request.method == 'PUT':
+            name = request.json.get('name')
+            email = request.json.get('email')
+            
+            member.name = name
+            member.email = email
             db.session.commit()
-            flash('Your account details have been updated', 'success')
-            return redirect(url_for('account'), 301)
+            return jsonify({ 'status': True, 'message': 'Details updated successfully'}), 200
     except Exception as e:
-        db.session.rollback()
-        flash('Error updating your account details', 'danger')
-        return render_template('500_error.html', title='Internal Server Error')
-    return render_template('account.html', title='Account', form=form)
+        return jsonify({ 'status': False, 'message':str(e) }), 500
 
 
 # App post API
@@ -181,7 +180,7 @@ def update_post(post_id):
     try:
         post = Post.query.get_or_404(post_id)
         if post.author != current_user:
-            return jsonify({ 'status': False, 'message': 'Unauthorized Access'})
+            return jsonify({'status': False, 'message': 'Unauthorized Access'})
 
         title = request.json.get('title')
         content = request.json.get('content')
@@ -189,10 +188,10 @@ def update_post(post_id):
         post.content = content
         db.session.commit()
         flash('The Article has been updated', 'success')
-        return jsonify({ 'status': True, 'message': 'Article updated successfully' })
+        return jsonify({'status': True, 'message': 'Article updated successfully'})
     except Exception as e:
         db.session.rollback()
-        return jsonify({ 'status': False, 'message': str(e) })
+        return jsonify({'status': False, 'message': str(e)})
 
 
 # Delete post API
@@ -220,7 +219,7 @@ def add_comment(post_id):
             return jsonify({'status': False, 'message': 'Access denied'}), 403
         text = request.json.get('text')
         commented_by = request.json.get('commented_by')
-        
+
         post = Post.query.filter_by(id=post_id).first()
         if post:
             comment = Comment(
@@ -475,9 +474,9 @@ def block_user(user_id):
                     db.session.commit()
                     return jsonify({'stuatus': True, 'message': 'User Un-blocked successfully', 'operation': 'Un-Blocked'}), 200
             else:
-                return jsonify({ 'status': False, 'message': 'No results found'}), 404
+                return jsonify({'status': False, 'message': 'No results found'}), 404
         except Exception as e:
             db.session.rollback()
-            return jsonify({ 'status': False, 'message':str(e)}), 500
+            return jsonify({'status': False, 'message': str(e)}), 500
     else:
-        return jsonify({ 'status': False, 'message': 'Unauthorized access'}), 401
+        return jsonify({'status': False, 'message': 'Unauthorized access'}), 401

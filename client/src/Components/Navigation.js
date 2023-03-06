@@ -12,7 +12,7 @@ import Dropdown from "react-bootstrap/Dropdown";
 function NavScrollExample() {
     // const [isLoggedIn, setIsLoggedIn] = useState(false);
     const [currentUser, setCurrentUser] = useState({});
-    const [serachKeyword, setSerachKeyword] = useState('');
+    const [serachKeyword, setSerachKeyword] = useState("");
     const navigate = useNavigate();
     useEffect(() => {
         axios
@@ -32,11 +32,11 @@ function NavScrollExample() {
             });
     }, []);
 
-    function handleChangeSearchKeyword(e){
+    function handleChangeSearchKeyword(e) {
         setSerachKeyword(e.target.value);
     }
 
-    function handleSearch(e){
+    function handleSearch(e) {
         e.preventDefault();
         navigate(`/search/q`);
     }
@@ -92,6 +92,9 @@ function NavScrollExample() {
                                         </Link>
                                     </>
                                 )}
+                                <Link className="nav-link" to="/account">
+                                    Account
+                                </Link>
                             </>
                         ) : (
                             <>
@@ -131,7 +134,7 @@ function NavScrollExample() {
                                 </Dropdown.Item>
                             ) : (
                                 <>
-                                    {currentUser.is_admin == true && (
+                                    {currentUser.isAdmin && (
                                         <Dropdown.Item href="admin/register">
                                             Admin Register
                                         </Dropdown.Item>

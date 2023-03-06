@@ -14,6 +14,7 @@ import AllUsers from "./Components/AllUsers";
 import AllPosts from "./Components/AllPosts";
 import AllAdmins from "./Components/AllAdmins";
 import Search from "./Components/Search";
+import Account from "./Components/Account";
 
 function App() {
     return (
@@ -28,6 +29,7 @@ function App() {
                     <Route path="/register" element={ <RegisterForm /> } />
                     <Route path="/login" element={ <LoginForm /> } />
                     <Route path='/logout' element={ <Logout /> } />
+                    <Route path='/account' element={ <Account /> } />
                     {/* Logged In user's posts */}
                     <Route path='/user/all_posts' element={ < AllPosts /> } />
                     {/* Random user's posts */}

@@ -46,7 +46,7 @@ export default function UpdatePost() {
         e.preventDefault();
         if( article.post.title === title && article.post.content === content){
             setError(`You haven't update anything in your article yet`);
-            return 
+            return null;
         }
         axios
             .put(`/post/update/${postId}`, {

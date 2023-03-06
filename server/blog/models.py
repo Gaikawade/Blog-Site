@@ -44,15 +44,6 @@ class User(db.Model, UserMixin):
             # 'posts': [post.to_dict() for post in self.posts if post.used_id == self.id]
         }
 
-    # def get_posts(self):
-    #     return [post.to_dict() for post in self.posts]
-
-    # def get_likes(self):
-    #     return [like.to_dict() for like in self.likes]
-
-    # def get_comments(self):
-    #     return [comment.to_dict() for comment in self.comments]
-
 
 # Defining the structure of the 'post' table in the database
 class Post(db.Model):
@@ -136,7 +127,6 @@ class Admin(db.Model, UserMixin):
             'id': self.id,
             'name': self.name,
             'email': self.email,
-            'password': self.password,
             'is_admin': self.is_admin,
             'is_blocked' : self.is_blocked,
             'created_at': self.created_at.strftime('%D')
