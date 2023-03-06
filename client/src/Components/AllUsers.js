@@ -4,6 +4,7 @@ import { Link, useNavigate } from "react-router-dom";
 
 import Container from "react-bootstrap/esm/Container";
 import Table from "react-bootstrap/esm/Table";
+import { blockUser } from "../script";
 
 export default function AllUsers() {
     const [users, setUsers] = useState([]);
@@ -58,9 +59,14 @@ export default function AllUsers() {
 							<td>{user.email}</td>
 							<td>{user.created_at}</td>
 							<td>
-								<Link to='#' className='text-decoration-none'>
-									Block
-								</Link>
+                                <Link className="text-decoration-none">
+                                    <div className='text-danger'
+                                        id={`block-option-${user.id}`}
+                                        onClick={()=>blockUser(user.id)}
+                                    >
+                                        {user.is_blocked ? <>Unblock</> : <>Block</>}
+                                    </div>
+                                </Link>
 							</td>
 						</tr>
 					))}

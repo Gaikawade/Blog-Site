@@ -13,31 +13,40 @@ import UpdatePost from "./Components/UpdatePost";
 import AllUsers from "./Components/AllUsers";
 import AllPosts from "./Components/AllPosts";
 import AllAdmins from "./Components/AllAdmins";
+import Search from "./Components/Search";
 
 function App() {
     return (
         <BrowserRouter>
-            <div className="">
+            {/* <div className=""> */}
                 <Navigation />
                 <Routes>
+                    {/* Home Page */}
                     <Route path="/" element={ <Home /> } />
                     <Route path="/home" element={ <Home /> } />
+                    {/* User Routes */}
                     <Route path="/register" element={ <RegisterForm /> } />
-                    <Route path="/admin/register" element={ <RegisterForm /> } />
                     <Route path="/login" element={ <LoginForm /> } />
-                    <Route path="/admin/login" element={ <LoginForm /> } />
                     <Route path='/logout' element={ <Logout /> } />
-                    <Route path='/add_post' element={ <AddPost /> } />
-                    <Route path='/post/:post_id' element={ <FullPost />} />
-                    <Route path='/post/update/:postId' element={ <UpdatePost />} />
+                    {/* Logged In user's posts */}
+                    <Route path='/user/all_posts' element={ < AllPosts /> } />
+                    {/* Random user's posts */}
+                    <Route path='/user/:userId/posts' element={ < AllPosts /> } />
+                    {/* Admin Routes */}
+                    <Route path="/admin/register" element={ <RegisterForm /> } />
+                    <Route path="/admin/login" element={ <LoginForm /> } />
                     <Route path='/admin/all_users' element={ <AllUsers />} />
                     <Route path='/admin/all_posts' element={ < AllPosts />} />
                     <Route path='/admin/all_admins' element={ < AllAdmins />} />
-                    <Route path='/user/:userId/posts' element={ < AllPosts /> } />
-                    <Route path='/user/all_posts' element={ < AllPosts /> } />
+                    {/* Post Routes */}
+                    <Route path='/add_post' element={ <AddPost /> } />
+                    <Route path='/post/:post_id' element={ <FullPost />} />
+                    <Route path='/post/update/:postId' element={ <UpdatePost />} />
+                    {/* Search */}
+                    <Route path='/search/q' element={ <Search /> } />
                 </Routes>
                 <Footer />
-            </div>
+            {/* </div> */}
         </BrowserRouter>
     );
 }

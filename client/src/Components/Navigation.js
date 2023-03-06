@@ -1,4 +1,4 @@
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import axios from "axios";
 
@@ -12,14 +12,18 @@ import Dropdown from "react-bootstrap/Dropdown";
 function NavScrollExample() {
     // const [isLoggedIn, setIsLoggedIn] = useState(false);
     const [currentUser, setCurrentUser] = useState({});
-
+    const [serachKeyword, setSerachKeyword] = useState('');
+    const navigate = useNavigate();
     useEffect(() => {
         axios
             .get("/check_login")
             .then((response) => {
                 // setIsLoggedIn(true);
                 setCurrentUser(response.data);
-                localStorage.setItem("currentUser", JSON.stringify(response.data));
+                localStorage.setItem(
+                    "currentUser",
+                    JSON.stringify(response.data)
+                );
                 // console.log(response.data);
                 // console.log(isLoggedIn);
             })
@@ -27,6 +31,15 @@ function NavScrollExample() {
                 console.log(error);
             });
     }, []);
+
+    function handleChangeSearchKeyword(e){
+        setSerachKeyword(e.target.value);
+    }
+
+    function handleSearch(e){
+        e.preventDefault();
+        navigate(`/search/q`);
+    }
 
     return (
         <Navbar bg="light" expand="lg" className="mb-3">
@@ -49,20 +62,32 @@ function NavScrollExample() {
                                         >
                                             Add Post
                                         </Link>
-                                        <Link className="nav-link" to="/user/all_posts">
+                                        <Link
+                                            className="nav-link"
+                                            to="/user/all_posts"
+                                        >
                                             My Posts
                                         </Link>
                                     </>
                                 )}
                                 {currentUser.isAdmin && (
                                     <>
-                                        <Link className="nav-link" to="/admin/all_users">
+                                        <Link
+                                            className="nav-link"
+                                            to="/admin/all_users"
+                                        >
                                             Users
                                         </Link>
-                                        <Link className="nav-link" to="/admin/all_posts">
+                                        <Link
+                                            className="nav-link"
+                                            to="/admin/all_posts"
+                                        >
                                             Posts
                                         </Link>
-                                        <Link className="nav-link" to="/admin/all_admins">
+                                        <Link
+                                            className="nav-link"
+                                            to="/admin/all_admins"
+                                        >
                                             Admins
                                         </Link>
                                     </>
@@ -85,8 +110,16 @@ function NavScrollExample() {
                             placeholder="Search"
                             className="me-2"
                             aria-label="Search"
+                            onChange={handleChangeSearchKeyword}
+                            onSubmit={handleSearch}
                         />
-                        <Button variant="outline-success">Search</Button>
+                        <Button
+                            variant="outline-success"
+                            type="submit"
+                            onClick={handleSearch}
+                        >
+                            Search
+                        </Button>
                     </Form>
                     &nbsp; &nbsp;
                     <Dropdown drop="start">

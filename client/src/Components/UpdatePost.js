@@ -16,7 +16,7 @@ export default function UpdatePost() {
     const navigate = useNavigate();
 
     useEffect(() => {
-        const token = localStorage.getItem("jwtToken");
+        const token = localStorage.getItem("token");
         const decodedToken = jwt_decode(token);
         setCurrentUser(decodedToken);
         axios

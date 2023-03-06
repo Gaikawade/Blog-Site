@@ -8,7 +8,7 @@ export default function Logout() {
     useEffect(() => {
         axios.post('/logout')
         .then((response) => {
-            localStorage.removeItem('jwtToken');
+            localStorage.clear();
             navigate('/');
             window.location.reload();
         })

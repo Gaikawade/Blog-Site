@@ -3,6 +3,7 @@ import React, { useEffect, useState } from "react";
 import Container from "react-bootstrap/esm/Container";
 import Table from "react-bootstrap/esm/Table";
 import { Link, useNavigate } from "react-router-dom";
+import { blockUser } from "../script";
 
 export default function AllAdmins() {
 	const [admins, setAdmins] = useState([]);
@@ -57,8 +58,13 @@ export default function AllAdmins() {
 							<td>{admin.email}</td>
 							<td>{admin.created_at}</td>
 							<td>
-								<Link to='#' className='text-decoration-none'>
-									Block
+								<Link className='text-decoration-none'>
+								<div className='text-danger'
+                                    id={`block-option-${admin.id}`}
+                                    onClick={()=>blockUser(admin.id)}
+                                >
+									{admin.is_blocked ? <>Unblock</> : <>Block</>}
+                                </div>
 								</Link>
 							</td>
 						</tr>

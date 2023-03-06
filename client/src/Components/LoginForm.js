@@ -4,6 +4,8 @@ import axios from "axios";
 import Form from "react-bootstrap/Form";
 import Button from "react-bootstrap/Button";
 
+// axios.defaults.baseURL = 'http://localhost:5000';
+
 function LoginForm() {
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
@@ -60,13 +62,16 @@ function LoginForm() {
             .then((response) => {
                 console.log(response);
                 console.log(response.data.status);
-                localStorage.setItem('jwtToken', response.data.token);
+                localStorage.clear();
+                localStorage.setItem('token', response.data.token);
+                // axios.defaults.headers.common['Authorization'] = `Bearer ${response.data.access_token}`;
+
                 navigate("/");
                 window.location.reload();
             })
             .catch((err) => {
                 setError(err.response.data.message);
-                alert(error)
+                // alert(error)
             });
     }
 
@@ -76,6 +81,7 @@ function LoginForm() {
                 <div className="h5 m-3 text-center"> Admin Login </div>
             ) : ( <div className="h5 m-3 text-center"> User Login </div> )
             }
+            {error && <div className="text-danger">{error}</div>}
             <Form.Floating className="mb-3">
                 <Form.Control
                     type="email"

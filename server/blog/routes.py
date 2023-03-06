@@ -438,6 +438,8 @@ def all_posts():
     if check_access():
         try:
             posts = Post.query.order_by(Post.created_at.desc())
+            # if not posts:
+            #     return jsonify({ 'status': False, 'message': ''})
             posts = [post.to_dict() for post in posts]
             return jsonify({'status': True, 'posts': posts}), 200
         except Exception as e:
@@ -447,7 +449,7 @@ def all_posts():
 
 
 # Block/Unblock user API
-@app.route('/admin/block_user/<string:user_id>', methods=['POST'])
+@app.route('/admin/block_user/<string:user_id>', methods=['PUT'])
 @login_required
 def block_user(user_id):
     if check_access():
@@ -458,30 +460,24 @@ def block_user(user_id):
                 if user.is_blocked == False:
                     user.is_blocked = True
                     db.session.commit()
-                    flash('User blocked successfully', 'success')
-                    return redirect(url_for('home'))
+                    return jsonify({'stuatus': True, 'message': 'User blocked successfully', 'operation': 'Blocked'}), 200
                 else:
                     user.is_blocked = False
                     db.session.commit()
-                    flash('User unblocked successfully', 'success')
-                    return redirect(url_for('home'))
+                    return jsonify({'stuatus': True, 'message': 'User Un-blocked successfully', 'operation': 'Un-Blocked'}), 200
             elif admin:
                 if admin.is_blocked == False:
                     admin.is_blocked = True
                     db.session.commit()
-                    flash('User blocked successfully', 'success')
-                    return redirect(url_for('home'))
+                    return jsonify({'stuatus': True, 'message': 'User blocked successfully', 'operation': 'Blocked'}), 200
                 else:
                     admin.is_blocked = False
                     db.session.commit()
-                    flash('User unblocked successfully', 'success')
-                    return redirect(url_for('home'))
+                    return jsonify({'stuatus': True, 'message': 'User Un-blocked successfully', 'operation': 'Un-Blocked'}), 200
             else:
-                return render_template('404_error.html'), 404
+                return jsonify({ 'status': False, 'message': 'No results found'}), 404
         except Exception as e:
             db.session.rollback()
-            flash('Failed to block/unblock user', 'danger')
-            return render_template('500_error.html')
+            return jsonify({ 'status': False, 'message':str(e)}), 500
     else:
-        flash('Unauthorized access', 'danger')
-        return redirect(url_for('home'), 301)
+        return jsonify({ 'status': False, 'message': 'Unauthorized access'}), 401

@@ -20,7 +20,7 @@ export default function FullPost() {
     // const likedByCurrentUser = ;
 
     useEffect(() => {
-        const token = localStorage.getItem("jwtToken");
+        const token = localStorage.getItem("token");
         const decodedToken = jwt_decode(token);
         // console.log(decodedToken);
         setCurrentUser(decodedToken);

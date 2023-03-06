@@ -48,9 +48,10 @@ export default function AllPosts() {
     if (isLoading) {
         return <div className="text-center">Loading...</div>;
     }
-    console.log(currentUser);
+
     return (
         <div>
+            {posts.length == 0 && <Container className=''>No Posts</Container>}
             {posts.map((post) => (
                 <Container key={post.post.id} className="mb-5">
                     <Card className="my-3">

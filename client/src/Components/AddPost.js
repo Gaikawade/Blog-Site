@@ -14,7 +14,7 @@ export default function AddPost() {
     const navigate = useNavigate();
 
     useEffect(() => {        
-        const token = localStorage.getItem('jwtToken');
+        const token = localStorage.getItem('token');
         const decodenToken = jwt_decode(token);
         
 
