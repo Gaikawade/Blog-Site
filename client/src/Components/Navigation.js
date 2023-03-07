@@ -10,9 +10,9 @@ import Navbar from "react-bootstrap/Navbar";
 import Dropdown from "react-bootstrap/Dropdown";
 
 function NavScrollExample() {
-    // const [isLoggedIn, setIsLoggedIn] = useState(false);
     const [currentUser, setCurrentUser] = useState({});
     const [searchTerm, setSearchTerm] = useState("");
+    const [searchError, setSearchError] = useState('');
     const navigate = useNavigate();
     useEffect(() => {
         axios
@@ -38,10 +38,14 @@ function NavScrollExample() {
 
     function handleSearch(e) {
         e.preventDefault();
-        navigate(`/search`, {searchTerm});
+        if(!searchTerm.trim()){
+            return setSearchError('Please enter a search term')
+        }
+        navigate(`/search?q=${encodeURIComponent(searchTerm)}`)
     }
 
     return (
+        <>
         <Navbar bg="light" expand="lg" className="mb-3">
             <Container fluid>
                 <Navbar.Brand href="/">Home</Navbar.Brand>
@@ -149,6 +153,8 @@ function NavScrollExample() {
                 </Navbar.Collapse>
             </Container>
         </Navbar>
+        {searchError && <div className="text-danger text-center">{searchError}</div>}
+        </>
     );
 }
 

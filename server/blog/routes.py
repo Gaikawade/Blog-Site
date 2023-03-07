@@ -326,6 +326,7 @@ def search():
     q = request.args.get('q')
     posts = Post.query
     users = User.query
+    admins = Admin.query
     if q:
         try:
             posts = posts.filter(
@@ -338,12 +339,26 @@ def search():
                     User.email.like('%' + q + '%'))
             ).order_by(text('User.name')).all()
 
-            return render_template('search.html', users=users, posts=posts, q=q)
+            admins= admins.filter(
+                or_(Admin.name.like('%' + q + '%'),
+                    Admin.email.like('%' + q + '%'))
+            ).order_by(text('Admin.name')).all()
+            
+            posts = [post.to_dict() for post in posts]
+            users = [user.to_dict() for user in users]
+            admins = [admin.to_dict() for admin in admins]
+            
+            return jsonify({
+                'status': True,
+                'message': 'Data fetched successfully',
+                'posts': posts,
+                'users': users,
+                'admins': admins
+                })
         except Exception as e:
-            return render_template('500_error.html')
+            return jsonify({ 'status': False, 'message': str(e) })
     else:
-        flash('Invalid Data for search', 'danger')
-        return redirect(url_for('home'))
+        return jsonify({ 'status': Fasle, 'message': 'Please provide a term to perform search operation' })
 
 
 # Admin Registration API
@@ -451,27 +466,24 @@ def all_posts():
 @login_required
 def block_user(user_id):
     if check_access():
+        member = None
         try:
-            user = User.query.filter_by(id=user_id).first()
-            admin = Admin.query.filter_by(id=user_id).first()
-            if user:
-                if user.is_blocked == False:
-                    user.is_blocked = True
+            # Query DB with user_id in Admin and User tables
+            if user_id.startswith('U'):
+                member = User.query.filter_by(id=user_id).first()
+            else:
+                member = Admin.query.filter_by(id=user_id).first()
+            # If user/admin found
+            if member:
+                if member.is_blocked == False:
+                    member.is_blocked = True
                     db.session.commit()
                     return jsonify({'stuatus': True, 'message': 'User blocked successfully', 'operation': 'Blocked'}), 200
                 else:
-                    user.is_blocked = False
+                    member.is_blocked = False
                     db.session.commit()
                     return jsonify({'stuatus': True, 'message': 'User Un-blocked successfully', 'operation': 'Un-Blocked'}), 200
-            elif admin:
-                if admin.is_blocked == False:
-                    admin.is_blocked = True
-                    db.session.commit()
-                    return jsonify({'stuatus': True, 'message': 'User blocked successfully', 'operation': 'Blocked'}), 200
-                else:
-                    admin.is_blocked = False
-                    db.session.commit()
-                    return jsonify({'stuatus': True, 'message': 'User Un-blocked successfully', 'operation': 'Un-Blocked'}), 200
+            # if no user/admin found
             else:
                 return jsonify({'status': False, 'message': 'No results found'}), 404
         except Exception as e:

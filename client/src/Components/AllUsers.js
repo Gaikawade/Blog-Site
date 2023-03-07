@@ -1,10 +1,8 @@
 import axios from "axios";
 import React, { useEffect, useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
+import ShowAllUsers from "./ShowAllUsers";
 
-import Container from "react-bootstrap/esm/Container";
-import Table from "react-bootstrap/esm/Table";
-import { blockUser } from "../script";
 
 export default function AllUsers() {
     const [users, setUsers] = useState([]);
@@ -36,42 +34,6 @@ export default function AllUsers() {
     }
 
     return (
-        <Container>
-            <Table hover>
-                <thead>
-                    <tr>
-                        <th>#</th>
-                        <th>Name</th>
-                        <th>Email</th>
-                        <th>Joined On</th>
-                        <th>Block/Unblock</th>
-                    </tr>
-                </thead>
-                <tbody>
-					{users.map((user, i=1) => (
-						<tr key={user.id}>
-							<td>{i}</td>
-							<td>
-								<Link to={`/user/${user.id}/posts`} className='text-decoration-none'>
-									{user.name}
-								</Link>
-							</td>
-							<td>{user.email}</td>
-							<td>{user.created_at}</td>
-							<td>
-                                <Link className="text-decoration-none">
-                                    <div className='text-danger'
-                                        id={`block-option-${user.id}`}
-                                        onClick={()=>blockUser(user.id)}
-                                    >
-                                        {user.is_blocked ? <>Unblock</> : <>Block</>}
-                                    </div>
-                                </Link>
-							</td>
-						</tr>
-					))}
-                </tbody>
-            </Table>
-        </Container>
+        < ShowAllUsers users={users} />
     );
 }

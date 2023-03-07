@@ -47,6 +47,16 @@ export default function Account() {
         }
     }
 
+    function handleNameChange(e){
+        setName(e.target.value);
+        setNameError('');
+    }
+
+    function handleEmailChange(e){
+        setEmail(e.target.value);
+        setEmailError('');
+    }
+
     function handleSubmit(e) {
         e.preventDefault();
         if (!name) {
@@ -100,7 +110,9 @@ export default function Account() {
                     </Card.Text>
                 </Card.Body>
             </Card>
+
             <Button onClick={displayForm}>Update your details</Button>
+
             {showForm && (
                 <Form className="col-md-4">
                     <Form.Floating className="my-3">
