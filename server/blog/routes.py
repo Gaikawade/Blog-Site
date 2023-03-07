@@ -104,9 +104,8 @@ def logout():
 
 
 # User Account details and Update Account API
-@app.route('/account', methods=['GET', 'PUT'])
-def account():
-    user_id = request.args.get('userId')
+@app.route('/account/<string:user_id>', methods=['GET', 'PUT'])
+def account(user_id):
     member = ''
     try:
         if user_id.startswith('A'):

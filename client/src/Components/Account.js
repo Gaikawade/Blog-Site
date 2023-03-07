@@ -18,14 +18,15 @@ export default function Account() {
     const [nameError, setNameError] = useState("");
     const [emailError, setEmailError] = useState("");
     const [submitError, setSubmitError] = useState("");
-    let userId = null;
+
+
+    const [showForm, setShowForm] = useState(false);
+    const token = jwt_decode(localStorage.getItem("token"));
+    const userId = token.userId;
 
     useEffect(() => {
-        const token = localStorage.getItem("token");
-        const decodedToken = jwt_decode(token);
-        userId = decodedToken.userId;
         axios
-            .get(`/account`, { params: { userId } })
+            .get(`/account/${userId}`)
             .then((res) => {
                 // console.log(res.data);
                 setUser(res.data.member);
@@ -38,51 +39,47 @@ export default function Account() {
             });
     }, []);
 
-    function handleNameChange(e) {
-        setName(e.target.value);
-        setNameError("");
-    }
-
-    function handleEmailChange(e) {
-        setEmail(e.target.value);
-        setEmailError("");
+    function displayForm() {
+        if (showForm) {
+            setShowForm(false);
+        } else {
+            setShowForm(true);
+        }
     }
 
     function handleSubmit(e) {
         e.preventDefault();
         if (!name) {
-            setNameError("Please enter your name");
+            return setNameError("Please enter your name");
         } else if (name.length < 2 || !nameRegex.test(name)) {
-            setNameError(
+            return setNameError(
                 "Name should be alpha characters only & minimum 2 characters should be expected"
             );
         }
 
         if (!email) {
-            setEmailError("Please enter your email");
+            return setEmailError("Please enter your email");
         } else if (!/\S+@\S+\.\S+/.test(email)) {
-            setEmailError("Please enter a valid email");
+            return setEmailError("Please enter a valid email");
         }
 
         if (user.name == name && user.email == email) {
-            setSubmitError(`You haven't update details`);
-            return null;
+            return setSubmitError(`You haven't update details`);
         }
-        // const token = jwt_decode(localStorage.getItem("token"));
-        // userId = token.userId;
-        console.log(userId);
-        axios.put('/account', {params: {userId: userId }}, {
-            name : name,
-            email : email
-        })
-        .then((res) => {
-            if (res.data.status){
-                alert('Your account details have been updated');
-            }
-        })
-        .catch((err) => {
-            console.log(err);
-        })
+
+        axios
+            .put(`/account/${userId}`, {
+                name: name,
+                email: email,
+            })
+            .then((res) => {
+                if (res.data.status) {
+                    alert("Your account details have been updated");
+                }
+            })
+            .catch((err) => {
+                console.log(err);
+            });
     }
     if (isLoading) {
         return <div className="text-center">Loading...</div>;
@@ -97,73 +94,60 @@ export default function Account() {
                         Hello <strong>{user.name}</strong>
                     </Card.Title>
                     <Card.Text>
-                        <>
-                            {" "}
-                            Id: <strong>{user.id}</strong>{" "}
-                        </>
-                        <>
-                            {" "}
-                            Name: <strong>{user.name}</strong>{" "}
-                        </>
-                        <>
-                            {" "}
-                            Email: <strong>{user.email}</strong>{" "}
-                        </>
+                        Id: <strong>{user.id}</strong> <br />
+                        Name: <strong>{user.name}</strong> <br />
+                        Email: <strong>{user.email}</strong> <br />
                     </Card.Text>
                 </Card.Body>
             </Card>
-
-            <Button id={"update-button"}>Update your details</Button>
-
-            <Form
-                className="col-md-4"
-                id="update-form"
-                style={{ display: "block" }}
-            >
-                <Form.Floating className="my-3">
-                    <Form.Control
-                        type="name"
-                        placeholder="name"
-                        value={name}
-                        onChange={handleNameChange}
-                    />
-                    <label htmlFor="floatingInputCustom">Name</label>
-                    {nameError && (
+            <Button onClick={displayForm}>Update your details</Button>
+            {showForm && (
+                <Form className="col-md-4">
+                    <Form.Floating className="my-3">
+                        <Form.Control
+                            type="name"
+                            placeholder="name"
+                            value={name}
+                            onChange={handleNameChange}
+                        />
+                        <label htmlFor="floatingInputCustom">Name</label>
+                        {nameError && (
+                            <Form.Text className="text-danger">
+                                {nameError}
+                            </Form.Text>
+                        )}
+                    </Form.Floating>
+                    <Form.Floating className="mb-3">
+                        <Form.Control
+                            type="email"
+                            placeholder="Email"
+                            value={email}
+                            onChange={handleEmailChange}
+                        />
+                        <label htmlFor="floatingPasswordCustom">Email`</label>
+                        {emailError && (
+                            <Form.Text className="text-danger">
+                                {emailError}
+                            </Form.Text>
+                        )}
+                    </Form.Floating>
+                    {submitError && (
                         <Form.Text className="text-danger">
-                            {nameError}
+                            {" "}
+                            {submitError}{" "}
                         </Form.Text>
                     )}
-                </Form.Floating>
-                <Form.Floating className="mb-3">
-                    <Form.Control
-                        type="email"
-                        placeholder="Email"
-                        value={email}
-                        onChange={handleEmailChange}
-                    />
-                    <label htmlFor="floatingPasswordCustom">Email`</label>
-                    {emailError && (
-                        <Form.Text className="text-danger">
-                            {emailError}
-                        </Form.Text>
-                    )}
-                </Form.Floating>
-                {submitError && (
-                    <Form.Text className="text-danger">
-                        {" "}
-                        {submitError}{" "}
-                    </Form.Text>
-                )}
-                <Form.Floating>
-                    <Button
-                        variant="primary"
-                        type="submit"
-                        onClick={handleSubmit}
-                    >
-                        Submit
-                    </Button>
-                </Form.Floating>
-            </Form>
+                    <Form.Floating>
+                        <Button
+                            variant="primary"
+                            type="submit"
+                            onClick={handleSubmit}
+                        >
+                            Submit
+                        </Button>
+                    </Form.Floating>
+                </Form>
+            )}
         </Container>
     );
 }

@@ -29,7 +29,7 @@ function App() {
                     <Route path="/register" element={ <RegisterForm /> } />
                     <Route path="/login" element={ <LoginForm /> } />
                     <Route path='/logout' element={ <Logout /> } />
-                    <Route path='/account' element={ <Account /> } />
+                    <Route path='/account/:user_id' element={ <Account /> } />
                     {/* Logged In user's posts */}
                     <Route path='/user/all_posts' element={ < AllPosts /> } />
                     {/* Random user's posts */}
@@ -45,7 +45,7 @@ function App() {
                     <Route path='/post/:post_id' element={ <FullPost />} />
                     <Route path='/post/update/:postId' element={ <UpdatePost />} />
                     {/* Search */}
-                    <Route path='/search/q' element={ <Search /> } />
+                    <Route path='/search' element={ <Search /> } />
                 </Routes>
                 <Footer />
             {/* </div> */}
