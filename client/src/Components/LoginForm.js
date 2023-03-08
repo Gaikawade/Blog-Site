@@ -4,8 +4,7 @@ import axios from "axios";
 
 import Form from "react-bootstrap/Form";
 import Button from "react-bootstrap/Button";
-import Container from 'react-bootstrap/Container';
-
+import Container from "react-bootstrap/Container";
 
 function LoginForm() {
     const [email, setEmail] = useState("");
@@ -57,10 +56,8 @@ function LoginForm() {
             .then((response) => {
                 localStorage.clear();
                 localStorage.setItem("token", response.data.token);
-                axios.defaults.headers.common[
-                    "Authorization"
-                ] = `Bearer ${response.data.token}`;
-                console.log(response.request._header);
+                // axios.defaults.headers.common["Authorization"] = `Bearer ${response.data.token}`;
+
                 navigate("/");
                 location.reload();
             })
@@ -124,7 +121,7 @@ function LoginForm() {
                         Submit
                     </Button>
                 </Form.Floating>
-                Dont't have Account? <Link to={'/register'}>Regester</Link>
+                Dont't have Account? <Link to={"/register"}>Register</Link>
             </Form>
         </Container>
     );

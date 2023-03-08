@@ -9,7 +9,8 @@ import Nav from "react-bootstrap/Nav";
 import Navbar from "react-bootstrap/Navbar";
 import Dropdown from "react-bootstrap/Dropdown";
 
-function NavScrollExample() {
+function NavScrollExample(props) {
+    const { updateUrl } = props;
     const [currentUser, setCurrentUser] = useState({});
     const [searchTerm, setSearchTerm] = useState("");
     const [searchError, setSearchError] = useState('');
@@ -26,6 +27,10 @@ function NavScrollExample() {
                 console.log(error);
             });
     }, []);
+
+    function handleClick(source) {
+        navigate(`/admin/${source}`);
+      }
 
     function handleChangeSearchKeyword(e) {
         setSearchTerm(e.target.value);
@@ -74,18 +79,21 @@ function NavScrollExample() {
                                         <Link
                                             className="nav-link"
                                             to="/admin/all_users"
+                                            onClick={() => updateUrl('users')}
                                         >
                                             Users
                                         </Link>
                                         <Link
                                             className="nav-link"
                                             to="/admin/all_posts"
+                                            onClick={() => updateUrl('posts')}
                                         >
                                             Posts
                                         </Link>
                                         <Link
                                             className="nav-link"
                                             to="/admin/all_admins"
+                                            onClick={() => updateUrl('admins')}
                                         >
                                             Admins
                                         </Link>

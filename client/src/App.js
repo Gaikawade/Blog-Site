@@ -9,42 +9,49 @@ import RegisterForm from "./Components/RegisterForm";
 import Logout from "./Components/Logout";
 import AddPost from "./Components/AddPost";
 import UpdatePost from "./Components/UpdatePost";
-import AllUsers from "./Components/AllUsers";
+import Admin from './Components/Admin'
 import AllPosts from "./Components/AllPosts";
-import AllAdmins from "./Components/AllAdmins";
+// import AllAdmins from "./Components/AllAdmins";
 import Search from "./Components/Search";
 import Account from "./Components/Account";
+import { useState } from "react";
 
 function App() {
+    const [url, setUrl] = useState('all_users');
+
+    function updateUrl(source) {
+      setUrl(source);
+    }
+
     return (
         <BrowserRouter>
             {/* <div className=""> */}
-                <Navigation />
-                <Routes>
-                    {/* Home Page */}
-                    <Route path="/" element={ <Home /> } />
-                    <Route path="/home" element={ <Home /> } />
-                    {/* User Routes */}
-                    <Route path="/register" element={ <RegisterForm /> } />
-                    <Route path="/login" element={ <LoginForm /> } />
-                    <Route path='/logout' element={ <Logout /> } />
-                    <Route path='/account/:user_id' element={ <Account /> } />
-                    {/* specific user's posts */}
-                    <Route path='/user/:userId/posts' element={ < AllPosts /> } />
-                    {/* Admin Routes */}
-                    <Route path="/admin/register" element={ <RegisterForm /> } />
-                    <Route path="/admin/login" element={ <LoginForm /> } />
-                    <Route path='/admin/all_users' element={ <AllUsers />} />
-                    <Route path='/admin/all_posts' element={ < AllPosts />} />
-                    <Route path='/admin/all_admins' element={ < AllAdmins />} />
-                    {/* Post Routes */}
-                    <Route path='/add_post' element={ <AddPost /> } />
-                    <Route path='/post/:post_id' element={ <FullPost />} />
-                    <Route path='/post/update/:postId' element={ <UpdatePost />} />
-                    {/* Search */}
-                    <Route path='/search' element={ <Search /> } />
-                </Routes>
-                <Footer />
+            <Navigation />
+            <Routes>
+                {/* Home Page */}
+                <Route path="/" element={<Home />} />
+                <Route path="/home" element={<Home />} />
+                {/* User Routes */}
+                <Route path="/register" element={<RegisterForm />} />
+                <Route path="/login" element={<LoginForm />} />
+                <Route path="/logout" element={<Logout />} />
+                <Route path="/account/:user_id" element={<Account />} />
+                {/* specific user's posts */}
+                <Route path="/user/:userId/posts" element={<AllPosts />} />
+                {/* Admin Routes */}
+                <Route path="/admin/register" element={<RegisterForm />} />
+                <Route path="/admin/login" element={<LoginForm />} />
+                <Route path="/admin/all_users" element={<Admin url={url} />} />
+                <Route path="/admin/all_posts" element={<Admin url={url} />} />
+                <Route path="/admin/all_admins" element={<Admin url={url} />} />
+                {/* Post Routes */}
+                <Route path="/add_post" element={<AddPost />} />
+                <Route path="/post/:post_id" element={<FullPost />} />
+                <Route path="/post/update/:postId" element={<UpdatePost />} />
+                {/* Search */}
+                <Route path="/search" element={<Search />} />
+            </Routes>
+            <Footer />
             {/* </div> */}
         </BrowserRouter>
     );

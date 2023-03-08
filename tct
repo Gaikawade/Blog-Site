@@ -1,0 +1,77 @@
+import axios from "axios";
+import React, { useEffect, useState } from "react";
+import Spinner from "react-bootstrap/esm/Spinner";
+import { useNavigate } from "react-router-dom";
+import ShowAllMembers from "./ShowAllMembers";
+import ShowAllPosts from "./ShowAllPosts";
+
+export default function AllUsers() {
+    const [users, setUsers] = useState([]);
+    const [admins, setAdmins] = useState([]);
+    const [posts, setPosts] = useState([]);
+    const [isLoading, setIsLoading] = useState(true);
+    const navigate = useNavigate();
+    const URI = document.URL;
+    let api = null;
+    let source = null;
+
+    if (URI.includes("all_admins")) {
+        api = `/admin/all_admins`;
+        source = "admin";
+    } else if (URI.includes("all_users")) {
+        api = `/admin/all_users`;
+        source = "user";
+    } else if (URI.includes("all_posts")) {
+        api = `/admin/all_posts`;
+        source = "post";
+    }
+
+    useEffect(() => {
+        const token = localStorage.getItem("token");
+        if (token) {
+            axios
+                .get(api)
+                .then((response) => {
+                    console.log(response.data);
+                    if (source == "admin") {
+                        setAdmins(response.data.admins);
+                    } else if (source == "user") {
+                        setUsers(response.data.users);
+                    } else if (source == "post") {
+                        setPosts(response.data.posts);
+                    }
+                    setIsLoading(false);
+                })
+                .catch((error) => {
+                    navigate("/");
+                    alert(error.response.data.message);
+                    // console.error(error);
+                });
+        } else {
+            navigate("/admin/login");
+        }
+    }, []);
+
+    if (isLoading) {
+        return (
+            <div className="text-center">
+                <Spinner animation="border" variant="primary" />
+            </div>
+        );
+    }
+
+    return (
+        <div>
+            {users.length ? (
+                <ShowAllMembers users={users} />
+            ) : admins.length ? (
+                <ShowAllMembers admins={admins} />
+            ) : posts.length ? (
+                <ShowAllPosts posts={posts} />
+            ) : null}
+        </div>
+    );
+}
+
+how to rerender this when ever i click on navbar for users, posts and admins which is a different component and i rendered that navbar and above component in app.js
+

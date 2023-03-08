@@ -402,8 +402,8 @@ def admin_login():
 
 # Fetch all users API, which is available to admins only
 @app.route('/admin/all_users', methods=['GET'])
-@login_required
-def all_users():
+@token_required
+def all_users(logged_in_user):
     if check_access():
         try:
             users = User.query.order_by(User.created_at.desc())
@@ -417,8 +417,8 @@ def all_users():
 
 # Fetch all users API, which is available to admins only
 @app.route('/admin/all_admins', methods=['GET'])
-@login_required
-def all_admins():
+@token_required
+def all_admins(logged_in_user):
     if check_access():
         try:
             admins = Admin.query.order_by(Admin.created_at.desc())
@@ -432,8 +432,8 @@ def all_admins():
 
 # Fetch all posts API, which is available to admins only
 @app.route('/admin/all_posts', methods=['GET'])
-@login_required
-def all_posts():
+@token_required
+def all_posts(logged_in_user):
     if check_access():
         try:
             posts = Post.query.order_by(Post.created_at.desc())
