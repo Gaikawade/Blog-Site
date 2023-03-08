@@ -5,7 +5,7 @@ from blog import app, bcrypt, db
 from flask_login import login_required, login_user, logout_user, current_user
 import jwt
 from datetime import datetime, timedelta
-from .auth import authorize
+from .auth import token_required
 
 
 # Function to check whether user is logged in or not
@@ -80,7 +80,7 @@ def login():
                 token = jwt.encode({
                     'userId': document.id,
                     'isAdmin': check_access(),
-                    'expiration': str(datetime.utcnow() + timedelta(minutes=120))
+                    'exp': datetime.utcnow() + timedelta(minutes=30)
                 }, app.config['SECRET_KEY'])
                 response = jsonify({'status': True, 'message': 'Login successful', 'token': token})
                 response.headers['Authorization'] = f'Bearer {token}'
@@ -93,12 +93,12 @@ def login():
 
 # Logout API
 @app.route('/logout', methods=['POST'])
-@login_required
-def logout():
+@token_required
+def logout(current):
     try:
-        if current_user.is_authenticated:
+        if current:
             logout_user()
-            return jsonify({'status': True, 'message': 'Logout successfully'}), 200
+            return jsonify({'status': True, 'message': 'Logout successfully', 'user': current.to_dict()}), 200
         else:
             return jsonify({'status': False, 'message': 'Please Login'}), 400
     except Exception as e:
@@ -140,7 +140,6 @@ def account(user_id):
 
 # App post API
 @app.route('/add_post', methods=['POST'])
-@authorize
 def add_post():
     try:
         title = request.json.get('title')
@@ -162,7 +161,6 @@ def add_post():
 
 # Read post data API
 @app.route('/post/<int:post_id>', methods=['GET'])
-@authorize
 def read_post(post_id):
     try:
         post = Post.query.filter_by(id=post_id).first()

@@ -4,7 +4,7 @@ import Table from "react-bootstrap/esm/Table";
 import { Link } from "react-router-dom";
 import { blockUser } from "../script";
 
-export default function ShowAllUsers(props) {
+export default function ShowAllMembers(props) {
     let users = {};
     if(props.users){
         users = props.users;

@@ -3,6 +3,7 @@ import axios from "axios";
 import ShowAllPosts from "./ShowAllPosts";
 
 import Container from "react-bootstrap/esm/Container";
+import Spinner from "react-bootstrap/Spinner";
 
 function Home() {
     const [posts, setPosts] = useState([]);
@@ -22,7 +23,11 @@ function Home() {
     }, []);
 
     if (isLoading) {
-        return <p className="text-center">Loading...</p>;
+        return (
+            <div className="text-center">
+                <Spinner animation="border" variant="primary" />
+            </div>
+        );
     }
 
     return (

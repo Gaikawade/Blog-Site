@@ -1,8 +1,8 @@
 import axios from "axios";
 import React, { useEffect, useState } from "react";
+import Spinner from "react-bootstrap/esm/Spinner";
 import { useNavigate } from "react-router-dom";
-import ShowAllUsers from "./ShowAllUsers";
-
+import ShowAllMembers from "./ShowAllMembers";
 
 export default function AllUsers() {
     const [users, setUsers] = useState([]);
@@ -20,7 +20,7 @@ export default function AllUsers() {
                     setIsLoading(false);
                 })
                 .catch((error) => {
-                    navigate('/')
+                    navigate("/");
                     alert(error.response.data.message);
                     // console.error(error);
                 });
@@ -30,10 +30,12 @@ export default function AllUsers() {
     }, []);
 
     if (isLoading) {
-        return <div className="text-center">Loading...</div>;
+        return (
+            <div className="text-center">
+                <Spinner animation="border" variant="primary" />
+            </div>
+        );
     }
 
-    return (
-        < ShowAllUsers users={users} />
-    );
+    return <ShowAllMembers users={users} />;
 }

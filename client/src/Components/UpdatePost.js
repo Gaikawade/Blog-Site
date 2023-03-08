@@ -2,6 +2,7 @@ import axios from "axios";
 import jwt_decode from "jwt-decode";
 import React, { useEffect, useState } from "react";
 import Button from "react-bootstrap/esm/Button";
+import Spinner from "react-bootstrap/esm/Spinner";
 import Form from "react-bootstrap/Form";
 import { useNavigate, useParams } from "react-router-dom";
 
@@ -70,7 +71,11 @@ export default function UpdatePost() {
     }
 
     if (isLoading) {
-        return <p className="text-center">Loading...</p>;
+        return (
+            <div className="text-center">
+                <Spinner animation="border" variant="primary" />
+            </div>
+        );
     }
 
     return (

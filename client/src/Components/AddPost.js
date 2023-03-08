@@ -13,10 +13,9 @@ export default function AddPost() {
     const [currentUser, setCurrentUser]= useState('');
     const navigate = useNavigate();
 
-    useEffect(() => {        
+    useEffect(() => {
         const token = localStorage.getItem('token');
         const decodenToken = jwt_decode(token);
-        
 
         if (currentUser){
 

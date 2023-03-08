@@ -9,6 +9,7 @@ import Container from "react-bootstrap/esm/Container";
 import Col from "react-bootstrap/esm/Col";
 import Row from "react-bootstrap/esm/Row";
 import Button from "react-bootstrap/esm/Button";
+import Spinner from "react-bootstrap/esm/Spinner";
 
 export default function FullPost() {
     const { post_id } = useParams();
@@ -99,7 +100,11 @@ export default function FullPost() {
     }
 
     if (isLoading) {
-        return <p className="text-center">Loading...</p>;
+        return (
+            <div className="text-center">
+                <Spinner animation="border" variant="primary" />
+            </div>
+        );
     }
 
     return (

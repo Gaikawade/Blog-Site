@@ -1,12 +1,11 @@
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-
 import axios from "axios";
+
 import Form from "react-bootstrap/Form";
 import Button from "react-bootstrap/Button";
 import Container from 'react-bootstrap/Container';
 
-// axios.defaults.baseURL = 'http://localhost:5000';
 
 function LoginForm() {
     const [email, setEmail] = useState("");

@@ -1,8 +1,9 @@
 import axios from "axios";
 import React, { useEffect, useState } from "react";
+import Spinner from "react-bootstrap/esm/Spinner";
 import { useNavigate, useParams } from "react-router-dom";
-
 import ShowAllPosts from "./ShowAllPosts";
+
 
 export default function AllPosts() {
     const [posts, setPosts] = useState([]);
@@ -43,7 +44,11 @@ export default function AllPosts() {
     }, []);
 
     if (isLoading) {
-        return <div className="text-center">Loading...</div>;
+        return (
+            <div className="text-center">
+                <Spinner animation="border" variant="primary" />
+            </div>
+        );
     }
 
     return (

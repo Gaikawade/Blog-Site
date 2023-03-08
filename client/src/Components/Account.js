@@ -6,7 +6,7 @@ import Card from "react-bootstrap/Card";
 import Form from "react-bootstrap/Form";
 import Button from "react-bootstrap/Button";
 import axios from "axios";
-import { Link } from "react-router-dom";
+import Spinner from 'react-bootstrap/Spinner';
 
 const nameRegex = /^[a-zA-Z]+ ?[a-zA-Z ]*$/;
 
@@ -92,7 +92,11 @@ export default function Account() {
             });
     }
     if (isLoading) {
-        return <div className="text-center">Loading...</div>;
+        return (
+            <div className="text-center">
+                <Spinner animation="border" variant="primary" />
+            </div>
+        );
     }
 
     return (

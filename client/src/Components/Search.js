@@ -2,9 +2,10 @@ import axios from "axios";
 import React, { useEffect, useState } from "react";
 import Container from "react-bootstrap/esm/Container";
 import Nav from "react-bootstrap/esm/Nav";
+import Spinner from "react-bootstrap/esm/Spinner";
 import { useLocation } from "react-router-dom";
 import ShowAllPosts from "./ShowAllPosts";
-import ShowAllUsers from "./ShowAllUsers";
+import ShowAllUsers from "./ShowAllMembers";
 
 export default function Search() {
     const location = useLocation();
@@ -12,7 +13,7 @@ export default function Search() {
     const [users, setUsers] = useState({});
     const [posts, setPosts] = useState({});
     const [admins, setAdmins] = useState({});
-    const [activeTab, setActiveTab] = useState('posts');
+    const [activeTab, setActiveTab] = useState("posts");
     const [isLoading, setIsLoading] = useState(true);
 
     useEffect(() => {
@@ -31,11 +32,15 @@ export default function Search() {
     }, []);
 
     const handleSelect = (eventKey) => {
-      setActiveTab(eventKey);
+        setActiveTab(eventKey);
     };
 
     if (isLoading) {
-        return <div className="text-center mt-5">Loading...</div>;
+        return (
+            <div className="text-center">
+                <Spinner animation="border" variant="primary" />
+            </div>
+        );
     }
 
     return (
@@ -52,10 +57,15 @@ export default function Search() {
                 </Nav.Item>
             </Nav>
             <br />
-            {activeTab === "users" && < ShowAllUsers users={users} keyword={searchTerm} />}
-            {activeTab === "posts" && <ShowAllPosts posts={posts} keyword={searchTerm} />}
-            {activeTab === "admins" && <ShowAllUsers admins={admins} keyword={searchTerm} />}
-
+            {activeTab === "users" && (
+                <ShowAllUsers users={users} keyword={searchTerm} />
+            )}
+            {activeTab === "posts" && (
+                <ShowAllPosts posts={posts} keyword={searchTerm} />
+            )}
+            {activeTab === "admins" && (
+                <ShowAllUsers admins={admins} keyword={searchTerm} />
+            )}
         </Container>
     );
 }
