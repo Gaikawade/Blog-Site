@@ -1,8 +1,9 @@
 import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import axios from "axios";
 import Form from 'react-bootstrap/Form';
 import Button from 'react-bootstrap/Button';
+import Container from 'react-bootstrap/Container';
 
 export default function RegisterForm() {
     const [name, setName] = useState("");
@@ -13,6 +14,7 @@ export default function RegisterForm() {
     const [emailError, setEmailError] = useState('');
     const [passwordError, setPasswordError] = useState('');
     const [confirmPasswordError, setConfirmPasswordError] = useState('');
+    const [submitError, setSubmitError] = useState('');
     const navigate = useNavigate();
     const URL = document.URL;
     const nameRegex = /^[a-zA-Z]+ ?[a-zA-Z ]*$/;
@@ -51,27 +53,19 @@ export default function RegisterForm() {
         e.preventDefault();
 
         // Validate form inputs
-        if (!name) {
-            setNameError('Please enter your name');
-        } else if (name.length < 2 || !nameRegex.test(name)) {
+        if (name.length < 2 || !nameRegex.test(name)) {
             setNameError('Name should be alpha characters only & minimum 2 characters should be expected');
         }
     
-        if (!email) {
-            setEmailError('Please enter your email');
-        } else if (!/\S+@\S+\.\S+/.test(email)) {
+        if (!/\S+@\S+\.\S+/.test(email)) {
             setEmailError('Please enter a valid email');
         }
     
-        if (!password) {
-            setPasswordError('Please enter a password');
-        } else if (password.length < 6) {
+        if (password.length < 6) {
             setPasswordError('Password must be at least 6 characters long');
         }
     
-        if (!confirmPassword) {
-            setConfirmPasswordError('Please confirm your password');
-        } else if (confirmPassword !== password) {
+        if (confirmPassword !== password) {
             setConfirmPasswordError('Passwords do not match');
         }
 
@@ -83,27 +77,27 @@ export default function RegisterForm() {
                 confirmPassword: confirmPassword,
             })
             .then((response) => {
-                // console.log(response.data);
                 if (response.data.status === false){
-                    console.log(response.data.message);
+                    setSubmitError(response.data.message);
                     alert(response.data.message);
                 } else {
-                    alert('Registration successful')
                     navigate(navigateUrl);
+                    alert('Registration successful')
                 }
             })
             .catch((err) => {
-                console.log(err)
-                alert(err.message);
+                setSubmitError(err.response.data.message);
             });
     }
 
     return (
-        <Form className="container-fluid col-md-4">
+        <Container>
+        <Form className="container col-md-4">
             {URL.includes('admin') ? (
                 <div className="h5 m-3 text-center"> Admin Registration Form </div>
             ) : ( <div className="h5 m-3 text-center"> User Registration Form </div> )
             }
+            {submitError && <div className='text-danger'>{submitError}</div>}
             <Form.Floating className="mb-3">
                 <Form.Control
                     type="text"
@@ -111,6 +105,7 @@ export default function RegisterForm() {
                     placeholder="name"
                     value={name}
                     onChange={handleNameChange}
+                    required={true}
                 />
                 <label htmlFor="floatingInputCustom">Name</label>
                 {nameError && <Form.Text className="text-danger">{nameError}</Form.Text>}
@@ -123,6 +118,7 @@ export default function RegisterForm() {
                     placeholder="Email address"
                     value={email}
                     onChange={handleEmailChange}
+                    required={true}
                 />
                 <label htmlFor="floatingInputCustom">Email address</label>
                 {emailError && <Form.Text className="text-danger">{emailError}</Form.Text>}
@@ -152,12 +148,13 @@ export default function RegisterForm() {
                 {confirmPasswordError && <Form.Text className="text-danger">{confirmPasswordError}</Form.Text>}
             </Form.Floating>
 
-            <Form.Floating>
+            <Form.Floating className="mb-3">
                 <Button variant="primary" type="submit" onClick={handleSubmit}>
                     Submit
                 </Button>
             </Form.Floating>
-
+            Already have account? <Link to={'/login'}>Login</Link>
         </Form>
+        </Container>
     );
 }

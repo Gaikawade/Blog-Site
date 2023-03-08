@@ -1,8 +1,10 @@
 import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+
 import axios from "axios";
 import Form from "react-bootstrap/Form";
 import Button from "react-bootstrap/Button";
+import Container from 'react-bootstrap/Container';
 
 // axios.defaults.baseURL = 'http://localhost:5000';
 
@@ -40,15 +42,10 @@ function LoginForm() {
     function handleSubmit(e) {
         e.preventDefault();
 
-        if (!email) {
-            setEmailError("Please enter your email");
-        } else if (!/\S+@\S+\.\S+/.test(email)) {
+        if (!/\S+@\S+\.\S+/.test(email)) {
             setEmailError("Please enter a valid email");
         }
-
-        if (!password) {
-            setPasswordError("Please enter a password");
-        } else if (password.length < 6) {
+        if (password.length < 6) {
             setPasswordError("Password must be at least 6 characters long");
         }
 
@@ -75,7 +72,7 @@ function LoginForm() {
     }
 
     return (
-        <div className="container-fluid col-md-4">
+        <Container className="col-md-4">
             {URL.includes("admin") ? (
                 <div className="h5 m-3 text-center"> Admin Login </div>
             ) : (
@@ -119,7 +116,7 @@ function LoginForm() {
                         onChange={handleRememberChange}
                     />
                 </Form.Group>
-                <Form.Floating>
+                <Form.Floating className="mb-3">
                     <Button
                         variant="primary"
                         type="submit"
@@ -128,8 +125,9 @@ function LoginForm() {
                         Submit
                     </Button>
                 </Form.Floating>
+                Dont't have Account? <Link to={'/register'}>Regester</Link>
             </Form>
-        </div>
+        </Container>
     );
 }
 
