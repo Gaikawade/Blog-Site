@@ -44,7 +44,6 @@ export function blockUser(id) {
     axios
         .put(`/admin/block_user/${id}`)
         .then((res) => {
-            // console.log(res);
             if(res.data.operation == "Un-Blocked"){
                 showOpt.innerHTML = 'Block';
             } else {

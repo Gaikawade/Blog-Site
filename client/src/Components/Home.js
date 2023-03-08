@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
-import ShowAllPosts from "./ShowAllPosts";
+import ShowAllPosts from "./Articles/ShowAllPosts";
 
 import Container from "react-bootstrap/esm/Container";
 import Spinner from "react-bootstrap/Spinner";

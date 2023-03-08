@@ -4,8 +4,8 @@ import Container from "react-bootstrap/esm/Container";
 import Nav from "react-bootstrap/esm/Nav";
 import Spinner from "react-bootstrap/esm/Spinner";
 import { useLocation } from "react-router-dom";
-import ShowAllPosts from "./ShowAllPosts";
-import ShowAllUsers from "./ShowAllMembers";
+import ShowAllPosts from "./Articles/ShowAllPosts";
+import ShowAllUsers from "./Members/ShowAllMembers";
 
 export default function Search() {
     const location = useLocation();

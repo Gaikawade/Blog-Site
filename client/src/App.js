@@ -1,32 +1,35 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom";
-
-import Footer from "./Components/Footer";
-import Home from "./Components/Home";
-import Navigation from "./Components/Navigation";
-import LoginForm from "./Components/LoginForm";
-import FullPost from "./Components/FullPost";
-import RegisterForm from "./Components/RegisterForm";
-import Logout from "./Components/Logout";
-import AddPost from "./Components/AddPost";
-import UpdatePost from "./Components/UpdatePost";
-import Admin from './Components/Admin'
-import AllPosts from "./Components/AllPosts";
-// import AllAdmins from "./Components/AllAdmins";
-import Search from "./Components/Search";
-import Account from "./Components/Account";
 import { useState } from "react";
+// Header and Footer Component
+import Footer from "./Components/Footer";
+import Header from "./Components/Header";
+// Home Page Component
+import Home from "./Components/Home";
+// User's and Admin's Components
+import RegisterForm from "./Components/Members/RegisterForm";
+import LoginForm from "./Components/Members/LoginForm";
+import Logout from "./Components/Members/Logout";
+import Account from "./Components/Members/Account";
+import Admin from "./Components/Members/Admin";
+// Posts's Component
+import AddPost from "./Components/Articles/AddPost";
+import FullPost from "./Components/Articles/FullPost";
+import UpdatePost from "./Components/Articles/UpdatePost";
+import AllPosts from "./Components/Articles/AllPosts";
+// Search Component
+import Search from "./Components/Search";
+
 
 function App() {
-    const [url, setUrl] = useState('all_users');
+    const [url, setUrl] = useState("all_users");
 
     function updateUrl(source) {
-      setUrl(source);
+        setUrl(source);
     }
 
     return (
         <BrowserRouter>
-            {/* <div className=""> */}
-            <Navigation />
+            <Header />
             <Routes>
                 {/* Home Page */}
                 <Route path="/" element={<Home />} />
@@ -52,7 +55,6 @@ function App() {
                 <Route path="/search" element={<Search />} />
             </Routes>
             <Footer />
-            {/* </div> */}
         </BrowserRouter>
     );
 }

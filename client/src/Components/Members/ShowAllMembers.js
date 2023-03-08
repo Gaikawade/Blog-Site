@@ -2,7 +2,7 @@ import React from "react";
 import Container from "react-bootstrap/esm/Container";
 import Table from "react-bootstrap/esm/Table";
 import { Link } from "react-router-dom";
-import { blockUser } from "../script";
+import { blockUser } from "../../script";
 
 export default function ShowAllMembers(props) {
     let users = {};

@@ -3,7 +3,7 @@ import React, { useEffect, useState } from "react";
 import Spinner from "react-bootstrap/esm/Spinner";
 import { useNavigate } from "react-router-dom";
 import ShowAllMembers from "./ShowAllMembers";
-import ShowAllPosts from "./ShowAllPosts";
+import ShowAllPosts from "../Articles/ShowAllPosts";
 
 export default function AllUsers() {
     const [users, setUsers] = useState([]);
@@ -30,8 +30,8 @@ export default function AllUsers() {
         const token = localStorage.getItem("token");
         if (token) {
             const config = {
-                headers: { 'Authorization': `Bearer ${token}` },
-            }
+                headers: { Authorization: `Bearer ${token}` },
+            };
             axios
                 .get(api, config)
                 .then((response) => {

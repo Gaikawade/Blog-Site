@@ -9,7 +9,7 @@ import Nav from "react-bootstrap/Nav";
 import Navbar from "react-bootstrap/Navbar";
 import Dropdown from "react-bootstrap/Dropdown";
 
-function NavScrollExample(props) {
+function Header(props) {
     const { updateUrl } = props;
     const [currentUser, setCurrentUser] = useState({});
     const [searchTerm, setSearchTerm] = useState("");
@@ -161,4 +161,4 @@ function NavScrollExample(props) {
     );
 }
 
-export default NavScrollExample;
+export default Header;
