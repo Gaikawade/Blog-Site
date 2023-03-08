@@ -1,4 +1,3 @@
-import "./App.css";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 
 import Footer from "./Components/Footer";
@@ -30,9 +29,7 @@ function App() {
                     <Route path="/login" element={ <LoginForm /> } />
                     <Route path='/logout' element={ <Logout /> } />
                     <Route path='/account/:user_id' element={ <Account /> } />
-                    {/* Logged In user's posts */}
-                    <Route path='/user/all_posts' element={ < AllPosts /> } />
-                    {/* Random user's posts */}
+                    {/* specific user's posts */}
                     <Route path='/user/:userId/posts' element={ < AllPosts /> } />
                     {/* Admin Routes */}
                     <Route path="/admin/register" element={ <RegisterForm /> } />

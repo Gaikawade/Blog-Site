@@ -14,18 +14,13 @@ function NavScrollExample() {
     const [searchTerm, setSearchTerm] = useState("");
     const [searchError, setSearchError] = useState('');
     const navigate = useNavigate();
+
     useEffect(() => {
         axios
             .get("/check_login")
             .then((response) => {
-                // setIsLoggedIn(true);
                 setCurrentUser(response.data);
-                localStorage.setItem(
-                    "currentUser",
-                    JSON.stringify(response.data)
-                );
                 // console.log(response.data);
-                // console.log(isLoggedIn);
             })
             .catch((error) => {
                 console.log(error);
@@ -68,7 +63,7 @@ function NavScrollExample() {
                                         </Link>
                                         <Link
                                             className="nav-link"
-                                            to="/user/all_posts"
+                                            to={`/user/${currentUser.userId}/posts`}
                                         >
                                             My Posts
                                         </Link>
@@ -139,7 +134,7 @@ function NavScrollExample() {
                             ) : (
                                 <>
                                     {currentUser.isAdmin && (
-                                        <Dropdown.Item href="admin/register">
+                                        <Dropdown.Item href="/admin/register">
                                             Admin Register
                                         </Dropdown.Item>
                                     )}

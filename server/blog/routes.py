@@ -1,11 +1,11 @@
-from flask import render_template, redirect, url_for, flash, request, jsonify
+from flask import request, jsonify
 from sqlalchemy import text, or_
-from blog.forms import Register, Login, Account, PostForm, SearchForm, AdminRegister, AdminLogin
 from blog.models import add_user, add_admin, User, Post, Comment, Like, Admin
 from blog import app, bcrypt, db
 from flask_login import login_required, login_user, logout_user, current_user
 import jwt
 from datetime import datetime, timedelta
+from .auth import authorize
 
 
 # Function to check whether user is logged in or not
@@ -82,7 +82,9 @@ def login():
                     'isAdmin': check_access(),
                     'expiration': str(datetime.utcnow() + timedelta(minutes=120))
                 }, app.config['SECRET_KEY'])
-                return jsonify({'status': True, 'message': 'Login successful', 'token': token}), 200
+                response = jsonify({'status': True, 'message': 'Login successful', 'token': token})
+                response.headers['Authorization'] = f'Bearer {token}'
+                return response, 200
         else:
             return jsonify({'status': False, 'message': 'Incorrect Email or Password'}), 401
     except Exception as e:
@@ -138,7 +140,7 @@ def account(user_id):
 
 # App post API
 @app.route('/add_post', methods=['POST'])
-@login_required
+@authorize
 def add_post():
     try:
         title = request.json.get('title')
@@ -160,16 +162,17 @@ def add_post():
 
 # Read post data API
 @app.route('/post/<int:post_id>', methods=['GET'])
-# @login_required
+@authorize
 def read_post(post_id):
     try:
         post = Post.query.filter_by(id=post_id).first()
         if not post:
-            return jsonify({'message': 'No such post found'}), 404
+            return jsonify({ 'status': False, 'message': 'No such post found'}), 404
         post_dict = post.to_dict()
-        return jsonify({'message': 'Post exists', 'post': post_dict}), 200
+        return jsonify({ 'status': True, 'message': 'Post exists', 'post': post_dict}), 200
     except Exception as e:
-        return jsonify({'error': str(e)})
+        # return jsonify({'error': str(e)})
+        return e
 
 
 # Update post API
@@ -286,25 +289,10 @@ def like_post(post_id):
         return jsonify({'likes': len(post.likes), 'liked': current_user.id in map(lambda x: x.liked_by, post.likes)})
     except Exception as e:
         db.session.rollback()
-        return render_template('500_error.html')
+        return jsonify({ 'status': False, 'message': str(e)})
 
 
-# API to get all the posts of logged in users
-@app.route('/user/all_posts', methods=['GET'])
-@login_required
-def my_posts():
-    try:
-        # Query all posts by the current user
-        posts = Post.query.filter_by(user_id=current_user.id).order_by(
-            Post.created_at.desc()).all()
-        posts = [post.to_dict() for post in posts]
-
-        return jsonify({'status': True, 'posts': posts})
-    except Exception as e:
-        return jsonify({'status': False, 'message': str(e)}), 500
-
-
-# API to get all posts of other users
+# API to get all posts of ramdom users with their user id
 @app.route('/user/<string:user_id>/posts', methods=['GET'])
 @login_required
 def users_posts(user_id):

@@ -11,27 +11,26 @@ function LoginForm() {
     const [password, setPassword] = useState("");
     const [remember, setRemember] = useState(false);
     const [error, setError] = useState(null);
-    const [emailError, setEmailError] = useState('');
-    const [passwordError, setPasswordError] = useState('');
+    const [emailError, setEmailError] = useState("");
+    const [passwordError, setPasswordError] = useState("");
     const navigate = useNavigate();
-    const URL = document.URL
-    var api = ''
+    const URL = document.URL;
+    var api = "";
 
-    if (URL.includes('admin')){
-        api = '/admin/login';
+    if (URL.includes("admin")) {
+        api = "/admin/login";
     } else {
-        api = '/login';
+        api = "/login";
     }
-
 
     function handleEmailChange(e) {
         setEmail(e.target.value);
-        setEmailError('');
+        setEmailError("");
     }
 
     function handlePasswordChange(e) {
         setPassword(e.target.value);
-        setPasswordError('');
+        setPasswordError("");
     }
 
     function handleRememberChange(e) {
@@ -42,15 +41,15 @@ function LoginForm() {
         e.preventDefault();
 
         if (!email) {
-            setEmailError('Please enter your email');
+            setEmailError("Please enter your email");
         } else if (!/\S+@\S+\.\S+/.test(email)) {
-            setEmailError('Please enter a valid email');
+            setEmailError("Please enter a valid email");
         }
-    
+
         if (!password) {
-            setPasswordError('Please enter a password');
+            setPasswordError("Please enter a password");
         } else if (password.length < 6) {
-            setPasswordError('Password must be at least 6 characters long');
+            setPasswordError("Password must be at least 6 characters long");
         }
 
         axios
@@ -60,14 +59,14 @@ function LoginForm() {
                 remember: remember,
             })
             .then((response) => {
-                console.log(response);
-                console.log(response.data.status);
                 localStorage.clear();
-                localStorage.setItem('token', response.data.token);
-                // axios.defaults.headers.common['Authorization'] = `Bearer ${response.data.access_token}`;
-
+                localStorage.setItem("token", response.data.token);
+                axios.defaults.headers.common[
+                    "Authorization"
+                ] = `Bearer ${response.data.token}`;
+                console.log(response.request._header);
                 navigate("/");
-                window.location.reload();
+                location.reload();
             })
             .catch((err) => {
                 setError(err.response.data.message);
@@ -77,42 +76,59 @@ function LoginForm() {
 
     return (
         <div className="container-fluid col-md-4">
-            {URL.includes('admin') ? (
+            {URL.includes("admin") ? (
                 <div className="h5 m-3 text-center"> Admin Login </div>
-            ) : ( <div className="h5 m-3 text-center"> User Login </div> )
-            }
+            ) : (
+                <div className="h5 m-3 text-center"> User Login </div>
+            )}
             {error && <div className="text-danger">{error}</div>}
-            <Form.Floating className="mb-3">
-                <Form.Control
-                    type="email"
-                    placeholder="name@example.com"
-                    value={email}
-                    onChange={handleEmailChange}
-                />
-                <label htmlFor="floatingInputCustom">Email address</label>
-                {emailError && <Form.Text className="text-danger">{emailError}</Form.Text>}
-            </Form.Floating>
-            <Form.Floating className="mb-3">
-                <Form.Control
-                    type="password"
-                    placeholder="Password"
-                    value={password}
-                    onChange={handlePasswordChange}
-                />
-                <label htmlFor="floatingPasswordCustom">Password</label>
-                {passwordError && <Form.Text className="text-danger">{passwordError}</Form.Text>}
-            </Form.Floating>
-            <Form.Group className="mb-3">
-                <Form.Check
-                    type="checkbox"
-                    label="Remember Me"
-                    value={remember}
-                    onChange={handleRememberChange}
-                />
-            </Form.Group>
-            <Form.Floating>
-              <Button variant="primary" type="submit" onClick={handleSubmit}>Submit</Button>
-            </Form.Floating>
+            <Form onSubmit={handleSubmit}>
+                <Form.Floating className="mb-3">
+                    <Form.Control
+                        type="email"
+                        placeholder="name@example.com"
+                        value={email}
+                        onChange={handleEmailChange}
+                    />
+                    <label htmlFor="floatingInputCustom">Email address</label>
+                    {emailError && (
+                        <Form.Text className="text-danger">
+                            {emailError}
+                        </Form.Text>
+                    )}
+                </Form.Floating>
+                <Form.Floating className="mb-3">
+                    <Form.Control
+                        type="password"
+                        placeholder="Password"
+                        value={password}
+                        onChange={handlePasswordChange}
+                    />
+                    <label htmlFor="floatingPasswordCustom">Password</label>
+                    {passwordError && (
+                        <Form.Text className="text-danger">
+                            {passwordError}
+                        </Form.Text>
+                    )}
+                </Form.Floating>
+                <Form.Group className="mb-3">
+                    <Form.Check
+                        type="checkbox"
+                        label="Remember Me"
+                        value={remember}
+                        onChange={handleRememberChange}
+                    />
+                </Form.Group>
+                <Form.Floating>
+                    <Button
+                        variant="primary"
+                        type="submit"
+                        onClick={handleSubmit}
+                    >
+                        Submit
+                    </Button>
+                </Form.Floating>
+            </Form>
         </div>
     );
 }

@@ -1,9 +1,7 @@
 import axios from "axios";
 import React, { useEffect, useState } from "react";
-import Container from "react-bootstrap/esm/Container";
-import Table from "react-bootstrap/esm/Table";
-import { Link, useNavigate } from "react-router-dom";
-import { blockUser } from "../script";
+import { useNavigate } from "react-router-dom";
+import ShowAllUsers from "./ShowAllUsers";
 
 export default function AllAdmins() {
 	const [admins, setAdmins] = useState([]);
@@ -35,42 +33,6 @@ export default function AllAdmins() {
 	}
 
     return (
-        <Container>
-            <Table hover>
-                <thead>
-                    <tr>
-                        <th>#</th>
-                        <th>Name</th>
-                        <th>Email</th>
-                        <th>Joined On</th>
-                        <th>Block/Unblock</th>
-                    </tr>
-                </thead>
-                <tbody>
-					{admins.map((admin, i=1) => (
-						<tr key={admin.id}>
-							<td>{i}</td>
-							<td>
-								<Link to='#' className='text-decoration-none'>
-									{admin.name}
-								</Link>
-							</td>
-							<td>{admin.email}</td>
-							<td>{admin.created_at}</td>
-							<td>
-								<Link className='text-decoration-none'>
-								<div className='text-danger'
-                                    id={`block-option-${admin.id}`}
-                                    onClick={()=>blockUser(admin.id)}
-                                >
-									{admin.is_blocked ? <>Unblock</> : <>Block</>}
-                                </div>
-								</Link>
-							</td>
-						</tr>
-					))}
-                </tbody>
-            </Table>
-        </Container>
+		< ShowAllUsers admins={admins}/>
     );
 }
