@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Link, useNavigate, useParams } from "react-router-dom";
+import { Link, useParams } from "react-router-dom";
 import axios from "axios";
 import jwt_decode from "jwt-decode";
 import { like, deleteArticle, check_token } from "../../script";
@@ -10,6 +10,7 @@ import Col from "react-bootstrap/esm/Col";
 import Row from "react-bootstrap/esm/Row";
 import Button from "react-bootstrap/esm/Button";
 import Spinner from "react-bootstrap/esm/Spinner";
+import Modal from "react-bootstrap/Modal";
 
 export default function FullPost() {
     const { post_id } = useParams();
@@ -18,14 +19,17 @@ export default function FullPost() {
     const [isLoading, setIsLoading] = useState(true);
     const [comment, setComment] = useState("");
     const [commentError, setCommentError] = useState("");
-    const navigate = useNavigate();
+    const [showModal, setShowModal] = useState(false);
+    const [deleteComment, setDeleteComment] = useState(null);
+    const [deletePost, setDeletePost] = useState(null);
 
     useEffect(() => {
         const token = check_token();
+        const decodedToken = jwt_decode(localStorage.getItem("token"));
+        setCurrentUser(decodedToken);
         axios
             .get(`/post/${post_id}`, token)
             .then((res) => {
-                // console.log(res);
                 setArticle(res.data.post);
                 setIsLoading(false);
             })
@@ -36,6 +40,23 @@ export default function FullPost() {
 
     function handleCommentChange(e) {
         setComment(e.target.value);
+    }
+
+    function handleShowModal(source) {
+        if ("author" in source) {
+            setDeletePost(source);
+            console.log(source);
+        } else {
+            setDeleteComment(source);
+        }
+        // console.log(source);
+        setShowModal(true);
+    }
+
+    function handleCloseModal() {
+        setDeletePost(null);
+        setDeleteComment(null);
+        setShowModal(false);
     }
 
     function showCommentInput() {
@@ -65,10 +86,14 @@ export default function FullPost() {
         }
 
         axios
-            .post(`/add_comment/${article.post.id}`, {
-                text: comment,
-                commented_by: currentUser.userId,
-            }, token)
+            .post(
+                `/add_comment/${article.post.id}`,
+                {
+                    text: comment,
+                    commented_by: currentUser.userId,
+                },
+                token
+            )
             .then((response) => {
                 // console.log(response.data);
                 alert(response.data.message);
@@ -78,23 +103,6 @@ export default function FullPost() {
             .catch((error) => {
                 // console.log(error);
                 alert("Something went wrong");
-            });
-    }
-
-    function handleDeleteComment(commentId) {
-        const token = check_token();
-        axios
-            .delete(`/delete_comment/${commentId}`, token)
-            .then((response) => {
-                // console.log(response);
-                alert("Comment deleted successfully");
-                window.location.reload();
-            })
-            .catch((error) => {
-                if (!error.response.data.status) {
-                    alert(error.response.data.message);
-                }
-                console.log(error);
             });
     }
 
@@ -125,11 +133,9 @@ export default function FullPost() {
                                 ) : null}
                                 &nbsp;
                                 {currentUser.userId === article.author.id ||
-                                currentUser.isAdmin === true ? (
+                                currentUser.isAdmin ? (
                                     <Link
-                                        onClick={() =>
-                                            deleteArticle(article.post.id)
-                                        }
+                                        onClick={() => handleShowModal(article)}
                                     >
                                         <i className="fa fa-trash text-danger"></i>
                                     </Link>
@@ -247,11 +253,11 @@ export default function FullPost() {
                                     {currentUser.userId ===
                                         comment.commented_by.id ||
                                     currentUser.isAdmin ||
-                                    currentUser.userId === article.post.id ? (
+                                    currentUser.userId === article.author.id ? (
                                         <i
                                             className="fa fa-trash text-danger"
                                             onClick={() =>
-                                                handleDeleteComment(comment.id)
+                                                handleShowModal(comment)
                                             }
                                         ></i>
                                     ) : null}
@@ -262,6 +268,34 @@ export default function FullPost() {
                     ))}
                 </Card>
             </Container>
+            {/* Delete Modal for Comment and Post */}
+            <Modal show={showModal} onHide={handleCloseModal}>
+                <Modal.Header closeButton>
+                    <Modal.Title>
+                        {deleteComment ? "Delete Comment" : "Delete Post"}
+                    </Modal.Title>
+                </Modal.Header>
+                <Modal.Body>
+                    Are you sure you want to delete{" "}
+                        {deleteComment &&
+                             <><strong>{deleteComment.commented_by.name}</strong>'s comment?</>
+                        }
+                        {deletePost &&
+                            <><strong>{deletePost.post.title}</strong> article?</>
+                        }
+                </Modal.Body>
+                <Modal.Footer>
+                    <Button variant="secondary" onClick={handleCloseModal}>
+                        Cancel
+                    </Button>
+                    <Button
+                        variant="danger"
+                        onClick={() => handleDeleteComment(deleteComment.id)}
+                    >
+                        Delete
+                    </Button>
+                </Modal.Footer>
+            </Modal>
         </div>
     );
 }

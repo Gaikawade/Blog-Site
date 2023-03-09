@@ -1,16 +1,38 @@
-import React from "react";
+import React, { useState } from "react";
+import { Link } from "react-router-dom";
+
 import Container from "react-bootstrap/esm/Container";
 import Table from "react-bootstrap/esm/Table";
-import { Link } from "react-router-dom";
+import Modal from "react-bootstrap/Modal";
+import Button from "react-bootstrap/esm/Button";
 import { blockUser } from "../../script";
 
 export default function ShowAllMembers(props) {
+    const [showModal, setShowModal] = useState(false);
+    const [user, setUser] = useState(null);
     let users = {};
-    if(props.users){
+
+    if (props.users) {
         users = props.users;
     } else {
         users = props.admins;
     }
+
+    const handleShowModal = (user) => {
+        setUser(user);
+        setShowModal(true);
+    };
+
+    const handleCloseModal = () => {
+        setUser(null);
+        setShowModal(false);
+    };
+
+    const handleConfirm = (id) => {
+        blockUser(id);
+        handleCloseModal();
+    };
+
     return (
         <Container>
             {!users.length ? (
@@ -47,7 +69,9 @@ export default function ShowAllMembers(props) {
                                         <div
                                             className="text-danger"
                                             id={`block-option-${user.id}`}
-                                            onClick={() => blockUser(user.id)}
+                                            onClick={() =>
+                                                handleShowModal(user)
+                                            }
                                         >
                                             {user.is_blocked ? (
                                                 <>Unblock</>
@@ -62,6 +86,30 @@ export default function ShowAllMembers(props) {
                     </tbody>
                 </Table>
             )}
+
+            {user ? (
+                <Modal show={showModal} onHide={handleCloseModal}>
+                    <Modal.Header closeButton>
+                        <Modal.Title>Confirm Block</Modal.Title>
+                    </Modal.Header>
+                    <Modal.Body>
+                        Are you sure you want to {user.is_blocked ? "Un-block" : "Block"}
+                        &nbsp;
+                        <strong>{user.name}</strong>
+                    </Modal.Body>
+                    <Modal.Footer>
+                        <Button variant="secondary" onClick={handleCloseModal}>
+                            Cancel
+                        </Button>
+                        <Button
+                            variant="danger"
+                            onClick={() => handleConfirm(user.id)}
+                        >
+                            {user.is_blocked ? "Unblock" : "Block"}
+                        </Button>
+                    </Modal.Footer>
+                </Modal>
+            ) : null}
         </Container>
     );
 }

@@ -98,7 +98,7 @@ def logout(current):
     try:
         if current:
             logout_user()
-            return jsonify({'status': True, 'message': 'Logout successfully', 'user': current.to_dict()}), 200
+            return jsonify({'status': True, 'message': 'Logout successfully' }), 200
         else:
             return jsonify({'status': False, 'message': 'Please Login'}), 400
     except Exception as e:
@@ -392,7 +392,7 @@ def admin_login():
                 token = jwt.encode({
                     'userId': document.id,
                     'isAdmin': check_access(),
-                    'expiration': str(datetime.utcnow() + timedelta(minutes=120))
+                    'expiration': datetime.utcnow() + timedelta(minutes=120)
                 }, app.config['SECRET_KEY'])
                 return jsonify({'status': True, 'message': 'Login successful', 'token': token}), 200
         else:
@@ -472,7 +472,7 @@ def block_user(user_id):
                     return jsonify({'stuatus': True, 'message': 'User Un-blocked successfully', 'operation': 'Un-Blocked'}), 200
             # if no user/admin found
             else:
-                return jsonify({'status': False, 'message': 'No results found'}), 404
+                return jsonify({'status': False, 'message': 'No member found'}), 404
         except Exception as e:
             db.session.rollback()
             return jsonify({'status': False, 'message': str(e)}), 500

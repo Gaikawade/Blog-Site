@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import jwt_decode from "jwt-decode";
 
 import Container from "react-bootstrap/esm/Container";
@@ -21,6 +21,7 @@ export default function Account() {
     const [emailError, setEmailError] = useState("");
     const [submitError, setSubmitError] = useState("");
     const [showForm, setShowForm] = useState(false);
+    const { user_id } = useParams();
     const navigate = useNavigate();
 
     useEffect(() => {
@@ -32,7 +33,7 @@ export default function Account() {
             headers: { Authorization: `Bearer ${token}` },
         };
         axios
-            .get(`/account/${userId}`, config)
+            .get(`/account/${user_id}`, config)
             .then((res) => {
                 // console.log(res.data);
                 setUser(res.data.member);
@@ -80,13 +81,14 @@ export default function Account() {
         }
 
         axios
-            .put(`/account/${userId}`, {
+            .put(`/account/${user_id}`, {
                 name: name,
                 email: email,
             }, token)
             .then((res) => {
                 if (res.data.status) {
                     alert("Your account details have been updated");
+                    location.reload();
                 }
             })
             .catch((err) => {

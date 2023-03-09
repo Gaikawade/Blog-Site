@@ -12,16 +12,8 @@ export function check_token(){
     const decodedToken = jwt_decode(token);
     const currentTime = Date.now() / 1000;
     if(decodedToken.exp < currentTime){
-        axios
-            .post("/logout", {}, config)
-            .then((response) => {
-                localStorage.clear();
-                navigate("/");
-                window.location.reload();
-            })
-            .catch((err) => {
-                console.log(err);
-            });
+        localStorage.clear();
+        location.href = '/login'
     }
 
     return config;
@@ -65,6 +57,24 @@ export function deleteArticle(postId) {
         })
         .catch((err) => {
             console.log(err);
+        });
+}
+
+export function deleteComment(commentId) {
+    handleCloseModal();
+    const token = check_token();
+    axios
+        .delete(`/delete_comment/${commentId}`, token)
+        .then((response) => {
+            // console.log(response);
+            alert("Comment deleted successfully");
+            window.location.reload();
+        })
+        .catch((error) => {
+            if (!error.response.data.status) {
+                alert(error.response.data.message);
+            }
+            console.log(error);
         });
 }
 
