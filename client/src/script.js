@@ -1,19 +1,20 @@
 import axios from "axios";
-import jwt_decode from 'jwt-decode';
+import jwt_decode from "jwt-decode";
+import Alert from 'react-bootstrap/Alert';
 
-export function check_token(){
-    const token = localStorage.getItem('token');
-    if(!token){
-        window.location.href = '/login';
+export function check_token() {
+    const token = localStorage.getItem("token");
+    if (!token) {
+        window.location.href = "/login";
     }
     const config = {
         headers: { Authorization: `Bearer ${token}` },
     };
     const decodedToken = jwt_decode(token);
     const currentTime = Date.now() / 1000;
-    if(decodedToken.exp < currentTime){
+    if (decodedToken.exp < currentTime) {
         localStorage.clear();
-        location.href = '/login'
+        location.href = "/login";
     }
 
     return config;
@@ -61,7 +62,6 @@ export function deleteArticle(postId) {
 }
 
 export function deleteComment(commentId) {
-    handleCloseModal();
     const token = check_token();
     axios
         .delete(`/delete_comment/${commentId}`, token)
@@ -69,6 +69,11 @@ export function deleteComment(commentId) {
             // console.log(response);
             alert("Comment deleted successfully");
             window.location.reload();
+            return (
+                <Alert color="primary">
+                    This is a primary alert — check it out!
+                </Alert>
+            );
         })
         .catch((error) => {
             if (!error.response.data.status) {
@@ -85,10 +90,10 @@ export function blockUser(id) {
     axios
         .put(`/admin/block_user/${id}`, {}, token)
         .then((res) => {
-            if(res.data.operation == "Un-Blocked"){
-                showOpt.innerHTML = 'Block';
+            if (res.data.operation == "Un-Blocked") {
+                showOpt.innerHTML = "Block";
             } else {
-                showOpt.innerHTML = 'Un-Block';
+                showOpt.innerHTML = "Un-Block";
             }
         })
         .catch((err) => console.log(err.response));

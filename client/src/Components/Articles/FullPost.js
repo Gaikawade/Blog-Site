@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import axios from "axios";
 import jwt_decode from "jwt-decode";
-import { like, deleteArticle, check_token } from "../../script";
+import { like, deleteArticle, check_token, deleteComment } from "../../script";
 
 import Card from "react-bootstrap/Card";
 import Container from "react-bootstrap/esm/Container";
@@ -20,8 +20,8 @@ export default function FullPost() {
     const [comment, setComment] = useState("");
     const [commentError, setCommentError] = useState("");
     const [showModal, setShowModal] = useState(false);
-    const [deleteComment, setDeleteComment] = useState(null);
-    const [deletePost, setDeletePost] = useState(null);
+    const [commentToDelete, setCommentToDelete] = useState(null);
+    const [postToDelete, setPostToDelete] = useState(null);
 
     useEffect(() => {
         const token = check_token();
@@ -44,18 +44,16 @@ export default function FullPost() {
 
     function handleShowModal(source) {
         if ("author" in source) {
-            setDeletePost(source);
-            console.log(source);
+            setPostToDelete(source);
         } else {
-            setDeleteComment(source);
+            setCommentToDelete(source);
         }
-        // console.log(source);
         setShowModal(true);
     }
 
     function handleCloseModal() {
-        setDeletePost(null);
-        setDeleteComment(null);
+        setPostToDelete(null);
+        setCommentToDelete(null);
         setShowModal(false);
     }
 
@@ -268,32 +266,40 @@ export default function FullPost() {
                     ))}
                 </Card>
             </Container>
+
             {/* Delete Modal for Comment and Post */}
-            <Modal show={showModal} onHide={handleCloseModal}>
+            <Modal centered={true} show={showModal} onHide={handleCloseModal}>
                 <Modal.Header closeButton>
                     <Modal.Title>
-                        {deleteComment ? "Delete Comment" : "Delete Post"}
+                        {commentToDelete ? "Delete Comment" : "Delete Post"}
                     </Modal.Title>
                 </Modal.Header>
                 <Modal.Body>
                     Are you sure you want to delete{" "}
-                        {deleteComment &&
-                             <><strong>{deleteComment.commented_by.name}</strong>'s comment?</>
-                        }
-                        {deletePost &&
-                            <><strong>{deletePost.post.title}</strong> article?</>
-                        }
+                    {commentToDelete ? (
+                        <>
+                            <strong>{commentToDelete.commented_by.name}</strong>'s
+                            comment?
+                        </>
+                    ) : postToDelete ? (
+                        <>
+                            <strong>{postToDelete.post.title}</strong> article?
+                        </>
+                    ) : null}
                 </Modal.Body>
                 <Modal.Footer>
                     <Button variant="secondary" onClick={handleCloseModal}>
                         Cancel
                     </Button>
-                    <Button
-                        variant="danger"
-                        onClick={() => handleDeleteComment(deleteComment.id)}
-                    >
-                        Delete
-                    </Button>
+                    {commentToDelete ? (
+                        <Button variant="danger" onClick={() => deleteComment(commentToDelete.id)}>
+                            Delete
+                        </Button>
+                    ) : postToDelete ? (
+                        <Button variant="danger" onClick={() => deleteArticle(postToDelete.post.id)}>
+                            Delete
+                        </Button>
+                    ) : null}
                 </Modal.Footer>
             </Modal>
         </div>
