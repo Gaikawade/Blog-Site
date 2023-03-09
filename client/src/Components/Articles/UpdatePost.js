@@ -18,10 +18,16 @@ export default function UpdatePost() {
 
     useEffect(() => {
         const token = localStorage.getItem("token");
+        if(!token){
+            navigate('/login');
+        }
         const decodedToken = jwt_decode(token);
         setCurrentUser(decodedToken);
+        const config = {
+            headers: { Authorization: `Bearer ${token}` },
+        };
         axios
-			.get(`/post/${postId}`)
+			.get(`/post/${postId}`, config)
 			.then((res) => {
 				// console.log(res.data.post);
 				setArticle(res.data.post);
@@ -49,12 +55,19 @@ export default function UpdatePost() {
             setError(`You haven't update anything in your article yet`);
             return null;
         }
+        const token = localStorage.getItem('token');
+        if(!token){
+            navigate('/login');
+        }
+        const config = {
+            headers: { Authorization: `Bearer ${token}` },
+        };
         axios
             .put(`/post/update/${postId}`, {
                 title: title,
                 content: content,
                 userId: currentUser.userId,
-            })
+            }, config)
             .then((response) => {
                 if (response.data.status) {
                     navigate(`/post/${postId}`);

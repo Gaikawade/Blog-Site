@@ -13,10 +13,13 @@ export default function AllPosts() {
     useEffect(() => {
         const token = localStorage.getItem('token');
         if (!token) {
-            
+            navigate('/login');
         }
+        const config = {
+            headers: { Authorization: `Bearer ${token}` },
+        };
         axios
-            .get(`/user/${userId}/posts`)
+            .get(`/user/${userId}/posts`, config)
             .then((response) => {
                 // console.log(response.data);
                 setPosts(response.data.posts);

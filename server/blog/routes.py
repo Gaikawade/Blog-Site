@@ -107,7 +107,8 @@ def logout(current):
 
 # User Account details and Update Account API
 @app.route('/account/<string:user_id>', methods=['GET', 'PUT'])
-def account(user_id):
+@token_required
+def account(logged_in_user ,user_id):
     member = ''
     try:
         if user_id.startswith('A'):
@@ -140,16 +141,17 @@ def account(user_id):
 
 # App post API
 @app.route('/add_post', methods=['POST'])
-def add_post():
+@token_required
+def add_post(logged_in_user):
     try:
         title = request.json.get('title')
         content = request.json.get('content')  # validation
 
         document = Post.query.filter_by(title=title).first()
         if document:
-            return jsonify({'status': False, 'message': 'Title should be unique/This title is already exists'})
+            return jsonify({'status': False, 'message': 'Title should be unique/This title is already exists'}), 400
 
-        post = Post(title=title, content=content, author=current_user)
+        post = Post(title=title, content=content, author=logged_in_user)
 
         db.session.add(post)
         db.session.commit()
@@ -161,7 +163,8 @@ def add_post():
 
 # Read post data API
 @app.route('/post/<int:post_id>', methods=['GET'])
-def read_post(post_id):
+@token_required
+def read_post(logged_in_user, post_id):
     try:
         post = Post.query.filter_by(id=post_id).first()
         if not post:
@@ -169,51 +172,50 @@ def read_post(post_id):
         post_dict = post.to_dict()
         return jsonify({ 'status': True, 'message': 'Post exists', 'post': post_dict}), 200
     except Exception as e:
-        # return jsonify({'error': str(e)})
-        return e
+        return jsonify({ 'stauts': False,'error': str(e)})
 
 
 # Update post API
 @app.route('/post/update/<int:post_id>', methods=['PUT'])
-@login_required
-def update_post(post_id):
+@token_required
+def update_post(logged_in_user, post_id):
     try:
         post = Post.query.get_or_404(post_id)
         if post.author != current_user:
-            return jsonify({'status': False, 'message': 'Unauthorized Access'})
+            return jsonify({'status': False, 'message': 'Unauthorized Access'}), 403
 
         title = request.json.get('title')
         content = request.json.get('content')
         post.title = title
         post.content = content
         db.session.commit()
-        flash('The Article has been updated', 'success')
-        return jsonify({'status': True, 'message': 'Article updated successfully'})
+
+        return jsonify({'status': True, 'message': 'Article updated successfully'}), 200
     except Exception as e:
         db.session.rollback()
-        return jsonify({'status': False, 'message': str(e)})
+        return jsonify({'status': False, 'message': str(e)}), 500
 
 
 # Delete post API
 @app.route('/post/delete/<int:post_id>', methods=['DELETE'])
-@login_required
-def delete_post(post_id):
+@token_required
+def delete_post(logged_in_user, post_id):
     try:
         post = Post.query.get_or_404(post_id)
         if post.author != current_user and current_user.is_admin != 1:
-            return jsonify({'status': False, 'message': 'Access denied'})
+            return jsonify({'status': False, 'message': 'Access denied'}), 403
         db.session.delete(post)
         db.session.commit()
         return jsonify({'status': True, 'message': 'The article has been deleted successfully'}), 200
     except Exception as e:
         db.session.rollback()
-        return jsonify({'status': False, 'message': str(e)})
+        return jsonify({'status': False, 'message': str(e)}), 500
 
 
 # Add comment to post API
 @app.route('/add_comment/<int:post_id>', methods=['POST'])
-@login_required
-def add_comment(post_id):
+@token_required
+def add_comment(logged_in_user, post_id):
     try:
         if check_access() == True:
             return jsonify({'status': False, 'message': 'Access denied'}), 403
@@ -237,8 +239,8 @@ def add_comment(post_id):
 
 # Delete commment API
 @app.route('/delete_comment/<int:comment_id>', methods=['DELETE'])
-@login_required
-def delete_comment(comment_id):
+@token_required
+def delete_comment(logged_in_user, comment_id):
     try:
         # Query comment by ID
         comment = Comment.query.filter_by(id=comment_id).first()
@@ -260,8 +262,8 @@ def delete_comment(comment_id):
 
 # Likes API - like or unlike the article
 @app.route('/like_post/<int:post_id>', methods=['POST'])
-@login_required
-def like_post(post_id):
+@token_required
+def like_post(logged_in_user, post_id):
     try:
         post = Post.query.filter_by(id=post_id).first()
         like = Like.query.filter_by(
@@ -292,8 +294,8 @@ def like_post(post_id):
 
 # API to get all posts of ramdom users with their user id
 @app.route('/user/<string:user_id>/posts', methods=['GET'])
-@login_required
-def users_posts(user_id):
+@token_required
+def users_posts(logged_in_user ,user_id):
     try:
         # Query all posts by the specified user
         posts = Post.query.filter_by(user_id=user_id).order_by(
@@ -307,8 +309,8 @@ def users_posts(user_id):
 
 # Search API for posts or users
 @app.route('/search', methods=['GET'])
-@login_required
-def search():
+@token_required
+def search(logged_in_user):
     q = request.args.get('q')
     posts = Post.query
     users = User.query

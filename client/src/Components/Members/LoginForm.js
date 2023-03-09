@@ -56,8 +56,6 @@ function LoginForm() {
             .then((response) => {
                 localStorage.clear();
                 localStorage.setItem("token", response.data.token);
-                // axios.defaults.headers.common["Authorization"] = `Bearer ${response.data.token}`;
-
                 navigate("/");
                 location.reload();
             })

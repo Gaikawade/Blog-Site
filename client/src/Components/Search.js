@@ -10,6 +10,7 @@ import ShowAllUsers from "./Members/ShowAllMembers";
 export default function Search() {
     const location = useLocation();
     const searchTerm = new URLSearchParams(location.search).get("q");
+
     const [users, setUsers] = useState({});
     const [posts, setPosts] = useState({});
     const [admins, setAdmins] = useState({});
@@ -17,8 +18,15 @@ export default function Search() {
     const [isLoading, setIsLoading] = useState(true);
 
     useEffect(() => {
+        const token = localStorage.getItem('token');
+        if(!token){
+            navigate('login');
+        }
+        const config = {
+            headers: { Authorization: `Bearer ${token}` },
+        };
         axios
-            .get(`/search?q=${searchTerm}`)
+            .get(`/search?q=${searchTerm}`, config)
             .then((response) => {
                 // console.log(response.data);
                 setUsers(response.data.users);

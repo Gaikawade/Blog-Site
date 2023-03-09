@@ -28,30 +28,29 @@ export default function AllUsers() {
 
     useEffect(() => {
         const token = localStorage.getItem("token");
-        if (token) {
-            const config = {
-                headers: { Authorization: `Bearer ${token}` },
-            };
-            axios
-                .get(api, config)
-                .then((response) => {
-                    if (source == "admin") {
-                        setAdmins(response.data.admins);
-                    } else if (source == "user") {
-                        setUsers(response.data.users);
-                    } else if (source == "post") {
-                        setPosts(response.data.posts);
-                    }
-                    setIsLoading(false);
-                })
-                .catch((error) => {
-                    navigate("/");
-                    alert(error.response.data.message);
-                    console.error(error);
-                });
-        } else {
+        if (!token) {
             navigate("/admin/login");
         }
+        const config = {
+            headers: { Authorization: `Bearer ${token}` },
+        };
+        axios
+            .get(api, config)
+            .then((response) => {
+                if (source == "admin") {
+                    setAdmins(response.data.admins);
+                } else if (source == "user") {
+                    setUsers(response.data.users);
+                } else if (source == "post") {
+                    setPosts(response.data.posts);
+                }
+                setIsLoading(false);
+            })
+            .catch((error) => {
+                navigate("/");
+                alert(error.response.data.message);
+                console.error(error);
+            });
     }, []);
 
     if (isLoading) {

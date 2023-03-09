@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import jwt_decode from "jwt-decode";
 
 import Container from "react-bootstrap/esm/Container";
@@ -6,7 +7,7 @@ import Card from "react-bootstrap/Card";
 import Form from "react-bootstrap/Form";
 import Button from "react-bootstrap/Button";
 import axios from "axios";
-import Spinner from 'react-bootstrap/Spinner';
+import Spinner from "react-bootstrap/Spinner";
 
 const nameRegex = /^[a-zA-Z]+ ?[a-zA-Z ]*$/;
 
@@ -18,15 +19,19 @@ export default function Account() {
     const [nameError, setNameError] = useState("");
     const [emailError, setEmailError] = useState("");
     const [submitError, setSubmitError] = useState("");
-
-
     const [showForm, setShowForm] = useState(false);
-    const token = jwt_decode(localStorage.getItem("token"));
-    const userId = token.userId;
+    const navigate = useNavigate();
 
     useEffect(() => {
+        const token = localStorage.getItem("token");
+        if (!token) {
+            navigate("/login");
+        }
+        const config = {
+            headers: { Authorization: `Bearer ${token}` },
+        };
         axios
-            .get(`/account/${userId}`)
+            .get(`/account/${userId}`, config)
             .then((res) => {
                 // console.log(res.data);
                 setUser(res.data.member);
@@ -47,32 +52,35 @@ export default function Account() {
         }
     }
 
-    function handleNameChange(e){
+    function handleNameChange(e) {
         setName(e.target.value);
-        setNameError('');
+        setNameError("");
     }
 
-    function handleEmailChange(e){
+    function handleEmailChange(e) {
         setEmail(e.target.value);
-        setEmailError('');
+        setEmailError("");
     }
 
     function handleSubmit(e) {
         e.preventDefault();
-        if (!name) {
-            return setNameError("Please enter your name");
-        } else if (name.length < 2 || !nameRegex.test(name)) {
+        const token = localStorage.getItem("token");
+        if (!token) {
+            navigate("/login");
+        }
+        const userId = jwt_decode(token).userId;
+        const config = {
+            headers: { Authorization: `Bearer ${token}` },
+        };
+        // Validation
+        if (name.length < 2 || !nameRegex.test(name)) {
             return setNameError(
                 "Name should be alpha characters only & minimum 2 characters should be expected"
             );
         }
-
-        if (!email) {
-            return setEmailError("Please enter your email");
-        } else if (!/\S+@\S+\.\S+/.test(email)) {
+        if (!/\S+@\S+\.\S+/.test(email)) {
             return setEmailError("Please enter a valid email");
         }
-
         if (user.name == name && user.email == email) {
             return setSubmitError(`You haven't update details`);
         }
@@ -81,7 +89,7 @@ export default function Account() {
             .put(`/account/${userId}`, {
                 name: name,
                 email: email,
-            })
+            }, config)
             .then((res) => {
                 if (res.data.status) {
                     alert("Your account details have been updated");
@@ -91,6 +99,7 @@ export default function Account() {
                 console.log(err);
             });
     }
+
     if (isLoading) {
         return (
             <div className="text-center">

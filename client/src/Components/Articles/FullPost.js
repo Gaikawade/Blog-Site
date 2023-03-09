@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from "react";
-import { Link, useParams } from "react-router-dom";
+import { Link, useNavigate, useParams } from "react-router-dom";
 import axios from "axios";
 import jwt_decode from "jwt-decode";
-import { like, deleteArticle } from '../../script';
+import { like, deleteArticle } from "../../script";
 
 import Card from "react-bootstrap/Card";
 import Container from "react-bootstrap/esm/Container";
@@ -18,25 +18,29 @@ export default function FullPost() {
     const [isLoading, setIsLoading] = useState(true);
     const [comment, setComment] = useState("");
     const [commentError, setCommentError] = useState("");
-    // const likedByCurrentUser = ;
+    const navigate = useNavigate();
 
     useEffect(() => {
         const token = localStorage.getItem("token");
-        const decodedToken = jwt_decode(token);
-        // console.log(decodedToken);
-        setCurrentUser(decodedToken);
-        // console.log(currentUser);
-        axios
-            .get(`/post/${post_id}`)
-            .then((res) => {
-                // console.log(res.data);
-                setArticle(res.data.post);
-                setIsLoading(false);
-                // console.log(article);
-            })
-            .catch((err) => {
-                console.error(err);
-            });
+        if (token) {
+            const decodedToken = jwt_decode(token);
+            setCurrentUser(decodedToken);
+            const config = {
+                headers: { Authorization: `Bearer ${token}` },
+            };
+            axios
+                .get(`/post/${post_id}`, config)
+                .then((res) => {
+                    // console.log(res);
+                    setArticle(res.data.post);
+                    setIsLoading(false);
+                })
+                .catch((err) => {
+                    console.error(err);
+                });
+        } else {
+            navigate('/login');
+        }
     }, []);
 
     function handleCommentChange(e) {
@@ -118,14 +122,20 @@ export default function FullPost() {
                             </Col>
                             <Col className="text-end">
                                 {currentUser.userId === article.author.id ? (
-                                    <Link to={`/post/update/${article.post.id}`}>
+                                    <Link
+                                        to={`/post/update/${article.post.id}`}
+                                    >
                                         <i className="fa fa-pen-to-square"></i>
                                     </Link>
                                 ) : null}
                                 &nbsp;
                                 {currentUser.userId === article.author.id ||
                                 currentUser.isAdmin === true ? (
-                                    <Link onClick={()=>deleteArticle(article.post.id)}>
+                                    <Link
+                                        onClick={() =>
+                                            deleteArticle(article.post.id)
+                                        }
+                                    >
                                         <i className="fa fa-trash text-danger"></i>
                                     </Link>
                                 ) : null}
@@ -155,7 +165,9 @@ export default function FullPost() {
                 {/* Show Likes and Comments icons with no of likes and no of comments */}
                 <div className="h6">
                     {/* <i className="fas fa-thumbs-up"></i> */}
-                    {article.likes.map((like) => like.liked_by).includes(currentUser.userId) ? (
+                    {article.likes
+                        .map((like) => like.liked_by)
+                        .includes(currentUser.userId) ? (
                         <i
                             className="fas fa-thumbs-up"
                             id={`like-button-${article.post.id}`}
@@ -169,7 +181,9 @@ export default function FullPost() {
                         ></i>
                     )}
                     &nbsp;
-                    <span id={`likes-count-${article.post.id}`}>{article.likes.length || 0}</span>
+                    <span id={`likes-count-${article.post.id}`}>
+                        {article.likes.length || 0}
+                    </span>
                     &nbsp; &nbsp;
                     <i
                         className="far fa-comment"

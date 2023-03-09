@@ -3,31 +3,32 @@ import React, { useEffect, useState } from 'react'
 import Button from 'react-bootstrap/esm/Button'
 import Form from 'react-bootstrap/Form'
 import { useNavigate } from 'react-router-dom';
-import jwt_decode from "jwt-decode";
 
 
 export default function AddPost() {
     const [title, setTitle] = useState('');
     const [content, setContent] = useState('');
-    const [userId, setUserId] = useState('');
     const [currentUser, setCurrentUser]= useState('');
     const navigate = useNavigate();
 
     useEffect(() => {
         const token = localStorage.getItem('token');
-        const decodenToken = jwt_decode(token);
-
-        if (currentUser){
-
+        
+        if (token){
+            const config = {
+                headers: { Authorization: `Bearer ${token}` },
+            };
+            axios.get('/check_login', config)
+            .then((response) => {
+                // console.log(response.data);
+                setCurrentUser(response.data);
+            })
+            .catch((error) => {
+                console.log(error.message);
+            });
+        } else {
+            navigate('/login');
         }
-        axios.get('/check_login')
-        .then((response) => {
-            // console.log(response.data);
-            setUserId(response.data.userId);
-        })
-        .catch((error) => {
-            console.log(error.message)
-        });
     }, [])
 
     function handleTitleChange(e) {
@@ -43,7 +44,7 @@ export default function AddPost() {
         axios.post('/add_post', {
             title: title,
             content: content,
-            userId: userId,
+            userId: currentUser.userId,
         })
         .then((response) => {
             if(response.data.status) {
