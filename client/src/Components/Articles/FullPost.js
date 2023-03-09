@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import axios from "axios";
 import jwt_decode from "jwt-decode";
-import { like, deleteArticle } from "../../script";
+import { like, deleteArticle, check_token } from "../../script";
 
 import Card from "react-bootstrap/Card";
 import Container from "react-bootstrap/esm/Container";
@@ -21,26 +21,17 @@ export default function FullPost() {
     const navigate = useNavigate();
 
     useEffect(() => {
-        const token = localStorage.getItem("token");
-        if (token) {
-            const decodedToken = jwt_decode(token);
-            setCurrentUser(decodedToken);
-            const config = {
-                headers: { Authorization: `Bearer ${token}` },
-            };
-            axios
-                .get(`/post/${post_id}`, config)
-                .then((res) => {
-                    // console.log(res);
-                    setArticle(res.data.post);
-                    setIsLoading(false);
-                })
-                .catch((err) => {
-                    console.error(err);
-                });
-        } else {
-            navigate('/login');
-        }
+        const token = check_token();
+        axios
+            .get(`/post/${post_id}`, token)
+            .then((res) => {
+                // console.log(res);
+                setArticle(res.data.post);
+                setIsLoading(false);
+            })
+            .catch((err) => {
+                console.error(err);
+            });
     }, []);
 
     function handleCommentChange(e) {
@@ -67,6 +58,8 @@ export default function FullPost() {
 
     function handleSubmit(e) {
         e.preventDefault();
+        const token = check_token();
+
         if (!comment) {
             setCommentError("Please enter your comment");
         }
@@ -75,7 +68,7 @@ export default function FullPost() {
             .post(`/add_comment/${article.post.id}`, {
                 text: comment,
                 commented_by: currentUser.userId,
-            })
+            }, token)
             .then((response) => {
                 // console.log(response.data);
                 alert(response.data.message);
@@ -83,13 +76,15 @@ export default function FullPost() {
                 setComment("");
             })
             .catch((error) => {
+                // console.log(error);
                 alert("Something went wrong");
             });
     }
 
     function handleDeleteComment(commentId) {
+        const token = check_token();
         axios
-            .delete(`/delete_comment/${commentId}`)
+            .delete(`/delete_comment/${commentId}`, token)
             .then((response) => {
                 // console.log(response);
                 alert("Comment deleted successfully");
@@ -99,7 +94,7 @@ export default function FullPost() {
                 if (!error.response.data.status) {
                     alert(error.response.data.message);
                 }
-                console.log(error.response);
+                console.log(error);
             });
     }
 

@@ -156,7 +156,7 @@ def add_post(logged_in_user):
         db.session.add(post)
         db.session.commit()
 
-        return jsonify({'status': True, 'message': 'Article added successfully'}), 201
+        return jsonify({'status': True, 'message': 'Article added successfully', 'postId': post.id}), 201
     except Exception as e:
         return jsonify({'status': False, 'message': str(e)}), 500
 
@@ -228,7 +228,6 @@ def add_comment(logged_in_user, post_id):
                 text=text, commented_by=commented_by, post_id=post_id)
             db.session.add(comment)
             db.session.commit()
-            flash('Comment added successfully', 'success')
             return jsonify({'status': True, 'message': 'Comment added successfully'}), 201
         else:
             return jsonify({'status': False, 'message': 'Post does not exist'}), 404

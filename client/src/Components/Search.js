@@ -4,6 +4,7 @@ import Container from "react-bootstrap/esm/Container";
 import Nav from "react-bootstrap/esm/Nav";
 import Spinner from "react-bootstrap/esm/Spinner";
 import { useLocation } from "react-router-dom";
+import { check_token } from "../script";
 import ShowAllPosts from "./Articles/ShowAllPosts";
 import ShowAllUsers from "./Members/ShowAllMembers";
 
@@ -18,15 +19,9 @@ export default function Search() {
     const [isLoading, setIsLoading] = useState(true);
 
     useEffect(() => {
-        const token = localStorage.getItem('token');
-        if(!token){
-            navigate('login');
-        }
-        const config = {
-            headers: { Authorization: `Bearer ${token}` },
-        };
+        const token = check_token();
         axios
-            .get(`/search?q=${searchTerm}`, config)
+            .get(`/search?q=${searchTerm}`, token)
             .then((response) => {
                 // console.log(response.data);
                 setUsers(response.data.users);

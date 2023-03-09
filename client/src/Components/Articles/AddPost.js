@@ -3,6 +3,7 @@ import React, { useEffect, useState } from 'react'
 import Button from 'react-bootstrap/esm/Button'
 import Form from 'react-bootstrap/Form'
 import { useNavigate } from 'react-router-dom';
+import { check_token } from '../../script';
 
 
 export default function AddPost() {
@@ -12,23 +13,18 @@ export default function AddPost() {
     const navigate = useNavigate();
 
     useEffect(() => {
-        const token = localStorage.getItem('token');
-        
-        if (token){
-            const config = {
-                headers: { Authorization: `Bearer ${token}` },
-            };
-            axios.get('/check_login', config)
+            axios.get('/check_login')
             .then((response) => {
+                console.log(response)
+                if(response.data.status == false ){
+                    navigate('/login');
+                }
                 // console.log(response.data);
                 setCurrentUser(response.data);
             })
             .catch((error) => {
                 console.log(error.message);
             });
-        } else {
-            navigate('/login');
-        }
     }, [])
 
     function handleTitleChange(e) {
@@ -41,21 +37,23 @@ export default function AddPost() {
 
     function handleSubmit(e){
         e.preventDefault();
+        const token = check_token()
         axios.post('/add_post', {
             title: title,
             content: content,
             userId: currentUser.userId,
-        })
+        }, token)
         .then((response) => {
             if(response.data.status) {
+                // console.log(response);
                 alert(response.data.message);
-                navigate('/')
+                navigate(`/post/${response.data.postId}`)
             } else {
                 alert(response.data.message);
             }
         })
         .catch((error) => {
-            alert(error.message);
+            console.log(error);
         })
     }
 

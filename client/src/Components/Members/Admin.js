@@ -4,6 +4,7 @@ import Spinner from "react-bootstrap/esm/Spinner";
 import { useNavigate } from "react-router-dom";
 import ShowAllMembers from "./ShowAllMembers";
 import ShowAllPosts from "../Articles/ShowAllPosts";
+import { check_token } from "../../script";
 
 export default function AllUsers() {
     const [users, setUsers] = useState([]);
@@ -27,15 +28,9 @@ export default function AllUsers() {
     }
 
     useEffect(() => {
-        const token = localStorage.getItem("token");
-        if (!token) {
-            navigate("/admin/login");
-        }
-        const config = {
-            headers: { Authorization: `Bearer ${token}` },
-        };
+        const token = check_token();
         axios
-            .get(api, config)
+            .get(api, token)
             .then((response) => {
                 if (source == "admin") {
                     setAdmins(response.data.admins);

@@ -8,6 +8,7 @@ import Form from "react-bootstrap/Form";
 import Button from "react-bootstrap/Button";
 import axios from "axios";
 import Spinner from "react-bootstrap/Spinner";
+import { check_token } from "../../script";
 
 const nameRegex = /^[a-zA-Z]+ ?[a-zA-Z ]*$/;
 
@@ -64,14 +65,7 @@ export default function Account() {
 
     function handleSubmit(e) {
         e.preventDefault();
-        const token = localStorage.getItem("token");
-        if (!token) {
-            navigate("/login");
-        }
-        const userId = jwt_decode(token).userId;
-        const config = {
-            headers: { Authorization: `Bearer ${token}` },
-        };
+        const token = check_token();
         // Validation
         if (name.length < 2 || !nameRegex.test(name)) {
             return setNameError(
@@ -89,7 +83,7 @@ export default function Account() {
             .put(`/account/${userId}`, {
                 name: name,
                 email: email,
-            }, config)
+            }, token)
             .then((res) => {
                 if (res.data.status) {
                     alert("Your account details have been updated");

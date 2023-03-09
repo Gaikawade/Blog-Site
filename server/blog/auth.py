@@ -1,12 +1,11 @@
-from flask import jsonify, request
-from blog import app
+from flask import jsonify, request, redirect, url_for, make_response
 from functools import wraps
+from datetime import datetime
 import jwt
+from blog import app
 from .models import User, Admin
 
 # decorator for verifying the JWT
-
-
 def token_required(f):
     @wraps(f)
     def decorated(*args, **kwargs):
@@ -24,6 +23,7 @@ def token_required(f):
                 token, app.config['SECRET_KEY'],
                 algorithms=['HS256']
             )
+
             user_id = decoded_token['userId']
             current_user = User.query.filter_by(id=user_id).first()
 
@@ -32,6 +32,7 @@ def token_required(f):
 
             if not current_user:
                 return jsonify({'status': False, 'message': 'Invalid token'}), 400
+            return f(current_user, *args, **kwargs)
 
         except jwt.ExpiredSignatureError:
             return jsonify({'status': False, 'message': 'Token is expired'}), 401
@@ -39,6 +40,5 @@ def token_required(f):
         except jwt.InvalidTokenError:
             return jsonify({'status': False, 'message': 'Invalid token'}), 401
         # returns the current logged in users context to the routes
-        return f(current_user, *args, **kwargs)
 
     return decorated

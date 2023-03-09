@@ -5,6 +5,7 @@ import Button from "react-bootstrap/esm/Button";
 import Spinner from "react-bootstrap/esm/Spinner";
 import Form from "react-bootstrap/Form";
 import { useNavigate, useParams } from "react-router-dom";
+import { check_token } from "../../script";
 
 export default function UpdatePost() {
     const [article, setArticle] = useState({});
@@ -55,30 +56,24 @@ export default function UpdatePost() {
             setError(`You haven't update anything in your article yet`);
             return null;
         }
-        const token = localStorage.getItem('token');
-        if(!token){
-            navigate('/login');
-        }
-        const config = {
-            headers: { Authorization: `Bearer ${token}` },
-        };
+        const token = check_token();
         axios
             .put(`/post/update/${postId}`, {
                 title: title,
                 content: content,
                 userId: currentUser.userId,
-            }, config)
+            }, token)
             .then((response) => {
                 if (response.data.status) {
                     navigate(`/post/${postId}`);
                     alert(response.data.message);
                 } else {
-                    console.log(response.data);
+                    // console.log(response.data);
                     alert(response.data.message);
                 }
             })
             .catch((error) => {
-                console.log(error.response)
+                // console.log(error.response)
                 alert(error.message);
             });
     }
