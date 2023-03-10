@@ -28,10 +28,6 @@ function Header(props) {
             });
     }, []);
 
-    function handleClick(source) {
-        navigate(`/admin/${source}`);
-      }
-
     function handleChangeSearchKeyword(e) {
         setSearchTerm(e.target.value);
     }

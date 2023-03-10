@@ -8,7 +8,7 @@ import Form from "react-bootstrap/Form";
 import Button from "react-bootstrap/Button";
 import axios from "axios";
 import Spinner from "react-bootstrap/Spinner";
-import { check_token } from "../../script";
+import { check_token } from "../../utils";
 
 const nameRegex = /^[a-zA-Z]+ ?[a-zA-Z ]*$/;
 

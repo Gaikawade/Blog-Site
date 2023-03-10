@@ -5,7 +5,7 @@ import Button from "react-bootstrap/esm/Button";
 import Spinner from "react-bootstrap/esm/Spinner";
 import Form from "react-bootstrap/Form";
 import { useNavigate, useParams } from "react-router-dom";
-import { check_token } from "../../script";
+import { check_token } from "../../utils";
 
 export default function UpdatePost() {
     const [article, setArticle] = useState({});

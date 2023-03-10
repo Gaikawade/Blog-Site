@@ -3,7 +3,7 @@ import React, { useEffect, useState } from 'react'
 import Button from 'react-bootstrap/esm/Button'
 import Form from 'react-bootstrap/Form'
 import { useNavigate } from 'react-router-dom';
-import { check_token } from '../../script';
+import { check_token } from '../../utils';
 
 
 export default function AddPost() {

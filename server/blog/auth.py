@@ -23,7 +23,7 @@ def token_required(f):
                 token, app.config['SECRET_KEY'],
                 algorithms=['HS256']
             )
-
+            print(token)
             user_id = decoded_token['userId']
             current_user = User.query.filter_by(id=user_id).first()
 
@@ -35,7 +35,6 @@ def token_required(f):
             return f(current_user, *args, **kwargs)
 
         except jwt.ExpiredSignatureError:
-            return redirect(url_for('logout')), 301
             return jsonify({'status': False, 'message': 'Token is expired'}), 401
 
         except jwt.InvalidTokenError:

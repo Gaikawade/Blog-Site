@@ -4,8 +4,9 @@ import ShowAllPosts from "./Articles/ShowAllPosts";
 
 import Container from "react-bootstrap/esm/Container";
 import Spinner from "react-bootstrap/Spinner";
+import Alert from "react-bootstrap/Alert";
 
-function Home() {
+function Home({ typo }) {
     const [posts, setPosts] = useState([]);
     const [isLoading, setIsLoading] = useState(true);
 
@@ -31,7 +32,16 @@ function Home() {
     }
 
     return (
-        <Container className="my-3">{<ShowAllPosts posts={posts} />}</Container>
+        <>
+            {typo && (
+                <Alert color="info">
+                    {typo}
+                </Alert>
+            )}
+            <Container className="my-3">
+                {<ShowAllPosts posts={posts} />}
+            </Container>
+        </>
     );
 }
 

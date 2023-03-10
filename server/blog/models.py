@@ -20,7 +20,7 @@ def load_user(id):
 class User(db.Model, UserMixin):
     # Specifies the name of the database table 
     __tablename__ = 'user'
-    id = db.Column(db.String(40), primary_key=True, default='U' + str(uuid.uuid4().int >> 64))
+    id = db.Column(db.String(40), primary_key=True, default=lambda:'U' + str(uuid.uuid4().int >> 64))
     name = db.Column(db.String(80), nullable=False)
     email = db.Column(db.String(80), nullable=False, unique=True)
     password = db.Column(db.String(80), nullable=False)
@@ -112,7 +112,7 @@ class Like(db.Model):
 
 # Defining the structure of the 'admin' table in the database
 class Admin(db.Model, UserMixin):
-    id = db.Column(db.String(40), primary_key=True, default='A' + str(uuid.uuid4().int >> 64))
+    id = db.Column(db.String(40), primary_key=True, default=lambda:'A' + str(uuid.uuid4().int >> 64))
     name = db.Column(db.String(80), nullable=False)
     email = db.Column(db.String(80), nullable=False)
     password = db.Column(db.String(80), nullable=False)

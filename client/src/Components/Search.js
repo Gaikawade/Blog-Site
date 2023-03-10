@@ -1,10 +1,12 @@
 import axios from "axios";
 import React, { useEffect, useState } from "react";
+import { useLocation } from "react-router-dom";
+import { check_token } from "../utils";
+import jwt_decode from "jwt-decode";
+
 import Container from "react-bootstrap/esm/Container";
 import Nav from "react-bootstrap/esm/Nav";
 import Spinner from "react-bootstrap/esm/Spinner";
-import { useLocation } from "react-router-dom";
-import { check_token } from "../script";
 import ShowAllPosts from "./Articles/ShowAllPosts";
 import ShowAllUsers from "./Members/ShowAllMembers";
 
@@ -17,11 +19,14 @@ export default function Search() {
     const [admins, setAdmins] = useState({});
     const [activeTab, setActiveTab] = useState("posts");
     const [isLoading, setIsLoading] = useState(true);
+    const [currentUser, setCurrentUSer] = useState("");
 
     useEffect(() => {
-        const token = check_token();
+        const config = check_token();
+        const token = jwt_decode(localStorage.getItem("token"));
+        setCurrentUSer(token);
         axios
-            .get(`/search?q=${searchTerm}`, token)
+            .get(`/search?q=${searchTerm}`, config)
             .then((response) => {
                 // console.log(response.data);
                 setUsers(response.data.users);
@@ -55,9 +60,11 @@ export default function Search() {
                 <Nav.Item>
                     <Nav.Link eventKey="users">Users</Nav.Link>
                 </Nav.Item>
-                <Nav.Item>
-                    <Nav.Link eventKey="admins">Admins</Nav.Link>
-                </Nav.Item>
+                {currentUser.isAdmin ? (
+                    <Nav.Item>
+                        <Nav.Link eventKey="admins">Admins</Nav.Link>
+                    </Nav.Item>
+                ) : null}
             </Nav>
             <br />
             {activeTab === "users" && (

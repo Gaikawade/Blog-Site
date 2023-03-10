@@ -1,16 +1,23 @@
 import React, { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import jwt_decode from "jwt-decode";
 
 import Container from "react-bootstrap/esm/Container";
 import Table from "react-bootstrap/esm/Table";
 import Modal from "react-bootstrap/Modal";
 import Button from "react-bootstrap/esm/Button";
-import { blockUser } from "../../script";
+import { blockUser } from "../../utils";
 
 export default function ShowAllMembers(props) {
     const [showModal, setShowModal] = useState(false);
     const [user, setUser] = useState(null);
+    const token = localStorage.getItem("token");
+    const navigate = useNavigate();
     let users = {};
+    if (!token) {
+        navigate("/login");
+    }
+    const currentUser = jwt_decode(token);
 
     if (props.users) {
         users = props.users;
@@ -47,7 +54,9 @@ export default function ShowAllMembers(props) {
                             <th>Name</th>
                             <th>Email</th>
                             <th>Joined On</th>
-                            <th>Block/Unblock</th>
+                            {currentUser.isAdmin ? (
+                                <th>Block/Unblock</th>
+                            ) : null}
                         </tr>
                     </thead>
                     <tbody>
@@ -64,23 +73,25 @@ export default function ShowAllMembers(props) {
                                 </td>
                                 <td>{user.email}</td>
                                 <td>{user.created_at}</td>
-                                <td>
-                                    <Link className="text-decoration-none">
-                                        <div
-                                            className="text-danger"
-                                            id={`block-option-${user.id}`}
-                                            onClick={() =>
-                                                handleShowModal(user)
-                                            }
-                                        >
-                                            {user.is_blocked ? (
-                                                <>Unblock</>
-                                            ) : (
-                                                <>Block</>
-                                            )}
-                                        </div>
-                                    </Link>
-                                </td>
+                                {currentUser.isAdmin ? (
+                                    <td>
+                                        <Link className="text-decoration-none">
+                                            <div
+                                                className="text-danger"
+                                                id={`block-option-${user.id}`}
+                                                onClick={() =>
+                                                    handleShowModal(user)
+                                                }
+                                            >
+                                                {user.is_blocked ? (
+                                                    <>Unblock</>
+                                                ) : (
+                                                    <>Block</>
+                                                )}
+                                            </div>
+                                        </Link>
+                                    </td>
+                                ) : null}
                             </tr>
                         ))}
                     </tbody>
@@ -93,7 +104,8 @@ export default function ShowAllMembers(props) {
                         <Modal.Title>Confirm Block</Modal.Title>
                     </Modal.Header>
                     <Modal.Body>
-                        Are you sure you want to {user.is_blocked ? "Un-block" : "Block"}
+                        Are you sure you want to{" "}
+                        {user.is_blocked ? "Un-block" : "Block"}
                         &nbsp;
                         <strong>{user.name}</strong>
                     </Modal.Body>

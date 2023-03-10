@@ -12,8 +12,8 @@ export default function ShowAllPosts(props) {
     return (
         <Container>
             {posts.length == 0 ? (
-                <div>
-                    No Posts with <strong>{props.keyword}</strong>
+                <div className="text-center">
+                    No Posts <strong>{props.keyword}</strong>
                 </div>
             ) : (
                 posts.map((post) => (

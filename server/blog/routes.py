@@ -80,7 +80,7 @@ def login():
                 token = jwt.encode({
                     'userId': document.id,
                     'isAdmin': check_access(),
-                    'exp': datetime.utcnow() + timedelta(minutes=30)
+                    'exp': datetime.utcnow() + timedelta(minutes=120)
                 }, app.config['SECRET_KEY'])
                 response = jsonify({'status': True, 'message': 'Login successful', 'token': token})
                 response.headers['Authorization'] = f'Bearer {token}'
@@ -392,12 +392,13 @@ def admin_login():
                 token = jwt.encode({
                     'userId': document.id,
                     'isAdmin': check_access(),
-                    'expiration': datetime.utcnow() + timedelta(minutes=120)
+                    'exp': datetime.utcnow() + timedelta(minutes=120)
                 }, app.config['SECRET_KEY'])
                 return jsonify({'status': True, 'message': 'Login successful', 'token': token}), 200
         else:
             return jsonify({'status': False, 'message': 'Incorrect Email or Password'}), 401
     except Exception as e:
+        print(str(e))
         return jsonify({'status': False, 'message': str(e)}), 500
 
 

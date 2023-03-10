@@ -4,7 +4,7 @@ import Spinner from "react-bootstrap/esm/Spinner";
 import { useNavigate } from "react-router-dom";
 import ShowAllMembers from "./ShowAllMembers";
 import ShowAllPosts from "../Articles/ShowAllPosts";
-import { check_token } from "../../script";
+import { check_token } from "../../utils";
 
 export default function AllUsers() {
     const [users, setUsers] = useState([]);

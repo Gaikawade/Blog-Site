@@ -1,7 +1,7 @@
 import axios from "axios";
 import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { check_token } from "../../script";
+import { check_token } from "../../utils";
 
 export default function Logout() {
     const navigate = useNavigate();
