@@ -1,0 +1,10 @@
+{
+    "presets": [
+        "@babel/preset-react",
+        "@babel/preset-env"
+    ],
+    "plugins": [
+        //  @babel/plugin-proposal-class-properties plugin to add support for experimental features like arrow functions in our code
+        "@babel/plugin-proposal-class-properties"
+    ]
+}
