@@ -5,12 +5,16 @@ import { useNavigate } from "react-router-dom";
 import ShowAllMembers from "./ShowAllMembers";
 import ShowAllPosts from "../Articles/ShowAllPosts";
 import { check_token } from "../../utils";
+import ReactPaginate from "react-paginate";
 
 export default function AllUsers() {
     const [users, setUsers] = useState([]);
     const [admins, setAdmins] = useState([]);
     const [posts, setPosts] = useState([]);
     const [isLoading, setIsLoading] = useState(true);
+    const [currentPage, setCurrentPage] = useState(0);
+    const [pageCount, setPageCount] = useState(20);
+    const perPage = 10;
     const navigate = useNavigate();
     const URI = document.URL;
     let api = null;
@@ -38,15 +42,21 @@ export default function AllUsers() {
                     setUsers(response.data.users);
                 } else if (source == "post") {
                     setPosts(response.data.posts);
+                    setPageCount(Math.ceil(response.data.total_posts/perPage));
                 }
                 setIsLoading(false);
             })
             .catch((error) => {
                 navigate("/");
-                alert(error.response.data.message);
+                alert(error.message);
                 console.error(error);
             });
-    }, []);
+    }, [currentPage]);
+
+    function changePage(data){
+        console.log(data)
+        setCurrentPage(data.selected)
+    }
 
     if (isLoading) {
         return (
@@ -64,6 +74,19 @@ export default function AllUsers() {
                 <ShowAllMembers admins={admins} />
             ) : posts.length ? (
                 <ShowAllPosts posts={posts} />
+            ) : null}
+            {posts.length ? (
+                <ReactPaginate
+                    previousLabel={"Previous"}
+                    nextLabel={"Next"}
+                    pageCount={pageCount}
+                    onPageChange={changePage}
+                    containerClassName={"pagination justify-content-center"}
+                    pageClassName={"page-link"}
+                    previousLinkClassName={"page-link"}
+                    nextLinkClassName={"page-link"}
+                    activeClassName={"active"}
+                />
             ) : null}
         </div>
     );

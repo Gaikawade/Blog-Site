@@ -32,9 +32,13 @@ def check_access():
 @app.route('/home')
 def home():
     try:
-        posts = Post.query.order_by(Post.id.desc())
+        page = request.args.get('page', 1, type=int)
+        per_page = request.args.get('per_page', 10, type=int)
+        offset = (page - 1) * per_page
+        posts = Post.query.order_by(Post.id.desc()).limit(per_page).offset(offset)
         posts = [post.to_dict() for post in posts]
-        return jsonify({'status': True, 'posts': posts}), 200
+        total_posts = Post.query.count()
+        return jsonify({'status': True, 'posts': posts, 'total_posts': total_posts}), 200
     except Exception as e:
         return jsonify({'status': False, 'message': str(e)}), 500
 
@@ -296,12 +300,15 @@ def like_post(logged_in_user, post_id):
 @token_required
 def users_posts(logged_in_user ,user_id):
     try:
+        page = request.args.get('page', 1, type=int)
+        per_page = request.args.get('per_page', 10, type=int)
+        offset = (page - 1) * per_page
         # Query all posts by the specified user
-        posts = Post.query.filter_by(user_id=user_id).order_by(
-            Post.created_at.desc()).all()
+        posts = Post.query.filter_by(user_id=user_id).order_by(Post.created_at.desc()).limit(per_page).offset(offset)
         posts = [post.to_dict() for post in posts]
+        total_posts = Post.query.filter_by(user_id=user_id).count()
         # Return rendered template with posts
-        return jsonify({'status': True, 'posts': posts})
+        return jsonify({'status': True, 'posts': posts, 'total_posts': total_posts})
     except Exception as e:
         return jsonify({'status': False, 'message': str(e)}), 500
 
@@ -438,11 +445,13 @@ def all_admins(logged_in_user):
 def all_posts(logged_in_user):
     if check_access():
         try:
-            posts = Post.query.order_by(Post.created_at.desc())
-            # if not posts:
-            #     return jsonify({ 'status': False, 'message': ''})
+            page = request.args.get('page', 1, type=int)
+            per_page = request.args.get('per_page', 10, type=int)
+            offset = (page - 1) * per_page
+            posts = Post.query.order_by(Post.created_at.desc()).limit(per_page).offset(offset)
             posts = [post.to_dict() for post in posts]
-            return jsonify({'status': True, 'posts': posts}), 200
+            total_posts = Post.query.count()
+            return jsonify({'status': True, 'posts': posts, 'total_posts': total_posts}), 200
         except Exception as e:
             return jsonify({'status': False, 'message': str(e)}), 500
     else:
