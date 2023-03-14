@@ -45,42 +45,32 @@ export function like(postId) {
 
 export function deleteArticle(postId) {
     const token = check_token();
-    axios
+    return new Promise((resolve, reject) => {
+        axios
         .delete(`/post/delete/${postId}`, token)
         .then((res) => {
-            // console.log(res.data);
-            if (res.data.status === false) {
-                alert(res.data.message);
-            } else {
-                alert(res.data.message);
-                window.location.href = "/";
-            }
+            resolve(res.data);
         })
         .catch((err) => {
             console.log(err);
+            reject(err);
         });
+    })
 }
 
 export function deleteComment(commentId) {
     const token = check_token();
-    axios
+    return new Promise((resolve, reject) => {
+        axios
         .delete(`/delete_comment/${commentId}`, token)
         .then((response) => {
-            // console.log(response);
-            alert("Comment deleted successfully");
-            window.location.reload();
-            return (
-                <Alert color="primary">
-                    This is a primary alert — check it out!
-                </Alert>
-            );
+            resolve(response.data);
         })
         .catch((error) => {
-            if (!error.response.data.status) {
-                alert(error.response.data.message);
-            }
-            console.log(error);
+            // console.log(error);
+            reject(error)
         });
+    })
 }
 
 export function blockUser(id) {

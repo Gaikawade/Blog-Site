@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
-import { Link, useParams } from "react-router-dom";
+import { Link, useNavigate, useParams } from "react-router-dom";
+import { toast, ToastContainer } from "react-toastify";
 import axios from "axios";
 import jwt_decode from "jwt-decode";
 import { like, deleteArticle, check_token, deleteComment } from "../../utils";
@@ -22,6 +23,7 @@ export default function FullPost() {
     const [showModal, setShowModal] = useState(false);
     const [commentToDelete, setCommentToDelete] = useState(null);
     const [postToDelete, setPostToDelete] = useState(null);
+    const navigate = useNavigate();
 
     useEffect(() => {
         const token = check_token();
@@ -36,7 +38,7 @@ export default function FullPost() {
             .catch((err) => {
                 console.error(err);
             });
-    }, []);
+    }, [comment]);
 
     function handleCommentChange(e) {
         setComment(e.target.value);
@@ -78,11 +80,9 @@ export default function FullPost() {
     function handleSubmit(e) {
         e.preventDefault();
         const token = check_token();
-
         if (!comment) {
             setCommentError("Please enter your comment");
         }
-
         axios
             .post(
                 `/add_comment/${article.post.id}`,
@@ -93,15 +93,40 @@ export default function FullPost() {
                 token
             )
             .then((response) => {
-                // console.log(response.data);
-                alert(response.data.message);
-                window.location.reload();
                 setComment("");
+                toast.success(response.data.message);
             })
             .catch((error) => {
-                // console.log(error);
-                alert("Something went wrong");
+                toast.error("Something went wrong");
             });
+    }
+
+    async function handleDeleteArticle(id) {
+        try {
+            const data = await deleteArticle(id);
+            if (data.status) {
+                toast.success(data.message);
+                navigate('/');
+            } else {
+                toast.error(data.message);
+            }
+        } catch {
+            toast.error(data.message);
+        }
+    }
+
+    async function handleDeleteComment(id) {
+        try {
+            const data = await deleteComment(id);
+            if (data.status) {
+                toast.success(data.message);
+            } else {
+                toast.error(data.message);
+            }
+        } catch (err) {
+            toast.error(err.message);
+            // console.log(err);
+        }
     }
 
     if (isLoading) {
@@ -114,6 +139,7 @@ export default function FullPost() {
 
     return (
         <div>
+            <ToastContainer position="top-center" autoClose={5000} />
             <Container className="my-3">
                 <Card key={article.post.id} className="my-3">
                     <Card.Header>
@@ -278,8 +304,8 @@ export default function FullPost() {
                     Are you sure you want to delete{" "}
                     {commentToDelete ? (
                         <>
-                            <strong>{commentToDelete.commented_by.name}</strong>'s
-                            comment?
+                            <strong>{commentToDelete.commented_by.name}</strong>
+                            's comment?
                         </>
                     ) : postToDelete ? (
                         <>
@@ -292,11 +318,23 @@ export default function FullPost() {
                         Cancel
                     </Button>
                     {commentToDelete ? (
-                        <Button variant="danger" onClick={() => deleteComment(commentToDelete.id)}>
+                        <Button
+                            variant="danger"
+                            onClick={() => {
+                                handleDeleteComment(commentToDelete.id);
+                                handleCloseModal();
+                            }}
+                        >
                             Delete
                         </Button>
                     ) : postToDelete ? (
-                        <Button variant="danger" onClick={() => deleteArticle(postToDelete.post.id)}>
+                        <Button
+                            variant="danger"
+                            onClick={() => {
+                                handleDeleteArticle(postToDelete.post.id);
+                                handleCloseModal();
+                            }}
+                        >
                             Delete
                         </Button>
                     ) : null}
