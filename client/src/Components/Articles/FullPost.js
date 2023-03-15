@@ -3,7 +3,7 @@ import { Link, useNavigate, useParams } from "react-router-dom";
 import { toast, ToastContainer } from "react-toastify";
 import axios from "axios";
 import jwt_decode from "jwt-decode";
-import { like, deleteArticle, check_token, deleteComment } from "../../utils";
+import { like, deleteArticle, check_token, deleteComment, showCommentInput, showComments } from "../../utils";
 
 import Card from "react-bootstrap/Card";
 import Container from "react-bootstrap/esm/Container";
@@ -26,17 +26,18 @@ export default function FullPost() {
     const navigate = useNavigate();
 
     useEffect(() => {
-        const token = check_token();
+        const {config} = check_token();
         const decodedToken = jwt_decode(localStorage.getItem("token"));
-        setCurrentUser(decodedToken);
+        setCurrentUser(decodedToken.sub);
         axios
-            .get(`/post/${post_id}`, token)
+            .get(`/post/${post_id}`, config)
             .then((res) => {
                 setArticle(res.data.post);
                 setIsLoading(false);
             })
             .catch((err) => {
-                console.error(err);
+                // console.error(err);
+                toast.error("Something went wrong");
             });
     }, [comment]);
 
@@ -59,27 +60,9 @@ export default function FullPost() {
         setShowModal(false);
     }
 
-    function showCommentInput() {
-        const commentField = document.querySelector("#comment-input");
-        if (commentField.style.display == "block") {
-            commentField.style.display = "none";
-        } else {
-            commentField.style.display = "block";
-        }
-    }
-
-    function showComments() {
-        const allComments = document.querySelector("#show-comments");
-        if (allComments.style.display == "block") {
-            allComments.style.display = "none";
-        } else {
-            allComments.style.display = "block";
-        }
-    }
-
     function handleSubmit(e) {
         e.preventDefault();
-        const token = check_token();
+        const {config} = check_token();
         if (!comment) {
             setCommentError("Please enter your comment");
         }
@@ -90,7 +73,7 @@ export default function FullPost() {
                     text: comment,
                     commented_by: currentUser.userId,
                 },
-                token
+                config
             )
             .then((response) => {
                 setComment("");
@@ -230,7 +213,7 @@ export default function FullPost() {
                 )}
 
                 {/* Posting a Comment (Comment Input field) */}
-                <Card id="comment-input" style={{ display: "none" }}>
+                <Card id="comment-input" style={{ display: "none" }} className="my-3">
                     <Card.Header className="text-center h6">
                         {" "}
                         Post your Comment{" "}

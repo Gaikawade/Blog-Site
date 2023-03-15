@@ -1,11 +1,11 @@
 import axios from "axios";
 import jwt_decode from "jwt-decode";
-import Alert from 'react-bootstrap/Alert';
 
 export function check_token() {
     const token = localStorage.getItem("token");
     if (!token) {
-        window.location.href = "/login";
+        // window.location.href = "/login";
+        return {'config': null, "error": "You haven\'t logged in"};
     }
     const config = {
         headers: { Authorization: `Bearer ${token}` },
@@ -14,19 +14,19 @@ export function check_token() {
     const currentTime = Date.now() / 1000;
     if (decodedToken.exp < currentTime) {
         localStorage.clear();
-        location.href = "/login";
+        // location.href = "/login";
+        return {"config": null, "error": "Session expired, Please login"};
     }
-
-    return config;
+    return {"config": config, "error": null};
 }
 
 export function like(postId) {
     const likeCount = document.getElementById(`likes-count-${postId}`);
     const likeButton = document.getElementById(`like-button-${postId}`);
-    const token = check_token();
+    const {config} = check_token();
 
     axios
-        .post(`/like_post/${postId}`, {}, token)
+        .post(`/like_post/${postId}`, {}, config)
         .then((res) => {
             // console.log(res);
             likeCount.innerHTML = res.data[`likes`];
@@ -44,10 +44,10 @@ export function like(postId) {
 }
 
 export function deleteArticle(postId) {
-    const token = check_token();
+    const {config} = check_token();
     return new Promise((resolve, reject) => {
         axios
-        .delete(`/post/delete/${postId}`, token)
+        .delete(`/post/delete/${postId}`, config)
         .then((res) => {
             resolve(res.data);
         })
@@ -75,10 +75,10 @@ export function deleteComment(commentId) {
 
 export function blockUser(id) {
     const showOpt = document.getElementById(`block-option-${id}`);
-    const token = check_token();
+    const {config} = check_token();
 
     axios
-        .put(`/admin/block_user/${id}`, {}, token)
+        .put(`/admin/block_user/${id}`, {}, config)
         .then((res) => {
             if (res.data.operation == "Un-Blocked") {
                 showOpt.innerHTML = "Block";
@@ -87,4 +87,22 @@ export function blockUser(id) {
             }
         })
         .catch((err) => console.log(err.response));
+}
+
+export function showCommentInput() {
+    const commentField = document.querySelector("#comment-input");
+    if (commentField.style.display == "block") {
+        commentField.style.display = "none";
+    } else {
+        commentField.style.display = "block";
+    }
+}
+
+export function showComments() {
+    const allComments = document.querySelector("#show-comments");
+    if (allComments.style.display == "block") {
+        allComments.style.display = "none";
+    } else {
+        allComments.style.display = "block";
+    }
 }

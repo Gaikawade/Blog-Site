@@ -6,7 +6,7 @@ import Form from "react-bootstrap/Form";
 import Button from "react-bootstrap/Button";
 import Container from "react-bootstrap/Container";
 
-function LoginForm({typo}) {
+function LoginForm({warn}) {
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
     const [remember, setRemember] = useState(false);
@@ -73,7 +73,7 @@ function LoginForm({typo}) {
                 <div className="h5 m-3 text-center"> User Login </div>
             )}
             {error && <div className="text-danger mb-3">{error}</div>}
-            {typo && <div className="text-danger mb-3">{typo}</div>}
+            {warn && <div className="text-danger mb-3">{warn}</div>}
             <Form onSubmit={handleSubmit}>
                 <Form.Floating className="mb-3">
                     <Form.Control

@@ -24,7 +24,7 @@ export default function AddPost() {
                 setCurrentUser(response.data);
             })
             .catch((error) => {
-                toast.error('Something went wrong');
+                toast.error("Something went wrong");
             });
     }, []);
 
@@ -38,7 +38,7 @@ export default function AddPost() {
 
     function handleSubmit(e) {
         e.preventDefault();
-        const token = check_token();
+        const { config } = check_token();
         axios
             .post(
                 "/add_post",
@@ -47,11 +47,10 @@ export default function AddPost() {
                     content: content,
                     userId: currentUser.userId,
                 },
-                token
+                config
             )
             .then((response) => {
                 if (response.data.status) {
-                    // console.log(response);
                     toast.success(response.data.message);
                     navigate(`/post/${response.data.postId}`);
                 } else {
@@ -59,8 +58,11 @@ export default function AddPost() {
                 }
             })
             .catch((error) => {
-                toast.error(error.response.data.message);
-                // console.log(error.response.data.message);
+                if (error.response.status === 400) {
+                    toast.error(error.response.data.message);
+                } else {
+                    toast.error("Something went wrong");
+                }
             });
     }
 

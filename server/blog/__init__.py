@@ -4,6 +4,7 @@ from flask_bcrypt import Bcrypt
 from flask_login import LoginManager
 from dotenv import load_dotenv
 from flask_cors import CORS
+from flask_jwt_extended import JWTManager
 import os
 
 load_dotenv()
@@ -22,6 +23,7 @@ app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = os.getenv('TRACK_MODIFICATION')
 db = SQLAlchemy(app)
 
 bcrypt = Bcrypt(app)
+jwt = JWTManager(app)
 # LoginManager object is used to handle user authentication
 # Creating a new LoginManager instance which assiciates with Flask instance 'app'
 # set the login_view attribute of the LoginManager instance to the name of the view function which handles user logins

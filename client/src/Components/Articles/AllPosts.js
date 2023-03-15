@@ -3,6 +3,7 @@ import React, { useEffect, useState } from "react";
 import Spinner from "react-bootstrap/esm/Spinner";
 import ReactPaginate from "react-paginate";
 import { useNavigate, useParams } from "react-router-dom";
+import { toast } from "react-toastify";
 import { check_token } from "../../utils";
 import ShowAllPosts from "./ShowAllPosts";
 
@@ -16,26 +17,32 @@ export default function AllPosts() {
     const { userId } = useParams();
 
     useEffect(() => {
-        const token = check_token();
+        const {config} = check_token();
         axios
-            .get(`/user/${userId}/posts?page=${currentPage + 1}&per_page=${perPage}`, token)
+            .get(
+                `/user/${userId}/posts?page=${
+                    currentPage + 1
+                }&per_page=${perPage}`,
+                config
+            )
             .then((response) => {
                 // console.log(response.data);
                 setPosts(response.data.posts);
-                setPageCount(Math.ceil(response.data.total_posts/perPage));
+                setPageCount(Math.ceil(response.data.total_posts / perPage));
                 setIsLoading(false);
             })
             .catch((error) => {
+                if(error.response.status === 401){
+                    toast.error()
+                }
                 navigate("/");
                 console.log(error);
-                // alert(error.response.data.message);
-                // console.error(error);
             });
     }, [currentPage]);
 
-    function changePage(data){
-        console.log(data)
-        setCurrentPage(data.selected)
+    function changePage(data) {
+        console.log(data);
+        setCurrentPage(data.selected);
     }
 
     if (isLoading) {
@@ -49,17 +56,19 @@ export default function AllPosts() {
     return (
         <>
             <ShowAllPosts posts={posts} />
-            <ReactPaginate
-                previousLabel={"Previous"}
-                nextLabel={"Next"}
-                pageCount={pageCount}
-                onPageChange={changePage}
-                containerClassName={"pagination justify-content-center"}
-                pageClassName={"page-link"}
-                previousLinkClassName={"page-link"}
-                nextLinkClassName={"page-link"}
-                activeClassName={"active"}
-            />
+            {posts.length && (
+                <ReactPaginate
+                    previousLabel={"Previous"}
+                    nextLabel={"Next"}
+                    pageCount={pageCount}
+                    onPageChange={changePage}
+                    containerClassName={"pagination justify-content-center"}
+                    pageClassName={"page-link"}
+                    previousLinkClassName={"page-link"}
+                    nextLinkClassName={"page-link"}
+                    activeClassName={"active"}
+                />
+            )}
         </>
     );
 }

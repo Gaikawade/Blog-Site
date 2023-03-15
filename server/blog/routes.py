@@ -2,10 +2,10 @@ from flask import request, jsonify
 from sqlalchemy import text, or_
 from blog.models import add_user, add_admin, User, Post, Comment, Like, Admin
 from blog import app, bcrypt, db
-from flask_login import login_required, login_user, logout_user, current_user
+from flask_login import login_user, logout_user, current_user, login_required
+from flask_jwt_extended import create_access_token, jwt_required, get_jwt_identity
 import jwt
 from datetime import datetime, timedelta
-from .auth import token_required
 
 
 # Function to check whether user is logged in or not
@@ -81,11 +81,10 @@ def login():
                 return jsonify({'status': False, 'message': 'Your account is blocked, please contact our support team'}), 403
             else:
                 login_user(document, remember=remember)
-                token = jwt.encode({
+                token = create_access_token({
                     'userId': document.id,
-                    'isAdmin': check_access(),
-                    'exp': datetime.utcnow() + timedelta(minutes=120)
-                }, app.config['SECRET_KEY'])
+                    'isAdmin': check_access()
+                }, expires_delta=timedelta(hours=0.5))
                 response = jsonify({'status': True, 'message': 'Login successful', 'token': token})
                 response.headers['Authorization'] = f'Bearer {token}'
                 return response, 200
@@ -97,22 +96,19 @@ def login():
 
 # Logout API
 @app.route('/logout', methods=['POST'])
-@token_required
-def logout(current):
+@jwt_required()
+def logout():
     try:
-        if current:
-            logout_user()
-            return jsonify({'status': True, 'message': 'Logout successfully' }), 200
-        else:
-            return jsonify({'status': False, 'message': 'Please Login'}), 400
+        logout_user()
+        return jsonify({'status': True, 'message': 'Logout successfully' }), 200
     except Exception as e:
         return jsonify({'status': False, 'message': str(e)}), 500
 
 
 # User Account details and Update Account API
 @app.route('/account/<string:user_id>', methods=['GET', 'PUT'])
-@token_required
-def account(logged_in_user ,user_id):
+@jwt_required()
+def account(user_id):
     member = ''
     try:
         if user_id.startswith('A'):
@@ -138,15 +134,16 @@ def account(logged_in_user ,user_id):
             member.name = name
             member.email = email
             db.session.commit()
-            return jsonify({ 'status': True, 'message': 'Details updated successfully'}), 200
+            result = member.to_dict()
+            return jsonify({ 'status': True, 'message': 'Details updated successfully', 'member': result}), 200
     except Exception as e:
         return jsonify({ 'status': False, 'message':str(e) }), 500
 
 
 # App post API
 @app.route('/add_post', methods=['POST'])
-@token_required
-def add_post(logged_in_user):
+@jwt_required()
+def add_post():
     try:
         title = request.json.get('title')
         content = request.json.get('content')  # validation
@@ -154,8 +151,9 @@ def add_post(logged_in_user):
         document = Post.query.filter_by(title=title).first()
         if document:
             return jsonify({'status': False, 'message': 'Title should be unique/This title is already exists'}), 400
-
-        post = Post(title=title, content=content, author=logged_in_user)
+        token = get_jwt_identity()
+        author = User.query.get(token['userId'])
+        post = Post(title=title, content=content, author=author)
 
         db.session.add(post)
         db.session.commit()
@@ -167,8 +165,8 @@ def add_post(logged_in_user):
 
 # Read post data API
 @app.route('/post/<int:post_id>', methods=['GET'])
-@token_required
-def read_post(logged_in_user, post_id):
+@jwt_required()
+def read_post(post_id):
     try:
         post = Post.query.filter_by(id=post_id).first()
         if not post:
@@ -181,8 +179,8 @@ def read_post(logged_in_user, post_id):
 
 # Update post API
 @app.route('/post/update/<int:post_id>', methods=['PUT'])
-@token_required
-def update_post(logged_in_user, post_id):
+@jwt_required()
+def update_post(post_id):
     try:
         post = Post.query.get_or_404(post_id)
         if post.author != current_user:
@@ -202,8 +200,8 @@ def update_post(logged_in_user, post_id):
 
 # Delete post API
 @app.route('/post/delete/<int:post_id>', methods=['DELETE'])
-@token_required
-def delete_post(logged_in_user, post_id):
+@jwt_required()
+def delete_post(post_id):
     try:
         post = Post.query.get_or_404(post_id)
         if post.author != current_user and current_user.is_admin != 1:
@@ -218,8 +216,8 @@ def delete_post(logged_in_user, post_id):
 
 # Add comment to post API
 @app.route('/add_comment/<int:post_id>', methods=['POST'])
-@token_required
-def add_comment(logged_in_user, post_id):
+@jwt_required()
+def add_comment(post_id):
     try:
         if check_access() == True:
             return jsonify({'status': False, 'message': 'Access denied'}), 403
@@ -236,14 +234,15 @@ def add_comment(logged_in_user, post_id):
         else:
             return jsonify({'status': False, 'message': 'Post does not exist'}), 404
     except Exception as e:
+        print(str(e))
         db.session.rollback()
         return jsonify({'status': False, 'message': str(e)}), 500
 
 
 # Delete commment API
 @app.route('/delete_comment/<int:comment_id>', methods=['DELETE'])
-@token_required
-def delete_comment(logged_in_user, comment_id):
+@jwt_required()
+def delete_comment(comment_id):
     try:
         # Query comment by ID
         comment = Comment.query.filter_by(id=comment_id).first()
@@ -265,8 +264,8 @@ def delete_comment(logged_in_user, comment_id):
 
 # Likes API - like or unlike the article
 @app.route('/like_post/<int:post_id>', methods=['POST'])
-@token_required
-def like_post(logged_in_user, post_id):
+@jwt_required()
+def like_post(post_id):
     try:
         post = Post.query.filter_by(id=post_id).first()
         like = Like.query.filter_by(
@@ -297,8 +296,8 @@ def like_post(logged_in_user, post_id):
 
 # API to get all posts of ramdom users with their user id
 @app.route('/user/<string:user_id>/posts', methods=['GET'])
-@token_required
-def users_posts(logged_in_user ,user_id):
+@jwt_required()
+def users_posts(user_id):
     try:
         page = request.args.get('page', 1, type=int)
         per_page = request.args.get('per_page', 10, type=int)
@@ -315,8 +314,8 @@ def users_posts(logged_in_user ,user_id):
 
 # Search API for posts or users
 @app.route('/search', methods=['GET'])
-@token_required
-def search(logged_in_user):
+@jwt_required()
+def search():
     q = request.args.get('q')
     posts = Post.query
     users = User.query
@@ -401,6 +400,10 @@ def admin_login():
                     'isAdmin': check_access(),
                     'exp': datetime.utcnow() + timedelta(minutes=120)
                 }, app.config['SECRET_KEY'])
+                token = create_access_token({
+                    'userId': document.id,
+                    'isAdmin': check_access()
+                }, expires_delta=timedelta(hours=0.5))
                 return jsonify({'status': True, 'message': 'Login successful', 'token': token}), 200
         else:
             return jsonify({'status': False, 'message': 'Incorrect Email or Password'}), 401
@@ -411,8 +414,8 @@ def admin_login():
 
 # Fetch all users API, which is available to admins only
 @app.route('/admin/all_users', methods=['GET'])
-@token_required
-def all_users(logged_in_user):
+@jwt_required()
+def all_users():
     if check_access():
         try:
             users = User.query.order_by(User.created_at.desc())
@@ -426,8 +429,8 @@ def all_users(logged_in_user):
 
 # Fetch all users API, which is available to admins only
 @app.route('/admin/all_admins', methods=['GET'])
-@token_required
-def all_admins(logged_in_user):
+@jwt_required()
+def all_admins():
     if check_access():
         try:
             admins = Admin.query.order_by(Admin.created_at.desc())
@@ -441,8 +444,8 @@ def all_admins(logged_in_user):
 
 # Fetch all posts API, which is available to admins only
 @app.route('/admin/all_posts', methods=['GET'])
-@token_required
-def all_posts(logged_in_user):
+@jwt_required()
+def all_posts():
     if check_access():
         try:
             page = request.args.get('page', 1, type=int)
