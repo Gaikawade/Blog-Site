@@ -2,9 +2,8 @@ import axios from "axios";
 import jwt_decode from "jwt-decode";
 
 export function check_token() {
-    const token = localStorage.getItem("token");
+    const token = localStorage.getItem("token", null);
     if (!token) {
-        // window.location.href = "/login";
         return {'config': null, "error": "You haven\'t logged in"};
     }
     const config = {
@@ -14,7 +13,6 @@ export function check_token() {
     const currentTime = Date.now() / 1000;
     if (decodedToken.exp < currentTime) {
         localStorage.clear();
-        // location.href = "/login";
         return {"config": null, "error": "Session expired, Please login"};
     }
     return {"config": config, "error": null};
@@ -25,22 +23,26 @@ export function like(postId) {
     const likeButton = document.getElementById(`like-button-${postId}`);
     const {config} = check_token();
 
-    axios
+    return new Promise((resolve, reject) => {
+        axios
         .post(`/like_post/${postId}`, {}, config)
         .then((res) => {
             // console.log(res);
             likeCount.innerHTML = res.data[`likes`];
-            if (res.data[`error`] == "Access denied") {
-                alert("You are not allowed to do this operation");
-                return;
-            }
             if (res.data[`likes`] == true) {
                 likeButton.className = "fas fa-thumbs-up";
             } else {
                 likeButton.className = "far fa-thumbs-up";
             }
         })
-        .catch((e) => console.log(e));
+        .catch((e) => {
+            // console.log(e)
+            if(e.response.status === 403){
+                // alert(e.response.data.error)
+                reject(e)
+            }
+        });
+    })
 }
 
 export function deleteArticle(postId) {

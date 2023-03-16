@@ -127,6 +127,9 @@ def account(user_id):
                 'message': 'Data fetched successfully'
             }), 200
 
+        elif request.method == 'PUT' and user_id.startswith('A'):
+            return jsonify({'status': False, 'message': "Access Denied"}), 403
+
         elif request.method == 'PUT':
             name = request.json.get('name')
             email = request.json.get('email')
@@ -152,6 +155,8 @@ def add_post():
         if document:
             return jsonify({'status': False, 'message': 'Title should be unique/This title is already exists'}), 400
         token = get_jwt_identity()
+        if token['userId'].startswith('A'):
+            return jsonify({'status': False, 'message': 'Access Denied' }), 403
         author = User.query.get(token['userId'])
         post = Post(title=title, content=content, author=author)
 
@@ -272,7 +277,7 @@ def like_post(post_id):
             liked_by=current_user.id, post_id=post_id).first()
 
         if check_access():
-            return jsonify({'error': 'Access denied', 'likes': len(post.likes)})
+            return jsonify({'error': 'Access denied', 'likes': len(post.likes)}), 403
         # Check if post exists
         if not post:
             # Return error message with status code 404

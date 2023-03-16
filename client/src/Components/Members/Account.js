@@ -94,11 +94,15 @@ export default function Account() {
                     toast.success(res.data.message);
                     setUser(res.data.member);
                 } else {
-                    toast.danger(res.data.message);
+                    toast.error(res.data.message);
                 }
             })
             .catch((err) => {
-                toast.danger("Something went wrong");
+                if (err.response.status === 403) {
+                    toast.error(err.response.data.message);
+                } else {
+                    toast.error("Something went wrong");
+                }
             });
     }
 
@@ -131,7 +135,9 @@ export default function Account() {
                         </Card.Body>
                     </Card>
 
+                    {user_id[0] === "U" && (
                     <Button onClick={displayForm}>Update your details</Button>
+                    )}
 
                     {showForm && (
                         <Form className="col-md-4">

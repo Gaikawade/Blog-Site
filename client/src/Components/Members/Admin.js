@@ -1,11 +1,14 @@
-import axios from "axios";
 import React, { useEffect, useState } from "react";
-import Spinner from "react-bootstrap/esm/Spinner";
+import ReactPaginate from "react-paginate";
 import { useNavigate } from "react-router-dom";
+import axios from "axios";
+
+import Spinner from "react-bootstrap/esm/Spinner";
+
 import ShowAllMembers from "./ShowAllMembers";
 import ShowAllPosts from "../Articles/ShowAllPosts";
 import { check_token } from "../../utils";
-import ReactPaginate from "react-paginate";
+import LoginForm from "./LoginForm";
 
 export default function AllUsers() {
     const [users, setUsers] = useState([]);
@@ -17,8 +20,10 @@ export default function AllUsers() {
     const perPage = 10;
     const navigate = useNavigate();
     const URI = document.URL;
-    let api = null;
-    let source = null;
+    let api = null,
+        source = null;
+
+    const { config, error } = check_token();
 
     if (URI.includes("all_admins")) {
         api = `/admin/all_admins`;
@@ -32,9 +37,8 @@ export default function AllUsers() {
     }
 
     useEffect(() => {
-        const token = check_token();
         axios
-            .get(api, token)
+            .get(api, config)
             .then((response) => {
                 if (source == "admin") {
                     setAdmins(response.data.admins);
@@ -42,22 +46,25 @@ export default function AllUsers() {
                     setUsers(response.data.users);
                 } else if (source == "post") {
                     setPosts(response.data.posts);
-                    setPageCount(Math.ceil(response.data.total_posts/perPage));
+                    setPageCount(
+                        Math.ceil(response.data.total_posts / perPage)
+                    );
                 }
                 setIsLoading(false);
             })
             .catch((error) => {
-                navigate("/");
-                alert(error.message);
-                console.error(error);
+                console.error(error.code);
             });
     }, [currentPage]);
 
-    function changePage(data){
-        console.log(data)
-        setCurrentPage(data.selected)
+    function changePage(data) {
+        console.log(data);
+        setCurrentPage(data.selected);
     }
 
+    if (error) {
+        return <LoginForm warn={error} />;
+    }
     if (isLoading) {
         return (
             <div className="text-center">

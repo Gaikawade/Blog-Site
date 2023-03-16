@@ -7,9 +7,9 @@ export default function Logout() {
     const navigate = useNavigate();
 
     useEffect(() => {
-        const token = check_token()
+        const {config} = check_token()
         axios
-            .post("/logout", {}, token)
+            .post("/logout", {}, config)
             .then((response) => {
                 localStorage.clear();
                 navigate("/");

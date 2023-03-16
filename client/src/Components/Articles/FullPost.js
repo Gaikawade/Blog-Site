@@ -3,7 +3,14 @@ import { Link, useNavigate, useParams } from "react-router-dom";
 import { toast, ToastContainer } from "react-toastify";
 import axios from "axios";
 import jwt_decode from "jwt-decode";
-import { like, deleteArticle, check_token, deleteComment, showCommentInput, showComments } from "../../utils";
+import {
+    like,
+    deleteArticle,
+    check_token,
+    deleteComment,
+    showCommentInput,
+    showComments,
+} from "../../utils";
 
 import Card from "react-bootstrap/Card";
 import Container from "react-bootstrap/esm/Container";
@@ -12,6 +19,7 @@ import Row from "react-bootstrap/esm/Row";
 import Button from "react-bootstrap/esm/Button";
 import Spinner from "react-bootstrap/esm/Spinner";
 import Modal from "react-bootstrap/Modal";
+import LoginForm from "../Members/LoginForm";
 
 export default function FullPost() {
     const { post_id } = useParams();
@@ -23,22 +31,27 @@ export default function FullPost() {
     const [showModal, setShowModal] = useState(false);
     const [commentToDelete, setCommentToDelete] = useState(null);
     const [postToDelete, setPostToDelete] = useState(null);
+    const [tokenError, setTokenError] = useState("");
     const navigate = useNavigate();
+    const { config, error } = check_token();
 
     useEffect(() => {
-        const {config} = check_token();
-        const decodedToken = jwt_decode(localStorage.getItem("token"));
-        setCurrentUser(decodedToken.sub);
-        axios
-            .get(`/post/${post_id}`, config)
-            .then((res) => {
-                setArticle(res.data.post);
-                setIsLoading(false);
-            })
-            .catch((err) => {
-                // console.error(err);
-                toast.error("Something went wrong");
-            });
+        if (error) {
+            setTokenError(error);
+        } else {
+            const decodedToken = jwt_decode(localStorage.getItem("token"));
+            setCurrentUser(decodedToken.sub);
+            axios
+                .get(`/post/${post_id}`, config)
+                .then((res) => {
+                    setArticle(res.data.post);
+                    setIsLoading(false);
+                })
+                .catch((err) => {
+                    console.error(err);
+                    toast.error("Something went wrong");
+                });
+        }
     }, [comment]);
 
     function handleCommentChange(e) {
@@ -62,7 +75,6 @@ export default function FullPost() {
 
     function handleSubmit(e) {
         e.preventDefault();
-        const {config} = check_token();
         if (!comment) {
             setCommentError("Please enter your comment");
         }
@@ -89,12 +101,25 @@ export default function FullPost() {
             const data = await deleteArticle(id);
             if (data.status) {
                 toast.success(data.message);
-                navigate('/');
+                navigate("/");
             } else {
                 toast.error(data.message);
             }
         } catch {
             toast.error(data.message);
+        }
+    }
+
+    async function handleLikeArticle(id) {
+        try {
+            const data = await like(id);
+            if (!data.success) {
+                console.log(data);
+                toast.error(data);
+            }
+        } catch (e) {
+            console.log(e);
+            toast.error(e);
         }
     }
 
@@ -107,9 +132,13 @@ export default function FullPost() {
                 toast.error(data.message);
             }
         } catch (err) {
-            toast.error(err.message);
+            toast.error(err.response.data.error);
             // console.log(err);
         }
+    }
+
+    if (tokenError) {
+        return <LoginForm warn={error} />;
     }
 
     if (isLoading) {
@@ -179,7 +208,7 @@ export default function FullPost() {
                         <i
                             className="fas fa-thumbs-up"
                             id={`like-button-${article.post.id}`}
-                            onClick={() => like(article.post.id)}
+                            onClick={() => handleLikeArticle(article.post.id)}
                         ></i>
                     ) : (
                         <i
@@ -213,7 +242,11 @@ export default function FullPost() {
                 )}
 
                 {/* Posting a Comment (Comment Input field) */}
-                <Card id="comment-input" style={{ display: "none" }} className="my-3">
+                <Card
+                    id="comment-input"
+                    style={{ display: "none" }}
+                    className="my-3"
+                >
                     <Card.Header className="text-center h6">
                         {" "}
                         Post your Comment{" "}

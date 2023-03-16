@@ -58,7 +58,7 @@ export default function AddPost() {
                 }
             })
             .catch((error) => {
-                if (error.response.status === 400) {
+                if (error.response.status === 400 || 403) {
                     toast.error(error.response.data.message);
                 } else {
                     toast.error("Something went wrong");

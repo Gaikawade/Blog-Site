@@ -6,7 +6,7 @@ import Form from "react-bootstrap/Form";
 import Button from "react-bootstrap/Button";
 import Container from "react-bootstrap/Container";
 
-function LoginForm({warn}) {
+function LoginForm({ warn }) {
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
     const [remember, setRemember] = useState(false);
@@ -120,7 +120,17 @@ function LoginForm({warn}) {
                         Submit
                     </Button>
                 </Form.Floating>
-                Dont't have Account? <Link to={"/register"}>Register</Link>
+                {warn ? (
+                    <>
+                        If your are admin please login{" "}
+                        <Link to={"/admin/login"}>here</Link>
+                    </>
+                ) : !URL.includes("admin") || warn ? (
+                    <>
+                        Dont't have Account?{" "}
+                        <Link to={"/register"}>Register</Link>
+                    </>
+                ) : null}
             </Form>
         </Container>
     );
