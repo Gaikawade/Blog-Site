@@ -14,9 +14,13 @@ function Header(props) {
     const [currentUser, setCurrentUser] = useState({});
     const [searchTerm, setSearchTerm] = useState("");
     const [searchError, setSearchError] = useState('');
+    const [token, setToken] = useState('');
     const navigate = useNavigate();
 
     useEffect(() => {
+        if(localStorage.getItem('token')){
+            setToken(localStorage.getItem('token'));
+        }
         axios
             .get("/check_login")
             .then((response) => {
@@ -26,7 +30,7 @@ function Header(props) {
             .catch((error) => {
                 console.log(error);
             });
-    }, []);
+    }, [token]);
 
     function handleChangeSearchKeyword(e) {
         setSearchTerm(e.target.value);
@@ -142,6 +146,9 @@ function Header(props) {
                                             Admin Register
                                         </Dropdown.Item>
                                     )}
+                                    <Dropdown.Item href={`/change_password/${currentUser.userId}`}>
+                                        Change Password
+                                    </Dropdown.Item>
                                     <Dropdown.Item href="/logout">
                                         Logout
                                     </Dropdown.Item>

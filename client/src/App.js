@@ -11,6 +11,7 @@ import LoginForm from "./Components/Members/LoginForm";
 import Logout from "./Components/Members/Logout";
 import Account from "./Components/Members/Account";
 import Admin from "./Components/Members/Admin";
+import ChangePassword from "./Components/Members/ChangePassword";
 // Posts's Component
 import AddPost from "./Components/Articles/AddPost";
 import FullPost from "./Components/Articles/FullPost";
@@ -18,7 +19,6 @@ import UpdatePost from "./Components/Articles/UpdatePost";
 import AllPosts from "./Components/Articles/AllPosts";
 // Search Component
 import Search from "./Components/Search";
-
 
 function App() {
     const [url, setUrl] = useState("all_users");
@@ -39,6 +39,10 @@ function App() {
                 <Route path="/login" element={<LoginForm />} />
                 <Route path="/logout" element={<Logout />} />
                 <Route path="/account/:user_id" element={<Account />} />
+                <Route
+                    path="/change_password/:user_id"
+                    element={<ChangePassword />}
+                />
                 {/* specific user's posts */}
                 <Route path="/user/:userId/posts" element={<AllPosts />} />
                 {/* Admin Routes */}

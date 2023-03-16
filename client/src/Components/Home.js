@@ -6,8 +6,10 @@ import ShowAllPosts from "./Articles/ShowAllPosts";
 import Container from "react-bootstrap/esm/Container";
 import Spinner from "react-bootstrap/Spinner";
 import Alert from "react-bootstrap/Alert";
+import { toast, ToastContainer } from "react-toastify";
 
-function Home({ typo }) {
+function Home({ msg }) {
+    const [showAlert, setShowAlert] = useState(true);
     const [posts, setPosts] = useState([]);
     const [isLoading, setIsLoading] = useState(true);
     const [currentPage, setCurrentPage] = useState(0);
@@ -20,7 +22,7 @@ function Home({ typo }) {
             .then((res) => {
                 // console.log(res.data);
                 setPosts(res.data.posts);
-                setPageCount(Math.ceil(res.data.total_posts/perPage));
+                setPageCount(Math.ceil(res.data.total_posts / perPage));
                 setIsLoading(false);
             })
             .catch((err) => {
@@ -28,9 +30,9 @@ function Home({ typo }) {
             });
     }, [currentPage]);
 
-    function changePage(data){
-        console.log(data)
-        setCurrentPage(data.selected)
+    function changePage(data) {
+        console.log(data);
+        setCurrentPage(data.selected);
     }
 
     if (isLoading) {
@@ -43,8 +45,16 @@ function Home({ typo }) {
 
     return (
         <>
-            {typo && <Alert color="info">{typo}</Alert>}
             <Container className="my-3">
+                {msg && showAlert && (
+                    <Alert
+                        color="success"
+                        onClose={() => setShowAlert(false)}
+                        dismissible
+                    >
+                        {msg}
+                    </Alert>
+                )}
                 {<ShowAllPosts posts={posts} />}
             </Container>
             {/* Pagination */}

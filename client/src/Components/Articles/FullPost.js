@@ -52,7 +52,7 @@ export default function FullPost() {
                     toast.error("Something went wrong");
                 });
         }
-    }, [comment]);
+    }, [comment, commentToDelete]);
 
     function handleCommentChange(e) {
         setComment(e.target.value);
@@ -91,8 +91,12 @@ export default function FullPost() {
                 setComment("");
                 toast.success(response.data.message);
             })
-            .catch((error) => {
-                toast.error("Something went wrong");
+            .catch((err) => {
+                if (err.response.status === 403) {
+                    toast.error(err.response.data.message);
+                } else {
+                    toast.error("Something went wrong");
+                }
             });
     }
 
@@ -113,13 +117,14 @@ export default function FullPost() {
     async function handleLikeArticle(id) {
         try {
             const data = await like(id);
-            if (!data.success) {
-                console.log(data);
-                toast.error(data);
+            console.log(data);
+            if (data) {
+                toast.success("You Liked this article");
+            } else {
+                toast.success("You Unlike this article");
             }
         } catch (e) {
-            console.log(e);
-            toast.error(e);
+            toast.error(e.response.data.error);
         }
     }
 
@@ -132,8 +137,7 @@ export default function FullPost() {
                 toast.error(data.message);
             }
         } catch (err) {
-            toast.error(err.response.data.error);
-            // console.log(err);
+            toast.error(err.response.data.message);
         }
     }
 
@@ -214,7 +218,7 @@ export default function FullPost() {
                         <i
                             className="far fa-thumbs-up"
                             id={`like-button-${article.post.id}`}
-                            onClick={() => like(article.post.id)}
+                            onClick={() => handleLikeArticle(article.post.id)}
                         ></i>
                     )}
                     &nbsp;
@@ -265,7 +269,10 @@ export default function FullPost() {
                         <Button
                             className="btn btn-primary"
                             type="submit"
-                            onClick={handleSubmit}
+                            onClick={(e) => {
+                                handleSubmit(e);
+                                showCommentInput();
+                            }}
                         >
                             {" "}
                             Comment{" "}

@@ -127,7 +127,7 @@ def account(user_id):
                 'message': 'Data fetched successfully'
             }), 200
 
-        elif request.method == 'PUT' and user_id.startswith('A'):
+        elif request.method == 'PUT' and check_access():
             return jsonify({'status': False, 'message': "Access Denied"}), 403
 
         elif request.method == 'PUT':
@@ -224,7 +224,7 @@ def delete_post(post_id):
 @jwt_required()
 def add_comment(post_id):
     try:
-        if check_access() == True:
+        if check_access():
             return jsonify({'status': False, 'message': 'Access denied'}), 403
         text = request.json.get('text')
         commented_by = request.json.get('commented_by')
@@ -239,7 +239,6 @@ def add_comment(post_id):
         else:
             return jsonify({'status': False, 'message': 'Post does not exist'}), 404
     except Exception as e:
-        print(str(e))
         db.session.rollback()
         return jsonify({'status': False, 'message': str(e)}), 500
 
@@ -249,16 +248,11 @@ def add_comment(post_id):
 @jwt_required()
 def delete_comment(comment_id):
     try:
-        # Query comment by ID
         comment = Comment.query.filter_by(id=comment_id).first()
-        # Check if comment exists
         if not comment:
             return jsonify({'status': False, 'message': 'Comment not found'}), 404
-        # Check if user is authorized to delete comment
-        if current_user.id == comment.author and current_user.id == comment.post.author:
-            # Return error message with status code 403 (forbidden)
+        if current_user.id != comment.author and current_user.id != comment.post.author and not current_user.is_admin:
             return jsonify({'status': False, 'message': 'Unauthorized access'}), 403
-        # Delete comment from database and commit changes
         db.session.delete(comment)
         db.session.commit()
         return jsonify({'status': True, 'message': 'Comment deleted successfully'}), 200
@@ -468,7 +462,7 @@ def all_posts():
 
 # Block/Unblock user API
 @app.route('/admin/block_user/<string:user_id>', methods=['PUT'])
-@login_required
+@jwt_required()
 def block_user(user_id):
     if check_access():
         member = None
@@ -496,3 +490,32 @@ def block_user(user_id):
             return jsonify({'status': False, 'message': str(e)}), 500
     else:
         return jsonify({'status': False, 'message': 'Unauthorized access'}), 401
+
+
+@app.route('/change_password/<string:user_id>', methods=['POST'])
+@jwt_required()
+def change_password(user_id):
+    member = None
+    old_password = request.json.get('oldPassword')
+    new_password = request.json.get('newPassword')
+    try:
+        if user_id.startswith('U'):
+            member = User.query.filter_by(id=user_id).first()
+        else:
+            member = Admin.query.filter_by(id=user_id).first()
+
+        if not member:
+            return jsonify({'status': False, 'message': 'No member found'}), 404
+
+        if bcrypt.check_password_hash(member.password, old_password):
+            if member.is_blocked == 1:
+                return jsonify({'status': False, 'message': 'Your account is blocked, please contact our support team'}), 403
+            else:
+                password = bcrypt.generate_password_hash(new_password).decode('utf-8')
+                member.password = password
+                db.session.commit()
+                return jsonify({'status': True, 'message': 'Password changed successfully'}), 200
+        else:
+            return jsonify({'status': False, 'message': 'Wrong Old Password'}), 400
+    except Exception as e:
+        return jsonify({ 'status': False, 'message': str(e) }), 500
