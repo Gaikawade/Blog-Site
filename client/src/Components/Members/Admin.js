@@ -1,14 +1,12 @@
 import React, { useEffect, useState } from "react";
 import ReactPaginate from "react-paginate";
-import { useNavigate } from "react-router-dom";
 import axios from "axios";
-
-import Spinner from "react-bootstrap/esm/Spinner";
-
+import { Spinner } from "react-bootstrap";
 import ShowAllMembers from "./ShowAllMembers";
 import ShowAllPosts from "../Articles/ShowAllPosts";
 import { check_token } from "../../utils";
 import LoginForm from "./LoginForm";
+import { toast } from "react-toastify";
 
 export default function AllUsers() {
     const [users, setUsers] = useState([]);
@@ -18,7 +16,6 @@ export default function AllUsers() {
     const [currentPage, setCurrentPage] = useState(0);
     const [pageCount, setPageCount] = useState(20);
     const perPage = 10;
-    const navigate = useNavigate();
     const URI = document.URL;
     let api = null,
         source = null;
@@ -37,28 +34,26 @@ export default function AllUsers() {
     }
 
     useEffect(() => {
-        axios
-            .get(api, config)
-            .then((response) => {
+        const fetchData = async () => {
+            try {
+                let res = await axios.get(api, config);
                 if (source == "admin") {
-                    setAdmins(response.data.admins);
+                    setAdmins(res.data.admins);
                 } else if (source == "user") {
-                    setUsers(response.data.users);
+                    setUsers(res.data.users);
                 } else if (source == "post") {
-                    setPosts(response.data.posts);
-                    setPageCount(
-                        Math.ceil(response.data.total_posts / perPage)
-                    );
+                    setPosts(res.data.posts);
+                    setPageCount(Math.ceil(res.data.total_posts / perPage));
                 }
                 setIsLoading(false);
-            })
-            .catch((error) => {
-                console.error(error.code);
-            });
+            } catch (err) {
+                toast.error(err.message);
+            }
+            fetchData();
+        };
     }, [currentPage]);
 
     function changePage(data) {
-        console.log(data);
         setCurrentPage(data.selected);
     }
 
@@ -75,13 +70,21 @@ export default function AllUsers() {
 
     return (
         <div>
-            {users.length ? (
+            <ToastContainer position="top-center" autoClose={5000} />
+            {error ? (
+                <LoginForm warn={error} />
+            ) : isLoading ? (
+                <div className="text-center">
+                    <Spinner animation="border" variant="primary" />
+                </div>
+            ) : users.length ? (
                 <ShowAllMembers users={users} />
             ) : admins.length ? (
                 <ShowAllMembers admins={admins} />
             ) : posts.length ? (
                 <ShowAllPosts posts={posts} />
             ) : null}
+
             {posts.length ? (
                 <ReactPaginate
                     previousLabel={"Previous"}

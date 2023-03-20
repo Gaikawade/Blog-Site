@@ -2,12 +2,13 @@ import axios from "axios";
 import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { check_token } from "../../utils";
+import LoginForm from "./LoginForm";
 
 export default function Logout() {
     const navigate = useNavigate();
+    const { config, error } = check_token();
 
     useEffect(() => {
-        const {config} = check_token()
         axios
             .post("/logout", {}, config)
             .then((response) => {
@@ -19,4 +20,6 @@ export default function Logout() {
                 console.log(err);
             });
     });
+
+    return <>{error ? <LoginForm warn={error} /> : null}</>;
 }

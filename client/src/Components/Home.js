@@ -6,7 +6,6 @@ import ShowAllPosts from "./Articles/ShowAllPosts";
 import Container from "react-bootstrap/esm/Container";
 import Spinner from "react-bootstrap/Spinner";
 import Alert from "react-bootstrap/Alert";
-import { toast, ToastContainer } from "react-toastify";
 
 function Home({ msg }) {
     const [showAlert, setShowAlert] = useState(true);
@@ -31,7 +30,6 @@ function Home({ msg }) {
     }, [currentPage]);
 
     function changePage(data) {
-        console.log(data);
         setCurrentPage(data.selected);
     }
 

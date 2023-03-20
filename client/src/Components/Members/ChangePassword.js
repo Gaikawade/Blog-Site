@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import { useParams } from "react-router-dom";
 import axios from "axios";
 
 import Form from "react-bootstrap/Form";
@@ -18,7 +18,6 @@ function ChangePassword() {
     const [confirmPasswordError, setConfirmPasswordError] = useState("");
     const [isPasswordChanged, setIsPasswordChanged] = useState(false);
     const { config } = check_token();
-    const navigate = useNavigate();
     const { user_id } = useParams();
 
     function handleOldPasswordChange(e) {
@@ -49,6 +48,8 @@ function ChangePassword() {
         }
         if (newPassword !== confirmPassword) {
             setConfirmPasswordError("Password mismatch");
+        } else if( oldPassword === newPassword){
+            setNewPasswordError("Dont use your last password while updating your password");
         }
 
         axios

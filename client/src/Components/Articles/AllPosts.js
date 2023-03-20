@@ -17,27 +17,23 @@ export default function AllPosts() {
     const { userId } = useParams();
 
     useEffect(() => {
-        const {config} = check_token();
-        axios
-            .get(
-                `/user/${userId}/posts?page=${
-                    currentPage + 1
-                }&per_page=${perPage}`,
-                config
-            )
-            .then((response) => {
-                // console.log(response.data);
+        const { config } = check_token();
+        const fetchPosts = async () => {
+            try {
+                let res = await axios.get(
+                    `/user/${userId}/posts?page=${
+                        currentPage + 1
+                    }&per_page=${perPage}`,
+                    config
+                );
                 setPosts(response.data.posts);
                 setPageCount(Math.ceil(response.data.total_posts / perPage));
                 setIsLoading(false);
-            })
-            .catch((error) => {
-                if(error.response.status === 401){
-                    toast.error()
-                }
+            } catch (e) {
                 navigate("/");
-                console.log(error);
-            });
+            }
+        };
+        fetchPosts();
     }, [currentPage]);
 
     function changePage(data) {

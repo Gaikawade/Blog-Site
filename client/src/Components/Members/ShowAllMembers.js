@@ -2,10 +2,7 @@ import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import jwt_decode from "jwt-decode";
 
-import Container from "react-bootstrap/esm/Container";
-import Table from "react-bootstrap/esm/Table";
-import Modal from "react-bootstrap/Modal";
-import Button from "react-bootstrap/esm/Button";
+import {Container, Table, Modal, Button} from "react-bootstrap";
 import { blockUser } from "../../utils";
 
 export default function ShowAllMembers(props) {

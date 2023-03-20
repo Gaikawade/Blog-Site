@@ -1,14 +1,10 @@
 import React, { useEffect, useState } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import { useParams } from "react-router-dom";
 import LoginForm from "./LoginForm";
-import Container from "react-bootstrap/esm/Container";
-import Card from "react-bootstrap/Card";
-import Form from "react-bootstrap/Form";
-import Button from "react-bootstrap/Button";
 import axios from "axios";
-import Spinner from "react-bootstrap/Spinner";
 import { check_token } from "../../utils";
 import { toast, ToastContainer } from "react-toastify";
+import { Container, Card, Form, Button, Spinner } from "react-bootstrap";
 
 const nameRegex = /^[a-zA-Z]+ ?[a-zA-Z ]*$/;
 
@@ -21,37 +17,31 @@ export default function Account() {
     const [emailError, setEmailError] = useState("");
     const [submitError, setSubmitError] = useState("");
     const [showForm, setShowForm] = useState(false);
-    const [tokenError, setTokenError] = useState(null);
+    const [isLoggedIn, setIsLoggedIn] = useState(null);
     const { user_id } = useParams();
-    const navigate = useNavigate();
+    const { config, error } = check_token();
 
     useEffect(() => {
-        const { config, error } = check_token();
         if (error) {
-            console.log(error);
-            setTokenError(error);
+            setIsLoggedIn(error);
         } else {
-            axios
-                .get(`/account/${user_id}`, config)
-                .then((res) => {
-                    // console.log(res.data);
+            const fetchDetails = async () => {
+                try {
+                    let res = await axios.get(`/account/${user_id}`, config);
                     setUser(res.data.member);
                     setName(res.data.member.name);
                     setEmail(res.data.member.email);
-                })
-                .catch((err) => {
-                    console.log(err);
-                });
+                } catch (e) {
+                    toast.error("Something went wrong");
+                }
+            };
+            fetchDetails();
         }
         setIsLoading(false);
     }, []);
 
     function displayForm() {
-        if (showForm) {
-            setShowForm(false);
-        } else {
-            setShowForm(true);
-        }
+        showForm ? setShowForm(false) : setShowForm(true);
     }
 
     function handleNameChange(e) {
@@ -66,7 +56,6 @@ export default function Account() {
 
     function handleSubmit(e) {
         e.preventDefault();
-        const { config } = check_token();
         // Validation
         if (name.length < 2 || !nameRegex.test(name)) {
             return setNameError(
@@ -80,44 +69,42 @@ export default function Account() {
             return setSubmitError(`You haven't update details`);
         }
 
-        axios
-            .put(
-                `/account/${user_id}`,
-                {
-                    name: name,
-                    email: email,
-                },
-                config
-            )
-            .then((res) => {
+        const updateDetails = async () => {
+            try {
+                let res = await axios.put(
+                    `/account/${user_id}`,
+                    {
+                        name: name,
+                        email: email,
+                    },
+                    config
+                );
                 if (res.data.status) {
                     toast.success(res.data.message);
                     setUser(res.data.member);
+                    setShowForm(false);
                 } else {
                     toast.error(res.data.message);
                 }
-            })
-            .catch((err) => {
+            } catch (err) {
                 if (err.response.status === 403) {
                     toast.error(err.response.data.message);
                 } else {
                     toast.error("Something went wrong");
                 }
-            });
-    }
-
-    if (isLoading) {
-        return (
-            <div className="text-center">
-                <Spinner animation="border" variant="primary" />
-            </div>
-        );
+            }
+        };
+        updateDetails();
     }
 
     return (
         <>
-            {tokenError ? (
-                <LoginForm warn={tokenError} />
+            {isLoggedIn ? (
+                <LoginForm warn={isLoggedIn} />
+            ) : isLoading ? (
+                <div className="text-center">
+                    <Spinner animation="border" variant="primary" />
+                </div>
             ) : (
                 <Container>
                     <ToastContainer position="top-center" autoClose={5000} />
@@ -136,7 +123,9 @@ export default function Account() {
                     </Card>
 
                     {user_id[0] === "U" && (
-                    <Button onClick={displayForm}>Update your details</Button>
+                        <Button onClick={displayForm}>
+                            Update your details
+                        </Button>
                     )}
 
                     {showForm && (

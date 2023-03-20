@@ -28,12 +28,16 @@ def check_access():
 
 # Home page of the web app
 # Showing all the posts in home page
-@app.route('/')
-@app.route('/home')
+@app.route('/', methods=["GET"])
+@app.route('/home', methods=["GET"])
 def home():
     try:
         page = request.args.get('page', 1, type=int)
         per_page = request.args.get('per_page', 10, type=int)
+        if page < 1:
+            page = 1
+        if per_page < 1:
+            per_page = 10
         offset = (page - 1) * per_page
         posts = Post.query.order_by(Post.id.desc()).limit(per_page).offset(offset)
         posts = [post.to_dict() for post in posts]
