@@ -163,7 +163,7 @@ def add_post():
         document = Post.query.filter_by(title=title).first()
         if document:
             return jsonify({'status': False, 'message': 'Title should be unique/This title is already exists'}), 400
-        author = db.query.get(User, token['userId'])
+        author = db.session.get(User, token['userId'])
         post = Post(title=title, content=content, author=author)
 
         db.session.add(post)
@@ -182,10 +182,10 @@ def read_post(post_id):
         post = Post.query.filter_by(id=post_id).first()
         if not post:
             return jsonify({ 'status': False, 'message': 'No such post found'}), 404
-        post_dict = post.to_dict()
+        post_dict = [post.to_dict()]
         return jsonify({ 'status': True, 'message': 'Post exists', 'post': post_dict}), 200
     except Exception as e:
-        return jsonify({ 'stauts': False,'error': str(e)})
+        return jsonify({ 'stauts': False,'error': str(e)}), 500
 
 
 # Update post API
@@ -193,14 +193,23 @@ def read_post(post_id):
 @jwt_required()
 def update_post(post_id):
     try:
-        post = Post.query.get_or_404(post_id)
+        post = db.session.get(Post, post_id)
+        if not post:
+            return jsonify({'status': False, 'message': 'Not Found'}), 404
         if post.author != current_user:
             return jsonify({'status': False, 'message': 'Unauthorized Access'}), 403
 
         title = request.json.get('title')
         content = request.json.get('content')
-        post.title = title
-        post.content = content
+        
+        if not title and not content:
+            return ({'status': False, 'message': 'Please provide some data to update'}), 400
+        
+        if title:
+            post.title = title
+        if content:
+            post.content = content
+
         db.session.commit()
 
         return jsonify({'status': True, 'message': 'Article updated successfully'}), 200
@@ -214,7 +223,10 @@ def update_post(post_id):
 @jwt_required()
 def delete_post(post_id):
     try:
-        post = Post.query.get_or_404(post_id)
+        post = db.session.get(Post, post_id)
+        if not post:
+            return jsonify({'status': False, 'message': 'Post not found'}), 404
+
         if post.author != current_user and current_user.is_admin != 1:
             return jsonify({'status': False, 'message': 'Access denied'}), 403
         db.session.delete(post)

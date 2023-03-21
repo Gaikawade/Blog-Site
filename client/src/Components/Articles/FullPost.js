@@ -45,12 +45,10 @@ export default function FullPost() {
             const fetchPost = async () => {
                 try {
                     let res = await axios.get(`/post/${post_id}`, config);
-                    setArticle(res.data.post);
+                    setArticle(res.data.post[0]);
                     setIsLoading(false);
-                    // toast.success(navigate.state.toastMsg)
-                    // props.toastMsg ? toast.success(props.toastMsg) : null;
                 } catch (err) {
-                    console.error(err);
+                    // console.error(err);
                     toast.error("Something went wrong");
                 }
             };

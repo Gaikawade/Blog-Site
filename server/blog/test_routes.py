@@ -4,6 +4,7 @@ from blog import app, db
 
 client = app.test_client()
 
+# default user_id's
 user_id = 'U13325696915855394160' # Mahesh
 admin_id = 'A11065529445829722718' # Varun
 
@@ -98,6 +99,7 @@ def test_register():
     response = client.post('/register', data=json.dumps(data), content_type='application/json')
     assert response.status_code == 400
     assert b'Password mismatch' in response.data
+
 
 # Login    
 def test_login():
@@ -202,12 +204,13 @@ def test_account_put_method():
 def test_add_post():
     # valid data
     data = {
-        'title': 'New Post Title',
-        'content': 'Post content goes here'
+        'title': 'Unit Testing I',
+        'content': 'Hello there, these are some test cases for flask backend' 
     }
     response = client.post('/add_post', data=json.dumps(data), headers=get_headers_for_user())
     assert response.status_code == 201
     assert b'message' and b'postId' in response.data
+    
     # duplicate title
     data = {
         'title': 'Post Title',
@@ -217,3 +220,100 @@ def test_add_post():
     assert response.status_code == 400
     assert b'Title should be unique' in response.data
     
+    # Add Post by Admin
+    data = {
+        'title': 'Post Title',
+        'content': 'Post content goes here'
+    }
+    response = client.post('/add_post', data=json.dumps(data), headers=get_headers_for_admin())
+    assert response.status_code == 403
+    assert b'Access Denied' in response.data
+    
+    # Without passing Header
+    response = client.post('/add_post', data=json.dumps(data))
+    assert response.status_code == 401
+    assert b'Missing Authorization Header' in response.data
+
+
+# Read Post
+def test_read_post():
+    # With a random post id - User
+    response = client.get('/post/2', headers=get_headers_for_user())
+    json_response = json.loads(response.get_data(as_text=True))
+    assert response.status_code == 200
+    assert len(json_response['post']) == 1
+    
+    # With a random post id - Admin
+    response = client.get('/post/2', headers=get_headers_for_admin())
+    json_response = json.loads(response.get_data(as_text=True))
+    assert response.status_code == 200
+    assert len(json_response['post']) == 1
+    
+    # With invalid post id - User
+    response = client.get('/post/post_id', headers=get_headers_for_user())
+    assert response.status_code == 404
+    assert b'Not Found' in response.data
+    
+    # With invalid post id - Admin
+    response = client.get('/post/post_id', headers=get_headers_for_admin())
+    assert response.status_code == 404
+    assert b'Not Found' in response.data
+    
+    # Without headers
+    response = client.get('/post/2')
+    assert response.status_code == 401
+    assert b'Missing Authorization' in response.data
+
+
+# Update Post
+def test_update_post():
+    data = {
+        'content': 'updated content, done by using update_post API, PUT method'
+    }
+    # User updating his own post
+    response = client.put('/post/update/44', data=json.dumps(data), headers=get_headers_for_user())
+    assert response.status_code == 200
+    assert b'Article updated' in response.data
+    
+    # user updating another user's post
+    response = client.put('/post/update/12', data=json.dumps(data), headers=get_headers_for_user())
+    assert response.status_code == 403
+    assert b'Unauthorized Access' in response.data
+    
+    # Updating post by Admin
+    response = client.put('/post/update/44', data=json.dumps(data), headers=get_headers_for_admin())
+    assert response.status_code == 403
+    assert b'Unauthorized Access' in response.data
+
+    # post id not exists
+    response = client.put('/post/update/postid', data=json.dumps(data), headers=get_headers_for_user())
+    assert response.status_code == 404
+    assert b'Not Found' in response.data
+
+
+# Delete Post
+def test_delete_post():
+    # authorized user
+    response = client.delete('/post/delete/44', headers=get_headers_for_user())
+    assert response.status_code == 200
+    assert b'deleted successfully' in response.data
+    
+    # Admin
+    response = client.delete('/post/delete/44', headers=get_headers_for_admin())
+    assert response.status_code == 200
+    assert b'deleted successfully' in response.data  
+    
+    # unauthorized user
+    response = client.delete('/post/delete/2', headers=get_headers_for_user())
+    assert response.status_code == 403
+    assert b'Access denied' in response.data
+    
+    # Without headers
+    response = client.delete('/post/delete/44')
+    assert response.status_code == 401
+    assert b'Missing Authorization' in response.data
+    
+    # Post id not exists
+    response = client.delete('/post/delete/postid', headers=get_headers_for_admin())
+    assert response.status_code == 404
+    assert b'Not Found' in response.data
