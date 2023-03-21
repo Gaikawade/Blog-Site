@@ -34,10 +34,8 @@ def home():
     try:
         page = request.args.get('page', 1, type=int)
         per_page = request.args.get('per_page', 10, type=int)
-        if page < 1:
-            page = 1
-        if per_page < 1:
-            per_page = 10
+        if page < 1 and per_page < 1:
+            return jsonify({'status': False, 'message': 'Invalid page number'}), 400
         offset = (page - 1) * per_page
         posts = Post.query.order_by(Post.id.desc()).limit(per_page).offset(offset)
         posts = [post.to_dict() for post in posts]
@@ -49,7 +47,7 @@ def home():
 
 # Register User API
 # Function used to registration end-user for the web application
-@app.route('/register', methods=['POST', 'GET'])
+@app.route('/register', methods=['POST'])
 def register():
     try:
         name = request.json.get('name')
@@ -57,22 +55,23 @@ def register():
         password = request.json.get('password')
         confirm_password = request.json.get('confirmPassword')
         # validation part
-        user = User.query.filter_by(email=email).first()
-        if user:
-            return jsonify({'status': False, 'message': 'Email is already registered.'}), 400
-
         if password == confirm_password:
+            user = User.query.filter_by(email=email).first()
+            if user:
+                return jsonify({'status': False, 'message': 'Email is already registered.'}), 400
             add_user(name, email, password)
             return jsonify({'status': True, 'message': 'Registration successful'}), 201
         else:
             return jsonify({'status': False, 'message': 'Password mismatch'}), 400
+        
+
     except Exception as e:
         db.session.rollback()
         return jsonify({'status': False, 'message': str(e)}), 500
 
 
 # User Login API
-@app.route('/login', methods=['POST', 'GET'])
+@app.route('/login', methods=['POST'])
 def login():
     try:
         email = request.json.get('email')
@@ -138,8 +137,10 @@ def account(user_id):
             name = request.json.get('name')
             email = request.json.get('email')
             
-            member.name = name
-            member.email = email
+            if name:
+                member.name = name
+            if email:
+                member.email = email
             db.session.commit()
             result = member.to_dict()
             return jsonify({ 'status': True, 'message': 'Details updated successfully', 'member': result}), 200
@@ -152,16 +153,17 @@ def account(user_id):
 @jwt_required()
 def add_post():
     try:
+        token = get_jwt_identity()
+        if token['userId'].startswith('A'):
+            return jsonify({'status': False, 'message': 'Access Denied' }), 403
+        
         title = request.json.get('title')
-        content = request.json.get('content')  # validation
+        content = request.json.get('content')
 
         document = Post.query.filter_by(title=title).first()
         if document:
             return jsonify({'status': False, 'message': 'Title should be unique/This title is already exists'}), 400
-        token = get_jwt_identity()
-        if token['userId'].startswith('A'):
-            return jsonify({'status': False, 'message': 'Access Denied' }), 403
-        author = User.query.get(token['userId'])
+        author = db.query.get(User, token['userId'])
         post = Post(title=title, content=content, author=author)
 
         db.session.add(post)

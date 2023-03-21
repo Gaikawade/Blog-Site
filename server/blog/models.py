@@ -6,13 +6,11 @@ import uuid
 # it is a decorator in Flask-Login, and a Flask extension for handling user authentication and session management
 @login_manager.user_loader
 def load_user(id):
-    # Load the user as a regular user
-    user = User.query.get(id)
-    if user:
+    if id.startswith('U'):
+        user = db.session.get(User, id)
         return user
-    # If the user is not found, load the user as an admin
-    admin = Admin.query.get(id)
-    if admin:
+    else:
+        admin = db.session.get(Admin, id)
         return admin
 
 

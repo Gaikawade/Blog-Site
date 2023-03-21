@@ -7,7 +7,10 @@ export function check_token() {
         return { config: null, error: "You haven't logged in" };
     }
     const config = {
-        headers: { Authorization: `Bearer ${token}` },
+        headers: { 
+            Authorization: `Bearer ${token}`,
+            content_type:'application/json'
+        },
     };
     const decodedToken = jwt_decode(token);
     const currentTime = Date.now() / 1000;
