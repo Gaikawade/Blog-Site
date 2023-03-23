@@ -49,12 +49,11 @@ def home():
 # Function used to registration end-user for the web application
 @app.route('/register', methods=['POST'])
 def register():
+    name = request.json.get('name')
+    email = request.json.get('email')
+    password = request.json.get('password')
+    confirm_password = request.json.get('confirmPassword')
     try:
-        name = request.json.get('name')
-        email = request.json.get('email')
-        password = request.json.get('password')
-        confirm_password = request.json.get('confirmPassword')
-        # validation part
         if password == confirm_password:
             user = User.query.filter_by(email=email).first()
             if user:
@@ -63,8 +62,6 @@ def register():
             return jsonify({'status': True, 'message': 'Registration successful'}), 201
         else:
             return jsonify({'status': False, 'message': 'Password mismatch'}), 400
-        
-
     except Exception as e:
         db.session.rollback()
         return jsonify({'status': False, 'message': str(e)}), 500
@@ -73,11 +70,10 @@ def register():
 # User Login API
 @app.route('/login', methods=['POST'])
 def login():
+    email = request.json.get('email')
+    password = request.json.get('password')
+    remember = request.json.get('remember')
     try:
-        email = request.json.get('email')
-        password = request.json.get('password')
-        remember = request.json.get('remember')
-
         document = User.query.filter_by(email=email).first()
         if document and bcrypt.check_password_hash(document.password, password):
             if document.is_blocked == 1:
@@ -246,6 +242,9 @@ def add_comment(post_id):
             return jsonify({'status': False, 'message': 'Access denied'}), 403
         text = request.json.get('text')
         commented_by = request.json.get('commented_by')
+        
+        if not text or not commented_by:
+            return jsonify({'status': False, 'message': 'Provide the required data'}), 400
 
         post = Post.query.filter_by(id=post_id).first()
         if post:
@@ -269,10 +268,10 @@ def delete_comment(comment_id):
         comment = Comment.query.filter_by(id=comment_id).first()
         if not comment:
             return jsonify({'status': False, 'message': 'Comment not found'}), 404
-        if current_user.id != comment.author and current_user.id != comment.post.author and not current_user.is_admin:
+        if current_user != comment.author and current_user != comment.post.author and not current_user.is_admin:
             return jsonify({'status': False, 'message': 'Unauthorized access'}), 403
-        db.session.delete(comment)
-        db.session.commit()
+        # db.session.delete(comment)
+        # db.session.commit()
         return jsonify({'status': True, 'message': 'Comment deleted successfully'}), 200
     except Exception as e:
         db.session.rollback()
@@ -284,27 +283,23 @@ def delete_comment(comment_id):
 @jwt_required()
 def like_post(post_id):
     try:
+        if check_access():
+            return jsonify({'error': 'Access denied', 'likes': len(post.likes)}), 403
+        
         post = Post.query.filter_by(id=post_id).first()
+        if not post:
+            return jsonify({'error': 'Post does not exist'}, 404)
+        
         like = Like.query.filter_by(
             liked_by=current_user.id, post_id=post_id).first()
 
-        if check_access():
-            return jsonify({'error': 'Access denied', 'likes': len(post.likes)}), 403
-        # Check if post exists
-        if not post:
-            # Return error message with status code 404
-            return jsonify({'error': 'Post does not exist'}, 404)
-        # Check if user has already liked the post
         if like:
-            # Unlike post and commit changes to database
             db.session.delete(like)
             db.session.commit()
         else:
-            # Like post and commit changes to database
             like = Like(liked_by=current_user.id, post_id=post_id)
             db.session.add(like)
             db.session.commit()
-        # Return updated like count and whether user has liked the post
         return jsonify({'likes': len(post.likes), 'liked': current_user.id in map(lambda x: x.liked_by, post.likes)})
     except Exception as e:
         db.session.rollback()
@@ -316,15 +311,18 @@ def like_post(post_id):
 @jwt_required()
 def users_posts(user_id):
     try:
+        user = db.session.get(User, user_id)
+        if not user:
+            return jsonify({"status": False, 'message': 'No such user exists'}), 400
         page = request.args.get('page', 1, type=int)
         per_page = request.args.get('per_page', 10, type=int)
+        if page < 1 and per_page < 1:
+            return jsonify({'status': False, 'message': 'Invalid page number'}), 400
         offset = (page - 1) * per_page
-        # Query all posts by the specified user
         posts = Post.query.filter_by(user_id=user_id).order_by(Post.created_at.desc()).limit(per_page).offset(offset)
         posts = [post.to_dict() for post in posts]
         total_posts = Post.query.filter_by(user_id=user_id).count()
-        # Return rendered template with posts
-        return jsonify({'status': True, 'posts': posts, 'total_posts': total_posts})
+        return jsonify({'status': True, 'posts': posts, 'total_posts': total_posts}), 200
     except Exception as e:
         return jsonify({'status': False, 'message': str(e)}), 500
 
@@ -358,32 +356,39 @@ def search():
             users = [user.to_dict() for user in users]
             admins = [admin.to_dict() for admin in admins]
             
-            return jsonify({
-                'status': True,
-                'message': 'Data fetched successfully',
-                'posts': posts,
-                'users': users,
-                'admins': admins
-                })
+            response = {
+                    'status': True,
+                    'message': 'Data fetched successfully',
+                    'posts': posts,
+                    'users': users,
+                }
+            
+            if check_access():
+                response['admins'] = admins
+            
+            return jsonify(response), 200
         except Exception as e:
-            return jsonify({ 'status': False, 'message': str(e) })
+            return jsonify({ 'status': False, 'message': str(e) }), 500
     else:
-        return jsonify({ 'status': Fasle, 'message': 'Please provide a term to perform search operation' })
+        return jsonify({ 'status': False, 'message': 'Please provide a term to perform search operation' }), 400
 
 
 # Admin Registration API
 # Only a admin can register other admins
 @app.route('/admin/register', methods=['POST'])
-@login_required
+@jwt_required()
 def admin_register():
+    if not request.get_json():
+        return jsonify({'status': False, 'message': 'Please provide data'}), 400
+    
     name = request.json.get('name')
     email = request.json.get('email')
     password = request.json.get('password')
     confirm_password = request.json.get('confirmPassword')
-    # validation part
+    
     try:
         if not check_access():
-            return jsonify({'status': False, 'message': 'Access denied'})
+            return jsonify({'status': False, 'message': 'Access denied'}), 403
         user = Admin.query.filter_by(email=email).first()
         if user:
             return jsonify({'status': False, 'message': 'Email is already registered.'}), 400
@@ -401,11 +406,13 @@ def admin_register():
 # Admin login API
 @app.route('/admin/login', methods=['POST', 'GET'])
 def admin_login():
+    if not request.get_json():
+        return jsonify({'status': False, 'message': 'Please provide data'})
+    
+    email = request.json.get('email')
+    password = request.json.get('password')
+    remember = request.json.get('remember')
     try:
-        email = request.json.get('email')
-        password = request.json.get('password')
-        remember = request.json.get('remember')
-
         document = Admin.query.filter_by(email=email).first()
         if document and bcrypt.check_password_hash(document.password, password):
             if document.is_blocked == 1:

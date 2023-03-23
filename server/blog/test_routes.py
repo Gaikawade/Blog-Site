@@ -294,12 +294,12 @@ def test_update_post():
 # Delete Post
 def test_delete_post():
     # authorized user
-    response = client.delete('/post/delete/44', headers=get_headers_for_user())
+    response = client.delete('/post/delete/48', headers=get_headers_for_user())
     assert response.status_code == 200
     assert b'deleted successfully' in response.data
     
     # Admin
-    response = client.delete('/post/delete/44', headers=get_headers_for_admin())
+    response = client.delete('/post/delete/49', headers=get_headers_for_admin())
     assert response.status_code == 200
     assert b'deleted successfully' in response.data  
     
@@ -309,7 +309,7 @@ def test_delete_post():
     assert b'Access denied' in response.data
     
     # Without headers
-    response = client.delete('/post/delete/44')
+    response = client.delete('/post/delete/50')
     assert response.status_code == 401
     assert b'Missing Authorization' in response.data
     
@@ -317,3 +317,182 @@ def test_delete_post():
     response = client.delete('/post/delete/postid', headers=get_headers_for_admin())
     assert response.status_code == 404
     assert b'Not Found' in response.data
+
+
+# Add comment
+def test_add_comment():
+    data = {
+        'text': 'This is a test comment',
+        'commented_by': user_id
+    }
+    # with valid data - User
+    response = client.post('/add_comment/50', data=json.dumps(data), headers=get_headers_for_user())
+    assert response.status_code == 201
+    assert b'Comment added' in response.data
+    
+    # with valid data - Admin
+    response = client.post('/add_comment/50', data=json.dumps(data), headers=get_headers_for_admin())
+    assert response.status_code == 403
+    assert b'Access denied' in response.data
+    
+    # with no data
+    response = client.post('/add_comment/50', data=json.dumps({}), headers=get_headers_for_user())
+    assert response.status_code == 400
+    assert b'Provide the required data' in response.data 
+
+    # with invalid post id
+    response = client.post('/add_comment/post_id', headers=get_headers_for_user())
+    assert response.status_code == 404
+    assert b'not found' in response.data
+    
+    # Without header
+    response = client.post('/add_comment/50')
+    assert response.status_code == 401
+    assert b'Missing Authorization' in response.data
+    
+
+# Delete Comment
+def test_delete_comment():
+    # with valid credentials - Admin
+    response = client.delete('/delete_comment/97', headers=get_headers_for_admin())
+    assert response.status_code == 200
+    assert b'deleted successfully' in response.data
+        
+    # with valid credentials - comment author
+    response = client.delete('/delete_comment/97', headers=get_headers_for_user())
+    assert response.status_code == 200
+    assert b'deleted successfully' in response.data
+    
+    # with valid credentials - post author
+    response = client.delete('/delete_comment/97', headers=get_headers_for_user())
+    assert response.status_code == 200
+    assert b'deleted successfully' in response.data
+    
+    # logged user trying to delete other user comment
+    response = client.delete('/delete_comment/73', headers=get_headers_for_user())
+    assert response.status_code == 403
+    assert b'Unauthorized access' in response.data
+    
+    # with invalid comment id
+    response = client.delete('/delete_comment/21211888412', headers=get_headers_for_user())
+    assert response.status_code == 404
+    assert b'Comment not found' in response.data
+    
+
+# Like Post
+def test_like_post():
+    # Admin
+    response = client.post('/like_post/5', headers=get_headers_for_admin())
+    assert response.status_code == 403
+    assert b'Access denied' in response.data
+
+
+# Get posts by user id
+def test_get_posts_by_user_id():
+    # with valid data
+    response = client.get(f'/user/{user_id}/posts', headers=get_headers_for_user())
+    assert response.status_code == 200
+    json_response = json.loads(response.get_data(as_text=True))
+    assert len(json_response['posts']) <= 10
+    assert len(json_response['posts']) >= 0
+    assert json_response['total_posts'] >= 0
+    
+    # with invalid user id
+    response = client.get('/user/21512215878451218451/posts', headers=get_headers_for_user())
+    assert response.status_code == 400
+    assert b'No such user' in response.data
+    
+    # with no headers
+    response = client.get(f'/user/{user_id}/posts')
+    assert response.status_code == 401
+    assert b'Missing Authorization' in response.data
+    
+    # with invalid values for page and per_page
+    response = client.get('/home?page=0&per_page=-1')
+    assert response.status_code == 400
+    assert b'Invalid page' in response.data
+    
+    # with valid values for page and per_page
+    response = client.get('/home?page=20&per_page=10')
+    json_response = json.loads(response.get_data(as_text=True))
+    assert response.status_code == 200
+    if json_response['posts']:
+        assert (len(json_response['posts'])) <= 10
+    else:
+        assert (len(json_response['posts'])) == 0
+
+
+# Search
+def test_search():
+    # search by user
+    response = client.get('/search?q=hello', headers=get_headers_for_user())
+    assert response.status_code == 200
+    assert b'admins' not in response.data
+    assert b'users' in response.data
+    assert b'posts' in response.data
+    
+    # search by admin
+    response = client.get('/search?q=hello', headers=get_headers_for_admin())
+    assert response.status_code == 200
+    assert b'admins' in response.data
+    assert b'users' in response.data
+    assert b'posts' in response.data
+    
+    # without headers
+    response = client.get('/search?q=hello')
+    assert response.status_code == 401
+    assert b'Missing Authorization' in response.data
+    
+    # without a search parameter
+    response = client.get('/search', headers=get_headers_for_admin())
+    assert response.status_code == 400
+    assert b'Please provide a term' in response.data
+
+
+# Admin Registration
+def test_admin_registration():
+    # with valid details
+    data = {
+        'name': 'test admin',
+        'email': 'test2@admin.com',
+        'password': 'password',
+        'confirmPassword': 'password'
+    }
+    response = client.post('/admin/register', data=json.dumps(data), headers=get_headers_for_admin())
+    assert response.status_code == 201
+    assert b'Registration successful' in response.data
+    
+    # With duplicate email
+    data['email'] = 'test@adm.co'
+    response = client.post('/admin/register', data=json.dumps(data), headers=get_headers_for_admin())
+    assert response.status_code == 400
+    assert b'Email is already registered' in response.data
+    
+    # by passing user token
+    response = client.post('/admin/register', data=json.dumps(data), headers=get_headers_for_user())
+    assert response.status_code == 403
+    assert b'Access denied' in response.data
+    
+    # without headers
+    response = client.post('/admin/register', data=json.dumps(data))
+    assert response.status_code == 401
+    assert b'Missing Authorization' in response.data
+    
+    # without data
+    response = client.post('/admin/register', data=json.dumps({}), headers=get_headers_for_admin())
+    assert response.status_code == 400
+    assert b'Please provide data' in response.data
+    
+    # password mismatch
+    data = {
+        'name': 'test admin',
+        'email': 'testadmin@admin.com',
+        'password': 'password',
+        'confirmPassword': 'password1'
+    }
+    response = client.post('/admin/register', data=json.dumps(data), headers=get_headers_for_admin())
+    assert response.status_code == 400
+    assert b'Password mismatch' in response.data
+    
+    
+    
