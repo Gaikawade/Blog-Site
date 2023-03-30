@@ -310,14 +310,16 @@ def like_post(post_id):
 @app.route('/user/<string:user_id>/posts', methods=['GET'])
 @jwt_required()
 def users_posts(user_id):
+    page = request.args.get('page', 1, type=int)
+    per_page = request.args.get('per_page', 10, type=int)
     try:
+        if page < 1 and per_page < 1:
+            return jsonify({'status': False, 'message': 'Invalid page number'}), 400
+        
         user = db.session.get(User, user_id)
         if not user:
             return jsonify({"status": False, 'message': 'No such user exists'}), 400
-        page = request.args.get('page', 1, type=int)
-        per_page = request.args.get('per_page', 10, type=int)
-        if page < 1 and per_page < 1:
-            return jsonify({'status': False, 'message': 'Invalid page number'}), 400
+        
         offset = (page - 1) * per_page
         posts = Post.query.filter_by(user_id=user_id).order_by(Post.created_at.desc()).limit(per_page).offset(offset)
         posts = [post.to_dict() for post in posts]
@@ -404,10 +406,10 @@ def admin_register():
 
 
 # Admin login API
-@app.route('/admin/login', methods=['POST', 'GET'])
+@app.route('/admin/login', methods=['POST'])
 def admin_login():
     if not request.get_json():
-        return jsonify({'status': False, 'message': 'Please provide data'})
+        return jsonify({'status': False, 'message': 'Please provide data'}), 400
     
     email = request.json.get('email')
     password = request.json.get('password')
@@ -419,11 +421,6 @@ def admin_login():
                 return jsonify({'status': False, 'message': 'Your account is blocked, please contact our support team'}), 403
             else:
                 login_user(document, remember=remember)
-                token = jwt.encode({
-                    'userId': document.id,
-                    'isAdmin': check_access(),
-                    'exp': datetime.utcnow() + timedelta(minutes=120)
-                }, app.config['SECRET_KEY'])
                 token = create_access_token({
                     'userId': document.id,
                     'isAdmin': check_access()
@@ -432,7 +429,6 @@ def admin_login():
         else:
             return jsonify({'status': False, 'message': 'Incorrect Email or Password'}), 401
     except Exception as e:
-        print(str(e))
         return jsonify({'status': False, 'message': str(e)}), 500
 
 
@@ -474,6 +470,8 @@ def all_posts():
         try:
             page = request.args.get('page', 1, type=int)
             per_page = request.args.get('per_page', 10, type=int)
+            if page < 1 or per_page < 1:
+                return jsonify({'status': False, 'message': 'Invalid page number'}), 400
             offset = (page - 1) * per_page
             posts = Post.query.order_by(Post.created_at.desc()).limit(per_page).offset(offset)
             posts = [post.to_dict() for post in posts]
@@ -514,7 +512,7 @@ def block_user(user_id):
             db.session.rollback()
             return jsonify({'status': False, 'message': str(e)}), 500
     else:
-        return jsonify({'status': False, 'message': 'Unauthorized access'}), 401
+        return jsonify({'status': False, 'message': 'Access denied'}), 403
 
 
 @app.route('/change_password/<string:user_id>', methods=['POST'])

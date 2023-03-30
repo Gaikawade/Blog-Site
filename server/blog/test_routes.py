@@ -408,12 +408,12 @@ def test_get_posts_by_user_id():
     assert b'Missing Authorization' in response.data
     
     # with invalid values for page and per_page
-    response = client.get('/home?page=0&per_page=-1')
+    response = client.get(f'/user/{user_id}/posts?page=0&per_page=-1', headers=get_headers_for_admin())
     assert response.status_code == 400
     assert b'Invalid page' in response.data
     
     # with valid values for page and per_page
-    response = client.get('/home?page=20&per_page=10')
+    response = client.get(f'/user/{user_id}/posts?page=20&per_page=10', headers=get_headers_for_user())
     json_response = json.loads(response.get_data(as_text=True))
     assert response.status_code == 200
     if json_response['posts']:
@@ -453,8 +453,8 @@ def test_search():
 def test_admin_registration():
     # with valid details
     data = {
-        'name': 'test admin',
-        'email': 'test2@admin.com',
+        'name': 'mahesh admin',
+        'email': 'mahesh1.adm@admin.com',
         'password': 'password',
         'confirmPassword': 'password'
     }
@@ -495,4 +495,113 @@ def test_admin_registration():
     assert b'Password mismatch' in response.data
     
     
+# Admin Login
+def test_admin_login():
+    # Test with valid credentials
+    data = {
+        'email': 'mahesh.adm@admin.com',
+        'password': 'password',
+        'remember': True
+    }
+    response = client.post('/admin/login', data=json.dumps(data), content_type='application/json')
+    assert response.status_code == 200
+    assert b'Login successful' in response.data
+    assert b'token' in response.data
     
+    # Test with invalid credentials
+    data = {
+        'email': 'test@gmail.com',
+        'password': '1234585'
+    }
+    response = client.post('/admin/login', data=json.dumps(data), content_type='application/json')
+    assert response.status_code == 401
+    assert b'Incorrect Email or Password' in response.data
+    assert b'token' not in response.data
+    
+    # Test for blocked user
+    data = {
+        'email': 'rajesh@adm.com',
+        'password': '123456'
+    }
+    response = client.post('/admin/login', data=json.dumps(data), content_type='application/json')
+    assert response.status_code == 403
+    assert b'Your account is blocked' in response.data
+    assert b'token' not in response.data
+
+
+# Fetch all users
+def test_get_all_users():
+    # valid request - Admin
+    response = client.get('/admin/all_users', headers=get_headers_for_admin())
+    assert response.status_code == 200
+    json_response = json.loads(response.get_data(as_text=True))
+    assert isinstance(json_response['users'], list)
+    
+    # without headers
+    response = client.get('/admin/all_users')
+    assert response.status_code == 401
+    assert b'Missing Authorization' in response.data
+    
+    # end user request
+    response = client.get('/admin/all_users', headers=get_headers_for_user())
+    assert response.status_code == 403
+    assert b'Access denied' in response.data
+    
+
+# Fetch all admins
+def test_get_all_admins():
+    # valid request
+    response = client.get('/admin/all_admins', headers=get_headers_for_admin())
+    assert response.status_code == 200
+    json_response = json.loads(response.get_data(as_text=True))
+    assert isinstance(json_response['admins'], list)
+        
+    # without headers
+    response = client.get('/admin/all_users')
+    assert response.status_code == 401
+    assert b'Missing Authorization' in response.data
+    
+    # end user request
+    response = client.get('/admin/all_admins', headers=get_headers_for_user())
+    assert response.status_code == 403
+    assert b'Access denied' in response.data
+
+
+# Fetch all posts
+def test_get_all_posts():
+    # valid request
+    response = client.get('/admin/all_posts', headers=get_headers_for_admin())
+    assert response.status_code == 200
+    json_response = json.loads(response.get_data(as_text=True))
+    assert isinstance(json_response['posts'], list)
+    assert len(json_response['posts']) <= 10
+    assert len(json_response['posts']) >= 0
+    assert json_response['total_posts'] >= 0
+    
+    # with valid values for page and per_page
+    response = client.get('/admin/all_posts?page=20&per_page=10', headers=get_headers_for_admin())
+    json_response = json.loads(response.get_data(as_text=True))
+    assert response.status_code == 200
+    if json_response['posts']:
+        assert (len(json_response['posts'])) <= 10
+    else:
+        assert (len(json_response['posts'])) == 0
+    
+    # invalid values for page and per_page
+    response = client.get('/admin/all_posts?page=1&per_page=-1', headers=get_headers_for_admin())
+    assert response.status_code == 400
+    assert b'Invalid page' in response.data
+    
+    # end user request
+    response = client.get('/admin/all_posts', headers=get_headers_for_user())
+    assert response.status_code == 403
+    assert b'Access denied' in response.data
+
+
+# Block or unblock user/admin
+def test_block_user_admin():
+    response = client.put('/admin/block_user/A548225843215', get_headers_for_admin())
+    assert response.status_code == 404
+    assert b'No member found' in response.data
+    # assert response.status_code == 403
+    # assert b'Access denied' in response.data
